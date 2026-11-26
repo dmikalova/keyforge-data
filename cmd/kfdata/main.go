@@ -22,6 +22,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"image"
+	"image/png"
 	"io"
 	"log/slog"
 	"net/http"
@@ -34,6 +36,7 @@ import (
 
 	"github.com/dmikalova/keyforge-data/crawl"
 	"github.com/dmikalova/keyforge-data/distill"
+	"github.com/dmikalova/keyforge-data/images"
 	"github.com/dmikalova/keyforge-data/inspect"
 	"github.com/dmikalova/keyforge-data/mv"
 	"github.com/dmikalova/keyforge-data/raw"
@@ -52,6 +55,8 @@ commands:
                                         fetch the cover decks in each language
   status [-crawl id]                    print the state of the crawls
   report [-out file] [crawl...]         write the raw data report
+  gigantic -out file <base URL> <art URL>
+                                        write a gigantic composite image
   distill [-out file] [-problems file] [-overrides dir]
                                         write the dataset and its problems
 `
@@ -124,6 +129,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return status(store, rest, stdout)
 	case "report":
 		return report(store, rest)
+	case "gigantic":
+		return giganticCmd(ctx, rest)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
 	default:
@@ -319,4 +326,44 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	_, err = fmt.Fprintf(stdout, "version %s: %d cards, %d sets, %d problems\n",
 		d.Version, len(d.Cards), len(d.Sets), len(problems))
 	return err
+}
+
+// giganticCmd downloads the two halves of a gigantic creature and writes
+// the composite card tile as a PNG.
+func giganticCmd(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("gigantic", flag.ContinueOnError)
+	out := fs.String("out", "", "PNG file")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 2 || *out == "" {
+		return errors.New("usage: gigantic -out file.png <base URL> <art URL>")
+	}
+	client := &http.Client{Timeout: time.Minute}
+	var halves [2]image.Image
+	for i, u := range fs.Args() {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+		if err != nil {
+			return err
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		img, err := png.Decode(resp.Body)
+		_ = resp.Body.Close()
+		if err != nil {
+			return fmt.Errorf("%s: %w", u, err)
+		}
+		halves[i] = img
+	}
+	f, err := os.Create(*out)
+	if err != nil {
+		return err
+	}
+	if err := png.Encode(f, images.Gigantic(halves[0], halves[1])); err != nil {
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
 }

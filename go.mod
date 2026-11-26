@@ -8,6 +8,7 @@ require (
 	github.com/dmikalova/project-standards v1.37.0
 	github.com/klauspost/compress v1.20.5
 	github.com/magefile/mage v1.17.2
+	golang.org/x/image v0.48.0
 	golang.org/x/text v0.44.0
 )
 

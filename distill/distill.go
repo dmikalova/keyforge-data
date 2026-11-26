@@ -90,15 +90,16 @@ type Problem struct {
 
 // Problem kinds.
 const (
-	ProblemUnknownSet     = "unknown set"
-	ProblemNoPower        = "creature without power"
-	ProblemMissingImage   = "missing image"
-	ProblemUnlabeledKind  = "unlabeled houseless kind"
-	ProblemDuplicateCard  = "same name and house twice in a set"
-	ProblemUnknownType    = "unknown card type"
-	ProblemBadObject      = "unreadable card object"
-	ProblemGiganticNoBase = "gigantic without a base half"
-	ProblemOnlyMavericks  = "printing with only mavericks"
+	ProblemUnknownSet      = "unknown set"
+	ProblemNoPower         = "creature without power"
+	ProblemMissingImage    = "missing image"
+	ProblemUnlabeledKind   = "unlabeled houseless kind"
+	ProblemDuplicateCard   = "same name and house twice in a set"
+	ProblemUnknownType     = "unknown card type"
+	ProblemBadObject       = "unreadable card object"
+	ProblemGiganticNoBase  = "gigantic without a base half"
+	ProblemOnlyMavericks   = "printing with only mavericks"
+	ProblemMissingGigantic = "missing gigantic image"
 )
 
 // referenceHouses are the Master Vault pseudo-houses of reference cards.
@@ -237,7 +238,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Number:  k.number,
 		Rarity:  base.Rarity,
 		Anomaly: base.IsAnomaly,
-		Image:   r.image(set, k, base.FrontImage),
+		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
 	}
 	if base.Flavor != nil {
 		p.Flavor = strings.TrimSpace(*base.Flavor)
@@ -626,4 +627,36 @@ func (r *run) maverickOnly(objs, mavericks []mvCard) []mvCard {
 		out = append(out, c)
 	}
 	return out
+}
+
+// printingImage returns the image path of a printing. A gigantic creature
+// uses the composite image <set>/<number>-gigantic.webp. The composite has
+// a new path, because the bucket caches each image path for a year.
+func (r *run) printingImage(
+	set sets.Set,
+	k printingKey,
+	base mvCard,
+	objs []mvCard,
+	gigantic bool,
+) string {
+	if !gigantic {
+		return r.image(set, k, base.FrontImage)
+	}
+	want := set.Slug + "/" + k.number + "-gigantic."
+	for _, n := range r.images[set.Slug+"/"+k.number] {
+		if strings.HasPrefix(n, want) {
+			return n
+		}
+	}
+	art := ""
+	for _, o := range objs {
+		if strings.Contains(strings.ToLower(o.Type), "art") && (art == "" || !o.IsEnhanced) {
+			art = o.FrontImage
+		}
+	}
+	r.problem(Problem{
+		Kind: ProblemMissingGigantic, Set: set.Slug, Number: k.number, Title: k.title,
+		Detail: base.FrontImage + " " + art,
+	})
+	return ""
 }

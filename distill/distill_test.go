@@ -207,6 +207,7 @@ func TestRun(t *testing.T) {
 	for _, want := range []string{
 		"missing image aemberskies 100",
 		"missing image massmutation 028",
+		"missing gigantic image massmutation 125",
 		"printing with only mavericks vaultmasters2023 099",
 		"unlabeled houseless kind aemberskies 400",
 	} {

@@ -215,30 +215,32 @@ func fillImages() (int, error) {
 	defer func() { _ = os.RemoveAll(dir) }()
 	n := 0
 	for _, p := range problems {
-		if p.Kind != "missing image" || !strings.HasPrefix(p.Detail, "https://") {
-			continue
-		}
+		name := p.Number
 		png := filepath.Join(dir, p.Set+"-"+p.Number+".png")
-		webp := strings.TrimSuffix(png, ".png") + ".webp"
-		if err := sh.Run("curl", "-sfL", "-o", png, p.Detail); err != nil {
-			fmt.Println("download failed:", p.Set, p.Number, err)
+		switch {
+		case p.Kind == "missing image" && strings.HasPrefix(p.Detail, "https://"):
+			if err := sh.Run("curl", "-sfL", "-o", png, p.Detail); err != nil {
+				fmt.Println("download failed:", p.Set, p.Number, err)
+				continue
+			}
+		case p.Kind == "missing gigantic image" && len(strings.Fields(p.Detail)) == 2:
+			name += "-gigantic"
+			args := append([]string{"gigantic", "-out", png}, strings.Fields(p.Detail)...)
+			if err := kfdata(args...); err != nil {
+				fmt.Println("gigantic failed:", p.Set, p.Number, err)
+				continue
+			}
+		default:
 			continue
 		}
+		webp := strings.TrimSuffix(png, ".png") + ".webp"
+		// -exact keeps the transparent edges of a gigantic tile.
 		if err := sh.Run(
-			"cwebp",
-			"-quiet",
-			"-q",
-			"80",
-			"-resize",
-			"300",
-			"420",
-			png,
-			"-o",
-			webp,
+			"cwebp", "-quiet", "-q", "80", "-exact", "-resize", "300", "420", png, "-o", webp,
 		); err != nil {
 			return n, err
 		}
-		dst := "gs://mklv-keyforge-cards-public/images/cards/" + p.Set + "/" + p.Number + ".webp"
+		dst := "gs://mklv-keyforge-cards-public/images/cards/" + p.Set + "/" + name + ".webp"
 		if err := sh.Run("gcloud", "storage", "cp",
 			"--cache-control=public, max-age=31536000, immutable",
 			"--content-type=image/webp", webp, dst); err != nil {
