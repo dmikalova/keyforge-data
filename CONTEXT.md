@@ -61,8 +61,14 @@ houseless cards have the flag `is:houseless`. There are three groups:
   label becomes a flag (`is:skybeast`).
 - The anomalies that have no printing in a playable set.
 - The cards that Master Vault prints in the house of the deck (Dark Æmber
-  Vault, It's Coming...). The flag is
-  `is:multihouse`.
+  Vault, It's Coming...).
+
+**Maverick** and **legacy**:
+A maverick is a card in a house that is not its own. A legacy is a card from
+an older set in a newer deck. Card search ignores both: they are copies of a
+printing that the dataset already has. One exception: a printing that
+Master Vault sends only as mavericks (Exchange Officer in Vault Masters
+1) is kept in the house of the card's other printings.
 
 **Anomaly**:
 A card with the anomaly frame and its own rarity symbol. Master Vault keeps
