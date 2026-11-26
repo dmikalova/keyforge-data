@@ -1,6 +1,6 @@
 # data.keyforge.cards service
 
-Status: proposed. The card crawl runs locally until the service exists.
+Status: accepted. The card crawl runs locally until the service exists.
 
 ## Context
 
@@ -24,9 +24,9 @@ distillation rules.
     query with the shared grammar) and, after the deck crawl, decks (one
     deck, a deck query). A deck import request goes into the priority queue
     of the crawler (ADR 0003).
-  - **Crawler.** The one paced Master Vault client. It runs as a Cloud Run
-    job or a worker with one instance, so there is only one client. Its
-    modes are the set scan, the cover refresh, the full deck crawl, the
+  - **Crawler.** The one paced Master Vault client, inside the same app.
+    The app keeps its own schedule (see Scheduling). There is no Cloud Run
+    job and no new Cloud Scheduler job. Its modes are the set scan, the cover refresh, the full deck crawl, the
     newest-deck tail, and the deck import queue.
   - **Publisher.** After a crawl adds card objects, it runs distillation,
     fills the missing images, publishes `data/cards.json`, and posts changed
@@ -43,6 +43,30 @@ distillation rules.
   3. The crawler in the service, in card mode (set scan, cover refresh).
   4. The full deck crawl and the deck database, when the user starts it.
 
+## Scheduling
+
+The user does not want a Cloud Run job or a new Cloud Scheduler job for each
+schedule, because each one adds cost.
+
+The Cloud Run module sets `cpu_idle = true` and a minimum of zero instances.
+Between requests the instance gets no CPU, and it can stop. A goroutine timer
+alone does not run on time.
+
+The mklv service already sends a request to each service with the label
+`warm=true` every 10 minutes, at no added cost. The app uses that request as
+its clock:
+
+- A goroutine scheduler holds the due time of each task (tail crawl, cover
+  refresh, publish). The tasks and their state are in the bucket.
+- Each request (the warm request or a user request) wakes the scheduler. The
+  warm request waits while the due tasks run, for up to 9 minutes, so the
+  instance keeps its CPU. Then it returns.
+- The full deck crawl runs in these 9-minute slices, every 10 minutes. It
+  continues from its saved state each time.
+- If a later need requires a task to run without requests, the alternative
+  is `cpu_idle = false` with one minimum instance. That costs money each
+  hour, so it needs the user's approval.
+
 ## Consequences
 
 - keyforge-data changes from `kind: library` to `kind: cloudrun` in
@@ -51,9 +75,7 @@ distillation rules.
 - A crawl in the service must keep its state in the bucket, because a Cloud
   Run instance has no disk that persists.
 
-## Open questions
+## API access
 
-- Is the crawler a Cloud Run job on a schedule, or one always-on instance?
-  A job that runs every 10 minutes fits the tail. The four-week full crawl
-  fits an always-on instance better.
-- Is the API public, or only for the keyforge.cards sites?
+The API is public. It needs a rate limit for each client IP, because a
+query can be expensive.
