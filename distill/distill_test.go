@@ -130,6 +130,10 @@ func TestRun(t *testing.T) {
 				`"card_title":"Old Egad","house":"Logos","card_type":"Evil Twin Creature","power":"2","rarity":"Rare","card_number":"004","expansion":496`,
 			),
 			obj(
+				"k1",
+				`"card_title":"Berserker","house":"Brobnar","card_type":"Token Creature","power":"2","rarity":"Token","card_number":"T01","expansion":800`,
+			),
+			obj(
 				"b1",
 				`"card_title":"ANT1-10NY","house":"Logos","card_type":"Creature","power":"3","rarity":"Rare","card_number":"100","expansion":800`,
 			),
@@ -262,6 +266,16 @@ func TestRun(t *testing.T) {
 	}
 	if n := find(t, d, "oldegad-logos"); n.HasFlag(FlagEvilTwin) || n.Power.N != 1 {
 		t.Errorf("normal twin: %+v", n)
+	}
+
+	if bz := find(
+		t,
+		d,
+		"berserker-brobnar",
+	); bz.Type != "creature" ||
+		!bz.HasFlag(FlagTokenCreature) ||
+		bz.Printings[0].Rarity != "Token Creature" {
+		t.Errorf("token creature: %+v", bz)
 	}
 
 	// Reference cards sort last, after the cards without a house.

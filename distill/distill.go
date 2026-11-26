@@ -542,6 +542,9 @@ func traits(s *string) []string {
 // print their own anomaly rarity.
 func rarity(c mvCard) string {
 	switch {
+	case c.Rarity == "Token":
+		// A token creature is not in a deck. Its rarity names the kind.
+		return "Token Creature"
 	case c.Rarity != "FIXED":
 		return c.Rarity
 	case c.IsAnomaly:
