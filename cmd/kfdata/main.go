@@ -7,6 +7,7 @@
 //	kfdata [-root dir] cover -crawl id <set...|all>
 //	kfdata [-root dir] refresh [-crawl id] [-locales en,de,...] <set...|all>
 //	kfdata [-root dir] status [-crawl id]
+//	kfdata [-root dir] report [-out file] [crawl...]
 //
 // crawl-sets scans the deck feed of each set and keeps the decks that add a
 // card. cover writes sources/mv/cover/<set>.json from a crawl-sets crawl.
@@ -31,6 +32,7 @@ import (
 	"time"
 
 	"github.com/dmikalova/keyforge-data/crawl"
+	"github.com/dmikalova/keyforge-data/inspect"
 	"github.com/dmikalova/keyforge-data/mv"
 	"github.com/dmikalova/keyforge-data/raw"
 	"github.com/dmikalova/keyforge-data/sets"
@@ -47,7 +49,32 @@ commands:
   refresh [-crawl id] [-locales l,...] <set...|all>
                                         fetch the cover decks in each language
   status [-crawl id]                    print the state of the crawls
+  report [-out file] [crawl...]         write the raw data report
 `
+
+func report(store *raw.Store, args []string) error {
+	fs := flag.NewFlagSet("report", flag.ContinueOnError)
+	out := fs.String("out", "docs/data-report.md", "report file")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	ids := fs.Args()
+	if len(ids) == 0 {
+		var err error
+		if ids, err = store.Crawls(); err != nil {
+			return err
+		}
+	}
+	f, err := os.Create(*out)
+	if err != nil {
+		return err
+	}
+	if err := inspect.Write(f, store, ids); err != nil {
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
+}
 
 func main() {
 	if err := runWithSignals(os.Args[1:]); err != nil {
@@ -91,6 +118,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return refresh(ctx, log, store, rest)
 	case "status":
 		return status(store, rest, stdout)
+	case "report":
+		return report(store, rest)
 	default:
 		fs.Usage()
 		return fmt.Errorf("unknown command %q", cmd)
