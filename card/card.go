@@ -11,6 +11,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/dmikalova/keyforge-data/sets"
 )
 
 // Card is one playable card identity: a name and a house. An evil twin is a
@@ -119,3 +122,25 @@ func (p *Power) UnmarshalText(b []byte) error {
 func (c *Card) HasFlag(flag string) bool {
 	return slices.Contains(c.Flags, flag)
 }
+
+// Dataset is the published card data. The site reads it from the public
+// bucket and reloads it when it changes, so a new card or set needs no
+// deploy.
+type Dataset struct {
+	// Version changes each time the content changes. It is a hash of the
+	// sets and the cards.
+	Version string `json:"version"`
+	// Generated is when distillation made the dataset.
+	Generated time.Time `json:"generated"`
+	// Sets are the sets that have cards, oldest first.
+	Sets []sets.Set `json:"sets"`
+	// Cards are the cards in the default sort order.
+	Cards []Card `json:"cards"`
+}
+
+// ImageBase is the public URL that Printing.Image and Localization.Image are
+// relative to.
+const ImageBase = "https://storage.googleapis.com/mklv-keyforge-cards-public/images/cards/"
+
+// DatasetPath is the object path of the dataset in the public bucket.
+const DatasetPath = "data/cards.json"

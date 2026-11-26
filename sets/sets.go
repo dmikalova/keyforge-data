@@ -11,13 +11,13 @@ import (
 // Set is one KeyForge set.
 type Set struct {
 	// Slug is the lowercase identifier used in paths and image URLs.
-	Slug string
+	Slug string `json:"slug"`
 	// Code is the short printed code, for example "GR".
-	Code string
+	Code string `json:"code"`
 	// Name is the full English name.
-	Name string
+	Name string `json:"name"`
 	// Expansion is the Master Vault expansion ID.
-	Expansion int
+	Expansion int `json:"expansion"`
 }
 
 // All lists every set in release order.
