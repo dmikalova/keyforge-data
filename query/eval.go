@@ -288,11 +288,18 @@ func keyedTerm(m map[string]int, t *Term) bool {
 		return numberTerm([]Num{{N: total}}, t)
 	}
 	n, ok := lookupKey(m, t.Key)
-	if !ok {
-		return false
-	}
 	if t.Value.Text == "" {
-		return true // the key alone
+		return ok // the key alone: the item has the key
+	}
+	switch {
+	case !ok:
+		// An item without the key has the value 0, so "assault=0" and
+		// "assault<2" find the cards without assault.
+		n = 0
+	case n == 0:
+		// A key without a number (the keyword Elusive) counts as 1, so
+		// "elusive>0" finds the cards that have it.
+		n = 1
 	}
 	return numberTerm([]Num{{N: n}}, t)
 }
