@@ -1,0 +1,27 @@
+{
+  "labels": {
+    "abilities": {
+      "action": "Action",
+      "beforefight": "Before Fight",
+      "destroyed": "Destroyed",
+      "fight": "Fight",
+      "leavesplay": "Leaves Play",
+      "omni": "Omni",
+      "play": "Play",
+      "reap": "Reap",
+      "scrap": "Scrap"
+    },
+    "groups": {
+      "anomaly": "Anomaly",
+      "houseless": "Houseless",
+      "reference": "Reference"
+    },
+    "houses": {
+      "ironyxrebels": "Ironyx Rebels",
+      "staralliance": "Star Alliance"
+    },
+    "types": {
+      "reference": "Reference"
+    }
+  }
+}

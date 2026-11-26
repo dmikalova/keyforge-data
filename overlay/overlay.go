@@ -13,6 +13,7 @@
 //   - _deckrules.json has the deck rules and notes of the Archon Arcana
 //     sheet. kfdata threads rules writes it. Do not edit it.
 //   - _artists.json has the known artists and the artist aliases.
+//   - _labels.json has the names for people of the data values.
 package overlay
 
 import (
@@ -33,6 +34,7 @@ const (
 	ThreadsFile = "_threads"
 	RulesFile   = "_deckrules"
 	ArtistsFile = "_artists"
+	LabelsFile  = "_labels"
 )
 
 // File is one override file. A section that a file does not use is empty.
@@ -62,6 +64,10 @@ type File struct {
 	// ArtistAliases maps another spelling of an artist to the artist name
 	// that the printings use. _artists.json.
 	ArtistAliases map[string]string `json:"artistAliases,omitempty"`
+	// Labels are names for people, by kind and value, for example
+	// "groups": {"anomaly": "Anomaly"}. They win over the names that the
+	// Master Vault data gives. _labels.json.
+	Labels map[string]map[string]string `json:"labels,omitempty"`
 }
 
 // CardFix corrects a Master Vault mistake.

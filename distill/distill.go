@@ -177,6 +177,9 @@ type run struct {
 	in       Input
 	images   map[string][]string
 	problems []Problem
+	// labels are the names for people that the Master Vault data gives, by
+	// kind ("houses", "groups", "types") and value.
+	labels map[string]map[string]string
 }
 
 func (r *run) problem(p Problem) { r.problems = append(r.problems, p) }
@@ -208,6 +211,9 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	// the four card types. Its kind is in the card group.
 	if slices.Contains(flags, FlagReference) {
 		typ = "reference"
+	}
+	if strings.EqualFold(base.Type, typ) {
+		r.label("types", typ, base.Type)
 	}
 	switch {
 	case slices.Contains([]string{"action", "artifact", "creature", "upgrade"}, typ),
@@ -345,11 +351,14 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 		// or a card such as Dark Æmber Vault. The card is houseless.
 		return "", []string{FlagHouseless}
 	case referenceHouses[h]:
+		r.label("groups", h, base.House)
 		return "", []string{FlagReference}
 	case realHouses[h]:
+		r.label("houses", h, base.House)
 		return h, nil
 	}
 	if label, ok := ov.Kinds[base.House]; ok {
+		r.label("groups", query.Normalize(label), base.House)
 		return "", []string{query.Normalize(label), FlagHouseless}
 	}
 	r.problem(Problem{
@@ -435,12 +444,14 @@ func (r *run) dataset(cards map[string]*card.Card) card.Dataset {
 	d := card.Dataset{
 		Generated: r.in.Now.UTC(), Sets: ss, Cards: out,
 		ArtistAliases: usedAliases(r.in.ArtistAliases, out),
+		Labels:        r.datasetLabels(),
 	}
 	b, err := json.Marshal(struct {
 		Sets    []sets.Set
 		Cards   []card.Card
 		Aliases map[string]string
-	}{ss, out, d.ArtistAliases}, json.Deterministic(true))
+		Labels  map[string]map[string]string
+	}{ss, out, d.ArtistAliases, d.Labels}, json.Deterministic(true))
 	if err == nil {
 		sum := sha256.Sum256(b)
 		d.Version = hex.EncodeToString(sum[:6])
@@ -837,6 +848,35 @@ func overlaid(fix CardFix) []string {
 	}
 	if fix.Armor != nil {
 		out = append(out, "armor")
+	}
+	return out
+}
+
+// label keeps the first name for people that Master Vault gives a value.
+func (r *run) label(kind, value, name string) {
+	if r.labels == nil {
+		r.labels = map[string]map[string]string{}
+	}
+	if r.labels[kind] == nil {
+		r.labels[kind] = map[string]string{}
+	}
+	if _, ok := r.labels[kind][value]; !ok && value != "" && name != "" {
+		r.labels[kind][value] = name
+	}
+}
+
+// datasetLabels returns the labels of the Master Vault data with the labels
+// of overrides/_labels.json over them.
+func (r *run) datasetLabels() map[string]map[string]string {
+	out := map[string]map[string]string{}
+	for kind, m := range r.labels {
+		out[kind] = maps.Clone(m)
+	}
+	for kind, m := range r.in.Overrides[overlay.LabelsFile].Labels {
+		if out[kind] == nil {
+			out[kind] = map[string]string{}
+		}
+		maps.Copy(out[kind], m)
 	}
 	return out
 }

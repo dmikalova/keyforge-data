@@ -176,6 +176,11 @@ type Dataset struct {
 	// that the printings use, for example "Matthew Mizak" to "Mateusz
 	// Mizak". Search can match the other spelling.
 	ArtistAliases map[string]string `json:"artistAliases,omitempty"`
+	// Labels are the names for people of the data values, by kind and value:
+	// "houses" (slug to house name), "groups" (houseless group to label),
+	// "types", and "abilities". The house and type names come from Master
+	// Vault. overrides/_labels.json adds the other names.
+	Labels map[string]map[string]string `json:"labels,omitempty"`
 }
 
 // ImageBase is the public URL that Printing.Image and Localization.Image are

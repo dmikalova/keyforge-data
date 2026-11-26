@@ -30,6 +30,9 @@ where it can.
    - `_deckrules.json` has the `rules` and `notes` of the Archon Arcana
      sheet. `mage threads:rules` writes it. Do not edit it.
    - `_artists.json` has the `knownArtists` and the `artistAliases`.
+   - `_labels.json` has `labels`: names for people of the data values,
+     such as the houseless group labels and the ability names. They win
+     over the house and type names that Master Vault gives.
 2. The loader rejects an unknown field, so that a misspelled section does
    not go unseen.
 3. `kfdata overrides lint` (`mage overrides:lint`) checks the files against
