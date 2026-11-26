@@ -36,6 +36,14 @@ func TestWriteShowsSpecialCards(t *testing.T) {
 			`"card_title":"Skybeast","house":"Skybeasts","card_type":"Creature","power":"X","rarity":"Common","card_number":"003","expansion":341`,
 		),
 		obj(
+			"f",
+			`"card_title":"Skybeast","house":"Skybeasts","card_type":"Creature","power":"X","rarity":"Common","card_number":"003","expansion":341,"is_enhanced":true`,
+		),
+		obj(
+			"g",
+			`"card_title":"Citizen Shrix","house":"Logos","card_type":"Creature","power":"3","rarity":"Common","card_number":"257","expansion":609,"is_enhanced":true`,
+		),
+		obj(
 			"e",
 			`"card_title":"Grunt","house":"Brobnar","card_type":"Token Creature","power":null,"rarity":"Token","card_number":"004","expansion":341`,
 		),
@@ -48,7 +56,7 @@ func TestWriteShowsSpecialCards(t *testing.T) {
 		t.Fatal(err)
 	}
 	deck := mv.Deck{ID: "d1", Raw: jsontext.Value(
-		`{"id":"d1","expansion":341,"_links":{"houses":["Brobnar","Dis","Logos"],"cards":["a","d"]}}`,
+		`{"id":"d1","expansion":341,"_links":{"houses":["Brobnar","Dis","Logos"],"cards":["a","d","g"]}}`,
 	)}
 	if err := c.WriteDecks("en", "feed", []mv.Deck{deck}); err != nil {
 		t.Fatal(err)
@@ -64,14 +72,15 @@ func TestWriteShowsSpecialCards(t *testing.T) {
 	out := b.String()
 	for _, want := range []string{
 		"## Call of the Archons (CotA, expansion 341)",
-		"Card objects: 5. Decks read: 1.",
+		"Card objects: 6. Decks read: 1.",
+		"- Card objects from other expansions in these decks: VM23 1",
 		"### Houses that are not deck houses (1)",
 		"### Gigantic halves (2)",
 		"### Tokens (1)",
 		"### Creature types with empty or non-numeric power (2)",
-		"### Card numbers with more than one card object (2)",
+		"### Card numbers with more than one title, type, or house (2)",
 		"### Cards outside the deck's houses (not mavericks) (1)",
-		"| 003 | Skybeast | Creature | Skybeasts |",
+		"| 003 | Skybeast | Creature | Skybeasts | Common | X | null |  | 2 (1 enhanced) |",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("report has no %q\n%s", want, out)

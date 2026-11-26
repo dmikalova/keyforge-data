@@ -12,6 +12,7 @@ import (
 	"io"
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/dmikalova/keyforge-data/raw"
@@ -62,7 +63,10 @@ type setData struct {
 	// outOfHouse counts, by card ID, the decks where the card is not in one
 	// of the deck's houses.
 	outOfHouse map[string]int
-	decks      int
+	// foreign holds, by expansion, the IDs of non-maverick cards from another
+	// expansion in the decks of this set.
+	foreign map[int]map[string]bool
+	decks   int
 }
 
 // Write writes a Markdown report of the stored English card objects and the
@@ -74,7 +78,12 @@ func Write(w io.Writer, store *raw.Store, crawlIDs []string) error {
 	}
 	data := map[int]*setData{}
 	for _, s := range sets.All {
-		data[s.Expansion] = &setData{set: s, cards: map[string]Card{}, outOfHouse: map[string]int{}}
+		data[s.Expansion] = &setData{
+			set:        s,
+			cards:      map[string]Card{},
+			outOfHouse: map[string]int{},
+			foreign:    map[int]map[string]bool{},
+		}
 	}
 	var unknownExp []Card
 	for _, c := range cards {
@@ -159,6 +168,12 @@ func scanDecks(
 		sd.decks++
 		for _, id := range d.Links.Cards {
 			c, ok := cards[id]
+			if ok && !c.IsMaverick && c.Expansion != d.Expansion {
+				if sd.foreign[c.Expansion] == nil {
+					sd.foreign[c.Expansion] = map[string]bool{}
+				}
+				sd.foreign[c.Expansion][id] = true
+			}
 			if !ok || c.IsMaverick || slices.Contains(d.Links.Houses, c.House) {
 				continue
 			}
@@ -191,6 +206,17 @@ func writeSet(p *printer, d *setData) {
 	flags("is_non_deck", func(c Card) bool { return c.IsNonDeck })
 	flags("house_variant set", func(c Card) bool { return isSet(c.HouseVariant) })
 	flags("flavor text", func(c Card) bool { return c.Flavor != nil && *c.Flavor != "" })
+	if len(d.foreign) > 0 {
+		var parts []string
+		for _, exp := range slices.Sorted(maps.Keys(d.foreign)) {
+			name := strconv.Itoa(exp)
+			if s, ok := sets.ByExpansion(exp); ok {
+				name = s.Code
+			}
+			parts = append(parts, fmt.Sprintf("%s %d", name, len(d.foreign[exp])))
+		}
+		p.f("- Card objects from other expansions in these decks: %s\n", strings.Join(parts, ", "))
+	}
 
 	section(
 		p,
@@ -210,9 +236,9 @@ func writeSet(p *printer, d *setData) {
 		return creatureType(c.Type) && !isNumber(c.Power)
 	}))
 	section(p, "Non-creature types with a power value", filter(cs, func(c Card) bool {
-		return !creatureType(c.Type) && isNumber(c.Power) && string(c.Power) != "0"
+		return !creatureType(c.Type) && isNumber(c.Power) && numText(c.Power) != "0"
 	}))
-	section(p, "Card numbers with more than one card object", dupNumbers(cs))
+	section(p, "Card numbers with more than one title, type, or house", dupNumbers(cs))
 
 	var out []Card
 	for id, n := range d.outOfHouse {
@@ -224,42 +250,88 @@ func writeSet(p *printer, d *setData) {
 	section(p, "Cards outside the deck's houses (not mavericks)", out)
 }
 
+// row is one line of a section table: the card objects that differ only in
+// their ID and their enhanced state.
+type row struct {
+	card     Card
+	objects  int
+	enhanced int
+}
+
+// rows collapses card objects that differ only in their ID and their
+// enhanced state. Master Vault makes a new card object for each enhanced
+// copy, so a set with Enhance has many objects for one printing.
+func rows(cs []Card) []row {
+	var out []row
+	index := map[string]int{}
+	for _, c := range cs {
+		k := strings.Join([]string{
+			c.Number, c.Title, c.Type, c.House, c.Rarity, numText(c.Power), numText(c.Armor),
+			fmt.Sprint(c.IsAnomaly, c.IsNonDeck, isSet(c.HouseVariant)),
+		}, "\x00")
+		i, ok := index[k]
+		if !ok {
+			i = len(out)
+			index[k] = i
+			out = append(out, row{card: c})
+		}
+		out[i].objects++
+		if c.IsEnhanced {
+			out[i].enhanced++
+		}
+	}
+	return out
+}
+
 func section(p *printer, title string, cs []Card) {
 	if len(cs) == 0 {
 		return
 	}
-	p.f("\n### %s (%d)\n\n", title, len(cs))
-	p.f("| # | Title | Type | House | Rarity | Power | Armor | Flags |\n")
-	p.f("|---|---|---|---|---|---|---|---|\n")
-	for _, c := range cs {
+	rs := rows(cs)
+	p.f("\n### %s (%d)\n\n", title, len(rs))
+	p.f("| # | Title | Type | House | Rarity | Power | Armor | Flags | Objects |\n")
+	p.f("|---|---|---|---|---|---|---|---|---|\n")
+	for _, r := range rs {
+		c := r.card
 		var fl []string
 		for name, on := range map[string]bool{
-			"anomaly": c.IsAnomaly, "enhanced": c.IsEnhanced, "non-deck": c.IsNonDeck,
-			"variant": isSet(c.HouseVariant),
+			"anomaly": c.IsAnomaly, "non-deck": c.IsNonDeck, "variant": isSet(c.HouseVariant),
 		} {
 			if on {
 				fl = append(fl, name)
 			}
 		}
 		slices.Sort(fl)
-		p.f("| %s | %s | %s | %s | %s | %s | %s | %s |\n",
+		objects := strconv.Itoa(r.objects)
+		if r.enhanced > 0 {
+			objects = fmt.Sprintf("%d (%d enhanced)", r.objects, r.enhanced)
+		}
+		p.f("| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
 			c.Number, cell(c.Title), c.Type, c.House, c.Rarity,
-			cell(string(c.Power)), cell(string(c.Armor)), strings.Join(fl, " "))
+			cell(numText(c.Power)), cell(numText(c.Armor)), strings.Join(fl, " "), objects)
 	}
 }
 
+// dupNumbers returns the cards whose number has more than one identity: a
+// different title, type, or house.
 func dupNumbers(cs []Card) []Card {
-	by := map[string][]Card{}
+	by := map[string]map[string]bool{}
 	for _, c := range cs {
-		by[c.Number] = append(by[c.Number], c)
-	}
-	var out []Card
-	for _, c := range cs {
-		if len(by[c.Number]) > 1 {
-			out = append(out, c)
+		if by[c.Number] == nil {
+			by[c.Number] = map[string]bool{}
 		}
+		by[c.Number][c.Title+"\x00"+c.Type+"\x00"+c.House] = true
 	}
-	return out
+	return filter(cs, func(c Card) bool { return len(by[c.Number]) > 1 })
+}
+
+// numText returns a power or armor value without JSON quotes, or "null".
+func numText(v jsontext.Value) string {
+	s := strings.Trim(strings.TrimSpace(string(v)), `"`)
+	if s == "" {
+		return "null"
+	}
+	return s
 }
 
 func counts(cs []Card, key func(Card) string) string {
