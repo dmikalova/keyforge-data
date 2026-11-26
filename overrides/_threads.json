@@ -2,12 +2,95 @@
   "threads": [
     {
       "label": "Monuments",
-      "titles": [
-        "Monument to Faust",
-        "Monument to Octavia",
-        "Monument to Primus",
-        "Monument to Shrix"
-      ]
+      "titles": ["Monument to Faust", "Monument to Ludo", "Monument to Octavia", "Monument to Primus", "Monument to Shrix"]
+    },
+    {
+      "label": "Key Imps",
+      "titles": ["Bronze Key Imp", "Gold Key Imp", "Silver Key Imp"]
+    },
+    {
+      "label": "Ambassadors",
+      "titles": ["Brobnar Ambassador", "Dis Ambassador", "Logos Ambassador", "Mars Ambassador", "Shadows Ambassador", "Untamed Ambassador"]
+    },
+    {
+      "label": "Master of 1, 2, and 3",
+      "titles": ["Master of 1", "Master of 2", "Master of 3"]
+    },
+    {
+      "label": "Mutations",
+      "titles": ["Mutation of Cunning", "Mutation of Fury", "Mutation of Instinct"]
+    },
+    {
+      "label": "Banes",
+      "titles": ["Beasts’ Bane", "Demons’ Bane", "Dinosaurs’ Bane", "Giants’ Bane", "Humans’ Bane", "Scientists’ Bane", "Thieves’ Bane"]
+    },
+    {
+      "label": "Plants",
+      "titles": ["Brobnar Plant", "Dis Plant", "Logos Plant", "Saurian Plant", "Star Alliance Plant", "Untamed Plant"]
+    },
+    {
+      "label": "Blasters",
+      "titles": ["Chan’s Blaster", "Frane’s Blaster", "Garcia’s Blaster", "Ingram’s Blaster", "Khrkhar’s Blaster", "Kirby’s Blaster", "Molina’s Blaster", "Qincan’s Blaster", "Walls’ Blaster"]
+    },
+    {
+      "label": "Brews",
+      "titles": ["Alaka’s Brew", "Chieftain’s Brew", "Cowfyne’s Brew", "Groke’s Brew", "Gron’s Brew", "Mogghunter’s Brew", "Narp’s Brew", "Shorty’s Brew"]
+    },
+    {
+      "label": "Dis mutants",
+      "titles": ["Dæmo-Alien", "Dæmo-Beast", "Dæmo-Bot", "Dæmo-Knight", "Dæmo-Saurus", "Dæmo-Thief"]
+    },
+    {
+      "label": "Saurian mutants",
+      "titles": ["Dino-Alien", "Dino-Beast", "Dino-Bot", "Dino-Fiend", "Dino-Knight", "Dino-Thief"]
+    },
+    {
+      "label": "Untamed mutants",
+      "titles": ["Lyco-Alien", "Lyco-Bot", "Lyco-Fiend", "Lyco-Knight", "Lyco-Saurus", "Lyco-Thief"]
+    },
+    {
+      "label": "Sanctum mutants",
+      "titles": ["Sacro-Alien", "Sacro-Beast", "Sacro-Bot", "Sacro-Fiend", "Sacro-Saurus", "Sacro-Thief"]
+    },
+    {
+      "label": "Logos mutants",
+      "titles": ["Techno-Alien", "Techno-Beast", "Techno-Fiend", "Techno-Knight", "Techno-Saurus", "Techno-Thief"]
+    },
+    {
+      "label": "Shadows mutants",
+      "titles": ["Umbra-Alien", "Umbra-Beast", "Umbra-Bot", "Umbra-Fiend", "Umbra-Knight", "Umbra-Saurus"]
+    },
+    {
+      "label": "Mars mutants",
+      "titles": ["Xeno-Beast", "Xeno-Bot", "Xeno-Fiend", "Xeno-Knight", "Xeno-Saurus", "Xeno-Thief"]
+    },
+    {
+      "label": "Fiend mutants",
+      "titles": ["Dino-Fiend", "Lyco-Fiend", "Sacro-Fiend", "Techno-Fiend", "Umbra-Fiend", "Xeno-Fiend"]
+    },
+    {
+      "label": "Saurus mutants",
+      "titles": ["Dæmo-Saurus", "Lyco-Saurus", "Sacro-Saurus", "Techno-Saurus", "Umbra-Saurus", "Xeno-Saurus"]
+    },
+    {
+      "label": "Beast mutants",
+      "titles": ["Dæmo-Beast", "Dino-Beast", "Sacro-Beast", "Techno-Beast", "Umbra-Beast", "Xeno-Beast"]
+    },
+    {
+      "label": "Knight mutants",
+      "titles": ["Dæmo-Knight", "Dino-Knight", "Lyco-Knight", "Techno-Knight", "Umbra-Knight", "Xeno-Knight"]
+    },
+    {
+      "label": "Bot mutants",
+      "titles": ["Dæmo-Bot", "Dino-Bot", "Lyco-Bot", "Sacro-Bot", "Umbra-Bot", "Xeno-Bot"]
+    },
+    {
+      "label": "Thief mutants",
+      "titles": ["Dæmo-Thief", "Dino-Thief", "Lyco-Thief", "Sacro-Thief", "Techno-Thief", "Xeno-Thief"]
+    },
+    {
+      "label": "Alien mutants",
+      "titles": ["Dæmo-Alien", "Dino-Alien", "Lyco-Alien", "Sacro-Alien", "Techno-Alien", "Umbra-Alien"]
     }
   ]
 }

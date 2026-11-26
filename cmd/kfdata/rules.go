@@ -144,13 +144,24 @@ func importRules(rows []sheetRule, cards []card.Card) ([]distill.Rule, []string)
 		}
 		group := len(r.pages) == 0
 		if (group && len(rule.With) < 2) ||
-			(!group && (len(rule.Cards) == 0 || len(rule.With) == 0)) {
+			(!group && (len(rule.Cards) == 0 || len(rule.With) == 0)) ||
+			megaPair(append(slices.Clone(rule.Cards), rule.With...)) {
 			continue
 		}
 		out = append(out, rule)
 	}
 	slices.Sort(missing)
 	return out, missing
+}
+
+// megaPair reports whether the titles are a card and its Mega creature,
+// such as "Alaka" and "Mega Alaka". Distillation links them already.
+func megaPair(titles []string) bool {
+	if len(titles) != 2 {
+		return false
+	}
+	a, b := titles[0], titles[1]
+	return a == "Mega "+b || b == "Mega "+a
 }
 
 // threadsRules writes overrides/_deckrules.json from the sheet TSV.

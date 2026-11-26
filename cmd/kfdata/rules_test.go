@@ -103,3 +103,19 @@ func TestImportRules(t *testing.T) {
 		t.Errorf("missing = %q, want Charybdis", missing)
 	}
 }
+
+func TestMegaPair(t *testing.T) {
+	for _, c := range []struct {
+		titles []string
+		want   bool
+	}{
+		{[]string{"Alaka", "Mega Alaka"}, true},
+		{[]string{"Mega Narp", "Narp"}, true},
+		{[]string{"Narp’s Brew", "Mega Narp"}, false},
+		{[]string{"Dexus", "Sinestra"}, false},
+	} {
+		if got := megaPair(c.titles); got != c.want {
+			t.Errorf("megaPair(%q) = %v, want %v", c.titles, got, c.want)
+		}
+	}
+}
