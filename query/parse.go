@@ -318,6 +318,8 @@ func opError(t token, f FieldInfo, op Op) error {
 	return &Error{Pos: t.pos, Msg: fmt.Sprintf("%s does not take %q", f.Name, op)}
 }
 
+// enumValue returns the value of an enum term in lowercase, so the canonical
+// query keeps the case that people type: "rarity:rare", not "rarity:Rare".
 func enumValue(t token, f FieldInfo, text string) (string, error) {
 	if text == "" {
 		return "", &Error{Pos: t.pos, Msg: "expected a value for " + f.Name}
@@ -333,17 +335,17 @@ func enumValue(t token, f FieldInfo, text string) (string, error) {
 	for _, v := range f.Values {
 		n := Normalize(v)
 		if n == want {
-			return v, nil
+			return strings.ToLower(v), nil
 		}
 		if want != "" && strings.HasPrefix(n, want) && !seen[n] {
 			seen[n] = true
 			prefixed = append(prefixed, v)
 		}
 	}
-	// A prefix of one value is enough: "h:ek" is house:Ekwidon.
+	// A prefix of one value is enough: "h:ek" is house:ekwidon.
 	switch len(prefixed) {
 	case 1:
-		return prefixed[0], nil
+		return strings.ToLower(prefixed[0]), nil
 	case 0:
 	default:
 		return "", &Error{
