@@ -88,6 +88,9 @@ type Printing struct {
 	Localizations map[string]Localization `json:"localizations,omitempty"`
 	// Flavor is the English flavor text.
 	Flavor string `json:"flavor,omitempty"`
+	// Artist is the artist as printed on the card. It comes from
+	// overrides/artists/<set>.json, not from Master Vault.
+	Artist string `json:"artist,omitempty"`
 }
 
 // Localization is the text of a printing in one language.
