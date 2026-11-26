@@ -69,7 +69,7 @@ func TestCardAbilities(t *testing.T) {
 		{"Before Fight: Deal 2 damage.", []string{"beforefight"}},
 		{"Taunt. Destroyed: Return it to hand.", []string{"destroyed"}},
 		{"Leaves Play: Purge it.", []string{"leavesplay"}},
-		{"This creature gains, “Fight/Reap: Draw a card.”", nil},
+		{"This creature gains, “Fight/Reap: Draw a card.”", []string{"fight", "reap"}},
 		{"Each creature gains elusive.", nil},
 	}
 	for _, c := range cases {

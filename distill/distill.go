@@ -70,6 +70,9 @@ type Override struct {
 	Aliases map[string][]string `json:"aliases,omitempty"`
 	// Cards maps a card number to corrections for that printing's card.
 	Cards map[string]CardFix `json:"cards,omitempty"`
+	// Threads are curated threads of related cards. Only the file
+	// overrides/_threads.json has them.
+	Threads []Thread `json:"threads,omitempty"`
 }
 
 // CardFix corrects a Master Vault mistake.
@@ -180,6 +183,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	}
 	house, kindFlags := r.house(set, base, objs, ov)
 	flags = append(flags, kindFlags...)
+	group := houselessGroup(house, base, objs, kindFlags)
 	typ := strings.ToLower(base.Type)
 	if strings.Contains(typ, "token") {
 		typ = "creature"
@@ -230,6 +234,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	c.Title = k.title
 	c.Folded = query.Fold(k.title)
 	c.House = house
+	c.Group = group
 	c.Type = typ
 	c.Traits = traits(base.Traits)
 	c.Text = derive.Display(base.Text)
@@ -383,6 +388,7 @@ func (r *run) dataset(cards map[string]*card.Card) card.Dataset {
 		}
 		out = append(out, *c)
 	}
+	linkCards(out, r.in.Overrides)
 	slices.SortFunc(out, compareCards)
 	var ss []sets.Set
 	for _, s := range sets.All {
@@ -409,16 +415,16 @@ func (r *run) dataset(cards map[string]*card.Card) card.Dataset {
 }
 
 // compareCards is the default order: house, then name. Cards without a
-// house sort last, and reference cards after them.
+// house sort last, in the order of card.HouselessGroups.
 func compareCards(a, b card.Card) int {
 	rank := func(c card.Card) int {
-		switch {
-		case c.HasFlag(FlagReference):
-			return 2
-		case c.House == "":
-			return 1
+		if c.House != "" {
+			return -1
 		}
-		return 0
+		if i := slices.Index(card.HouselessGroups, c.Group); i >= 0 {
+			return i
+		}
+		return len(card.HouselessGroups)
 	}
 	return cmp.Or(
 		cmp.Compare(rank(a), rank(b)),
@@ -679,4 +685,33 @@ func (r *run) printingImage(
 		Detail: base.FrontImage + " " + art,
 	})
 	return ""
+}
+
+// houselessGroup returns the sort group of a card without a house: the
+// reference kind (archonpower, prophecy, thetide), "anomaly", "multihouse"
+// for a card that Master Vault prints in the house of the deck, or the
+// houseless kind label.
+func houselessGroup(house string, base mvCard, objs []mvCard, kindFlags []string) string {
+	if house != "" {
+		return ""
+	}
+	if slices.Contains(kindFlags, FlagReference) {
+		return query.Normalize(base.House)
+	}
+	if base.IsAnomaly {
+		return "anomaly"
+	}
+	houses := map[string]bool{}
+	for _, o := range objs {
+		houses[o.House] = true
+	}
+	if len(houses) > 1 {
+		return "multihouse"
+	}
+	for _, f := range kindFlags {
+		if f != FlagHouseless {
+			return f
+		}
+	}
+	return "houseless"
 }

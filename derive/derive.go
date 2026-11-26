@@ -236,11 +236,12 @@ var Abilities = []string{
 	"play", "fight", "reap", "beforefight", "action", "omni", "destroyed", "leavesplay", "scrap",
 }
 
-// abilityRe finds a trigger list at the start of a line or a sentence:
-// "Play/After Fight/After Reap:". A trigger in quotes ("gains, “Reap: ...”")
-// belongs to another card, so it does not count.
+// abilityRe finds a trigger list at the start of a line, a sentence, or a
+// quote: "Play/After Fight/After Reap:". A trigger in quotes ("gains,
+// “Reap: ...”") is an ability that the card gives, and it counts, because a
+// search for the trigger must find the card.
 var abilityRe = regexp.MustCompile(
-	`(?m)(?:^|[.!]\s+)((?:(?:After |Before )?(?:Play|Fight|Reap|Action|Omni|Destroyed|Leaves Play|Scrap)/?)+):`,
+	`(?m)(?:^|[.!]\s+|[“"])((?:(?:After |Before )?(?:Play|Fight|Reap|Action|Omni|Destroyed|Leaves Play|Scrap)/?)+):`,
 )
 
 // CardAbilities returns the card's ability triggers in the order of

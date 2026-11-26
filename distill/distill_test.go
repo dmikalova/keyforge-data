@@ -154,6 +154,21 @@ func TestRun(t *testing.T) {
 		t.Errorf("troll: %+v", troll)
 	}
 
+	if ew := find(
+		t,
+		d,
+		"oldegad-logos-eviltwin",
+	); len(ew.Related) != 1 ||
+		ew.Related[0].Label != "Evil twin" ||
+		ew.Related[0].Cards[0] != "oldegad-logos" {
+		t.Errorf("evil twin related: %+v", ew.Related)
+	}
+	if gf := find(t, d, "ghostform-none"); gf.Group != "anomaly" {
+		t.Errorf("anomaly group %q", gf.Group)
+	}
+	if ref := find(t, d, "forgeahead-none"); ref.Group != "prophecy" {
+		t.Errorf("prophecy group %q", ref.Group)
+	}
 	if ab := find(t, d, "troll-brobnar").Abilities; !slices.Equal(ab, []string{"reap"}) {
 		t.Errorf("troll abilities: %v", ab)
 	}
