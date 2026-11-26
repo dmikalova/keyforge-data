@@ -81,11 +81,12 @@ func TestKeepNewSkipsMavericksSeenCardsAndCopies(t *testing.T) {
 	for _, d := range kept {
 		ids = append(ids, d.ID)
 	}
-	if want := []string{"d2", "d3"}; !slices.Equal(ids, want) {
+	// d3 has only a card from another set, so it is not kept.
+	if want := []string{"d2"}; !slices.Equal(ids, want) {
 		t.Errorf("kept = %v, want %v", ids, want)
 	}
-	if added != 2 {
-		t.Errorf("added = %d, want 2", added)
+	if added != 1 {
+		t.Errorf("added = %d, want 1", added)
 	}
 	if !numbers["002"] || numbers["010"] {
 		t.Errorf("numbers = %v, want only the set's own numbers", numbers)

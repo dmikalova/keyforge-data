@@ -197,7 +197,8 @@ func keepNew(
 		var fresh, freshIDs []string
 		for _, id := range d.CardIDs {
 			h, ok := heads[id]
-			if !ok || !IsTarget(h) || seen[TargetKey(h)] || slices.Contains(fresh, TargetKey(h)) {
+			if !ok || !IsTarget(h) || !ownSet(h, expansion) || seen[TargetKey(h)] ||
+				slices.Contains(fresh, TargetKey(h)) {
 				continue
 			}
 			fresh = append(fresh, TargetKey(h))
@@ -246,4 +247,13 @@ func sortedKeys(m map[string]bool) []string {
 	}
 	slices.Sort(out)
 	return out
+}
+
+// ownSet reports whether a card object belongs to the scanned set. A deck
+// also has legacy cards from older sets and reprints with their first set.
+// Those cards are found when their own set is scanned, so they do not keep
+// a scan going. The Worlds Collide anomalies (expansion 453) have no decks
+// of their own, so they belong to the Worlds Collide scan.
+func ownSet(h mv.CardHead, expansion int) bool {
+	return h.Expansion == expansion || expansion == 452 && h.Expansion == 453
 }
