@@ -227,3 +227,34 @@ func isLetterRun(rs []rune) bool {
 	}
 	return true
 }
+
+// Abilities are the ability triggers. "After Fight" is the same trigger as
+// "Fight", and "After Reap" is the same as "Reap".
+var Abilities = []string{
+	"action", "beforefight", "destroyed", "fight", "leavesplay", "omni", "play", "reap", "scrap",
+}
+
+// abilityRe finds a trigger list at the start of a line or a sentence:
+// "Play/After Fight/After Reap:". A trigger in quotes ("gains, “Reap: ...”")
+// belongs to another card, so it does not count.
+var abilityRe = regexp.MustCompile(
+	`(?m)(?:^|[.!]\s+)((?:(?:After |Before )?(?:Play|Fight|Reap|Action|Omni|Destroyed|Leaves Play|Scrap)/?)+):`,
+)
+
+// CardAbilities returns the card's ability triggers, sorted, or nil.
+func CardAbilities(text string) []string {
+	seen := map[string]bool{}
+	for _, m := range abilityRe.FindAllStringSubmatch(Text(text), -1) {
+		for t := range strings.SplitSeq(m[1], "/") {
+			t = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(t), "After "))
+			seen[strings.ReplaceAll(t, " ", "")] = true
+		}
+	}
+	var out []string
+	for _, a := range Abilities {
+		if seen[a] {
+			out = append(out, a)
+		}
+	}
+	return out
+}

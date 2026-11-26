@@ -2,6 +2,7 @@ package derive
 
 import (
 	"maps"
+	"slices"
 	"testing"
 )
 
@@ -53,6 +54,27 @@ func TestEnhance(t *testing.T) {
 	for _, c := range cases {
 		if got := Enhance(c.text); !maps.Equal(got, c.want) {
 			t.Errorf("Enhance(%q) = %v, want %v", c.text, got, c.want)
+		}
+	}
+}
+
+func TestCardAbilities(t *testing.T) {
+	cases := []struct {
+		text string
+		want []string
+	}{
+		{"Play: Gain 1 Æmber.", []string{"play"}},
+		{"Elusive.\u000bFight/Reap: Draw a card.", []string{"fight", "reap"}},
+		{"Play/After Fight/After Reap: Steal 1.", []string{"fight", "play", "reap"}},
+		{"Before Fight: Deal 2 damage.", []string{"beforefight"}},
+		{"Taunt. Destroyed: Return it to hand.", []string{"destroyed"}},
+		{"Leaves Play: Purge it.", []string{"leavesplay"}},
+		{"This creature gains, “Fight/Reap: Draw a card.”", nil},
+		{"Each creature gains elusive.", nil},
+	}
+	for _, c := range cases {
+		if got := CardAbilities(c.text); !slices.Equal(got, c.want) {
+			t.Errorf("CardAbilities(%q) = %v, want %v", c.text, got, c.want)
 		}
 	}
 }

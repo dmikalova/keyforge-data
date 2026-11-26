@@ -139,6 +139,10 @@ func TestRun(t *testing.T) {
 		t.Errorf("troll: %+v", troll)
 	}
 
+	if ab := find(t, d, "troll-brobnar").Abilities; !slices.Equal(ab, []string{"reap"}) {
+		t.Errorf("troll abilities: %v", ab)
+	}
+
 	g := find(t, d, "ultragravitron-logos")
 	if g.Type != "creature" || !g.HasFlag(FlagGigantic) || g.Power.N != 10 || g.Armor != 3 ||
 		g.Printings[0].Rarity != "Rare" || g.Keywords["taunt"] != 0 || len(g.Keywords) != 1 {

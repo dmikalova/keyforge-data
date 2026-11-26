@@ -44,6 +44,9 @@ type Card struct {
 	Aember int `json:"aember,omitempty"`
 	// Keywords are the keywords that start the text, with their numbers.
 	Keywords map[string]int `json:"keywords,omitempty"`
+	// Abilities are the ability triggers of the card text, for example "play"
+	// and "reap". "After Fight" counts as "fight".
+	Abilities []string `json:"abilities,omitempty"`
 	// Enhance counts the icons that the card's Enhance keywords give.
 	Enhance map[string]int `json:"enhance,omitempty"`
 	// Flags are the "is:" flags: reference, tokencreature, gigantic,

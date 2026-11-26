@@ -224,6 +224,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	c.Aember = base.Amber
 	c.Keywords = nilIfEmpty(derive.CardKeywords(base.Text))
 	c.Enhance = derive.Enhance(base.Text)
+	c.Abilities = derive.CardAbilities(base.Text)
 	c.Flags = sortedUnique(append(c.Flags, flags...))
 	c.Aliases = sortedUnique(append(c.Aliases, aliases(k.title, ov)...))
 	c.Power, c.Armor = nil, 0
