@@ -12,7 +12,7 @@ Put the query engine in `keyforge-data/query`:
 
 - The lexer, the parser, and the AST.
 - A field registry. Each site registers its fields with a name, one alias, a
-  value type (text, fuzzy text, enum, number), and an accessor.
+  value type (text, name, enum, number), and an accessor.
 - An in-memory evaluator for cards.
 - Later: an AST-to-SQL compiler for decks.
 

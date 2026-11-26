@@ -7,8 +7,9 @@ type Kind int
 const (
 	// KindText matches a substring of the folded text.
 	KindText Kind = iota
-	// KindFuzzy matches a fuzzy subsequence, and ranks by match quality.
-	KindFuzzy
+	// KindName matches a substring of the normalized name, and ranks by
+	// match quality (see NameScore).
+	KindName
 	// KindEnum matches one of a fixed set of values exactly.
 	KindEnum
 	// KindNumber compares a number. A number can be X.

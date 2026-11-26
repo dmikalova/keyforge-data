@@ -63,7 +63,7 @@ func Fold(s string) string {
 }
 
 // Normalize returns Fold(s) with only its letters and digits. It is the form
-// for enum values and for fuzzy name matching: "Star Alliance",
+// for enum values and for name matching: "Star Alliance",
 // "staralliance", and "star-alliance" are the same.
 func Normalize(s string) string {
 	s = Fold(s)

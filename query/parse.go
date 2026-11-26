@@ -211,7 +211,7 @@ func (p *parser) term(t token, name string, at int) (Node, error) {
 func value(t token, f FieldInfo, op Op, text string, quoted bool) (*Term, error) {
 	term := &Term{Field: f.Name, Op: op, Pos: t.pos}
 	switch f.Kind {
-	case KindText, KindFuzzy:
+	case KindText, KindName:
 		if op != OpHas && op != OpEq && op != OpNe {
 			return nil, opError(t, f, op)
 		}

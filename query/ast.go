@@ -20,8 +20,8 @@
 // and a keyed field takes a list of keys with ":". A comma inside quotes is
 // part of the value.
 //
-// A directive term (sort:, order:, unique:, seed:, fuzzy:) changes the
-// display or the name matching, and does not filter.| "#" value | word | "quoted words"
+// A directive term (sort:, order:, unique:, seed:) changes the
+// display, and does not filter.| "#" value | word | "quoted words"
 //
 //	op      = ":" | "=" | "!=" | "<" | "<=" | ">" | ">="
 //

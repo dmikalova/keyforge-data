@@ -30,7 +30,7 @@ func registry(t testing.TB) *Registry[card] {
 	r, err := NewRegistry(
 		[]Field[card]{
 			{
-				Name: "name", Alias: "n", Kind: KindFuzzy, Bare: true,
+				Name: "name", Alias: "n", Kind: KindName, Bare: true,
 				Strings: func(c card) []string { return append([]string{c.name}, c.aliases...) },
 			},
 			{
@@ -84,7 +84,6 @@ func registry(t testing.TB) *Registry[card] {
 				Name: "sort", Kind: KindDirective, Values: []string{"name", "power", "random"},
 			},
 			{Name: "seed", Kind: KindDirective},
-			{Name: DirFuzzy, Kind: KindDirective, Values: []string{"on", FuzzyOff}},
 		},
 		[]Flag[card]{
 			{
@@ -197,7 +196,7 @@ func TestParseFormatsCanonically(t *testing.T) {
 		{"k:elusive,taunt", "keyword:elusive,taunt"},
 		{"is:gigantic,eviltwin", "is:gigantic,eviltwin"},
 		{"x:a,b", "text:a,b"},
-		{"n:a,b fuzzy:off", "name:a,b fuzzy:off"},
+		{"n:a,b", "name:a,b"},
 	}
 	for _, c := range cases {
 		q, err := r.Parse(c.in)
@@ -299,7 +298,8 @@ func TestMatch(t *testing.T) {
 		{"x!=taunt.", []string{"Troll", "Urchin", "Krump", "Mimic Gel", "Anger"}},
 		{"steal", []string{"Urchin"}},
 		{"troll", []string{"Troll"}},
-		{"n:mmc", []string{"Mimic Gel"}},
+		{"n:mmc", nil},
+		{"n:mimic", []string{"Mimic Gel"}},
 		{"n:anthony", []string{"ANT1-10NY"}},
 		{"n:ant110", []string{"ANT1-10NY"}},
 		{`n:"mimic gel"`, []string{"Mimic Gel"}},
@@ -313,9 +313,7 @@ func TestMatch(t *testing.T) {
 		{"-h:brobnar,logos", []string{"Urchin", "ANT1-10NY"}},
 		{"k:elusive,taunt", []string{"Urchin", "ANT1-10NY"}},
 		{"t:creature h:brobnar,logos", []string{"Troll", "Krump", "Mimic Gel"}},
-		{"n:mmc fuzzy:off", nil},
-		{"n:mimic fuzzy:off", []string{"Mimic Gel"}},
-		{"n:mimi-c fuzzy:off", nil},
+		{"n:mimi-c", []string{"Mimic Gel"}},
 	}
 	for _, c := range cases {
 		if got := names(t, r, c.in); !slices.Equal(got, c.want) {
@@ -340,64 +338,66 @@ func TestDirectives(t *testing.T) {
 	}
 }
 
-func TestFuzzyRank(t *testing.T) {
+func TestNameRank(t *testing.T) {
 	r := registry(t)
-	q, err := r.Parse("n:mg")
+	q, err := r.Parse("n:m")
 	if err != nil {
 		t.Fatal(err)
 	}
-	mimic, ok := r.FuzzyRank(q, cards[3])
+	mimic, ok := r.NameRank(q, cards[3])
 	if !ok {
-		t.Fatal("n:mg is a fuzzy-only query")
+		t.Fatal("n:m is a name query")
 	}
-	krump, _ := r.FuzzyRank(q, cards[2])
+	krump, _ := r.NameRank(q, cards[2])
 	if mimic <= krump {
-		t.Errorf("Mimic Gel scores %d, Krump %d; want word starts to win", mimic, krump)
+		t.Errorf("Mimic Gel scores %d, Krump %d; want the prefix to win", mimic, krump)
 	}
-	q, _ = r.Parse("n:mg h:logos")
-	if _, ok := r.FuzzyRank(q, cards[3]); !ok {
+	q, _ = r.Parse("n:mimic h:logos")
+	if _, ok := r.NameRank(q, cards[3]); !ok {
 		t.Error("a query with a name term and a house term ranks by name")
 	}
-	q, _ = r.Parse("h:logos -n:mg")
-	if _, ok := r.FuzzyRank(q, cards[3]); ok {
+	q, _ = r.Parse("h:logos -n:mimic")
+	if _, ok := r.NameRank(q, cards[3]); ok {
 		t.Error("a negated name term ranks")
 	}
 	q, _ = r.Parse("mimic h:logos")
-	if s, ok := r.FuzzyRank(q, cards[3]); !ok || s == 0 {
+	if s, ok := r.NameRank(q, cards[3]); !ok || s == 0 {
 		t.Errorf("a bare word ranks by name: %d %t", s, ok)
 	}
 }
 
-func TestFuzzyScore(t *testing.T) {
+func TestNameScore(t *testing.T) {
 	cases := []struct {
 		p, s string
 		ok   bool
 	}{
-		{"brtm", "Brothers in Battle Team", true},
-		{"tmrb", "Brothers in Battle Team", false},
+		{"brtm", "Brothers in Battle Team", false},
+		{"battle team", "Brothers in Battle Team", true},
 		{"aember", "Æmber Imp", true},
+		{"mber-imp", "Æmber Imp", true},
 		{"", "anything", true},
-		{"ae imp", "Æmber Imp", true},
+		{"ae imp", "Æmber Imp", false},
 		{"zz", "Troll", false},
+		{"troll", "Tribute Collector", false},
 	}
 	for _, c := range cases {
-		if _, ok := FuzzyScore(c.p, c.s); ok != c.ok {
-			t.Errorf("FuzzyScore(%q, %q) ok = %t, want %t", c.p, c.s, ok, c.ok)
+		if _, ok := NameScore(c.p, c.s); ok != c.ok {
+			t.Errorf("NameScore(%q, %q) ok = %t, want %t", c.p, c.s, ok, c.ok)
 		}
 	}
-	order := []string{"Troll", "Trollop", "Big Troll", "Patrolled", "Tribute Collector"}
+	order := []string{"Troll", "Trollop", "Big Troll", "Patrolled"}
 	prev := 1 << 30
 	for _, s := range order {
-		sc, ok := FuzzyScore("troll", s)
+		sc, ok := NameScore("troll", s)
 		if !ok || sc >= prev {
-			t.Errorf("FuzzyScore(troll, %q) = %d %t; want below %d", s, sc, ok, prev)
+			t.Errorf("NameScore(troll, %q) = %d %t; want below %d", s, sc, ok, prev)
 		}
 		prev = sc
 	}
-	runs, _ := FuzzyScore("troll", "Troll")
-	spread, _ := FuzzyScore("troll", "The Rot Of All Lands")
-	if runs <= spread {
-		t.Errorf("a run scores %d, a spread match %d; want the run higher", runs, spread)
+	short, _ := NameScore("troll", "Trollop")
+	long, _ := NameScore("troll", "Trollish Trollop Trolls")
+	if short <= long {
+		t.Errorf("a shorter name scores %d, a longer one %d; want the shorter higher", short, long)
 	}
 }
 
@@ -437,7 +437,7 @@ func FuzzParse(f *testing.F) {
 		"h:dis (p>=3 or k:assault>=2) -is:gigantic",
 		`x:"steal 1" sort:power`,
 		"#S01 or n:anthony",
-		`h:dis,"star alliance" -k:elusive,taunt fuzzy:off`,
+		`h:dis,"star alliance" -k:elusive,taunt`,
 		"((a or b) c) not d",
 		`"`, "(", ")", "-", "a:b:c", "p:1..2..3", "k:>=", "#",
 	} {
