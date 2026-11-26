@@ -290,7 +290,7 @@ func section(p *printer, title string, cs []Card) {
 	rs := rows(cs)
 	p.f("\n### %s (%d)\n\n", title, len(rs))
 	p.f("| # | Title | Type | House | Rarity | Power | Armor | Flags | Objects |\n")
-	p.f("|---|---|---|---|---|---|---|---|---|\n")
+	p.f("| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n")
 	for _, r := range rs {
 		c := r.card
 		var fl []string

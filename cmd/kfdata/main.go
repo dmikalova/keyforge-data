@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -32,6 +33,7 @@ import (
 	"time"
 
 	"github.com/dmikalova/keyforge-data/crawl"
+	"github.com/dmikalova/keyforge-data/distill"
 	"github.com/dmikalova/keyforge-data/inspect"
 	"github.com/dmikalova/keyforge-data/mv"
 	"github.com/dmikalova/keyforge-data/raw"
@@ -50,6 +52,8 @@ commands:
                                         fetch the cover decks in each language
   status [-crawl id]                    print the state of the crawls
   report [-out file] [crawl...]         write the raw data report
+  distill [-out file] [-problems file] [-overrides dir]
+                                        write the dataset and its problems
 `
 
 func report(store *raw.Store, args []string) error {
@@ -120,6 +124,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return status(store, rest, stdout)
 	case "report":
 		return report(store, rest)
+	case "distill":
+		return distillCmd(ctx, store, rest, stdout)
 	default:
 		fs.Usage()
 		return fmt.Errorf("unknown command %q", cmd)
@@ -259,4 +265,50 @@ func status(store *raw.Store, args []string, stdout io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.Writer) error {
+	fs := flag.NewFlagSet("distill", flag.ContinueOnError)
+	out := fs.String("out", "tmp/cards.json", "dataset file")
+	problemsOut := fs.String("problems", "docs/dataset-problems.md", "problems file")
+	overridesDir := fs.String("overrides", "overrides", "overrides directory")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	cards, err := distill.LoadCards(store)
+	if err != nil {
+		return err
+	}
+	overrides, err := distill.LoadOverrides(*overridesDir)
+	if err != nil {
+		return err
+	}
+	images, err := distill.ListImages(ctx, &http.Client{Timeout: time.Minute})
+	if err != nil {
+		return err
+	}
+	d, problems := distill.Run(distill.Input{
+		Cards: cards, Images: images, Overrides: overrides, Now: time.Now(),
+	})
+	b, err := json.Marshal(d, json.Deterministic(true))
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(*out, b, 0o600); err != nil {
+		return err
+	}
+	f, err := os.Create(*problemsOut)
+	if err != nil {
+		return err
+	}
+	if err := distill.WriteProblems(f, d.Version, problems); err != nil {
+		_ = f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	_, err = fmt.Fprintf(stdout, "version %s: %d cards, %d sets, %d problems\n",
+		d.Version, len(d.Cards), len(d.Sets), len(problems))
+	return err
 }
