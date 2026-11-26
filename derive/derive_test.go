@@ -65,7 +65,7 @@ func TestCardAbilities(t *testing.T) {
 	}{
 		{"Play: Gain 1 Æmber.", []string{"play"}},
 		{"Elusive.\u000bFight/Reap: Draw a card.", []string{"fight", "reap"}},
-		{"Play/After Fight/After Reap: Steal 1.", []string{"fight", "play", "reap"}},
+		{"Play/After Fight/After Reap: Steal 1.", []string{"play", "fight", "reap"}},
 		{"Before Fight: Deal 2 damage.", []string{"beforefight"}},
 		{"Taunt. Destroyed: Return it to hand.", []string{"destroyed"}},
 		{"Leaves Play: Purge it.", []string{"leavesplay"}},
