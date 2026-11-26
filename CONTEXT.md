@@ -120,6 +120,11 @@ known artists. The user answers the matches that are not sure.
 The list of artist names that the scan can match. The user adds a name in the
 review.
 
+**Artist alias**:
+A different spelling of a known artist: a native and an anglicized name, a
+short form, a studio's other name, or a misprint. The dataset uses the
+canonical name for all spellings.
+
 **Variant**:
 The printed rarity that Master Vault gives to house variants. A variant group
 links the members of one variant family.

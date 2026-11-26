@@ -312,6 +312,11 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	if err != nil {
 		return err
 	}
+	aliases, err := artists.LoadAliases(*artistsDir)
+	if err != nil {
+		return err
+	}
+	aliases.CanonicalAll(printingArtists)
 	cards, err := distill.LoadCards(store)
 	if err != nil {
 		return err

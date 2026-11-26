@@ -106,6 +106,12 @@ func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 	if err != nil {
 		return err
 	}
+	aliases, err := artists.LoadAliases(af.dir)
+	if err != nil {
+		return err
+	}
+	// A new alias renames the printings that have the variant spelling.
+	aliases.CanonicalAll(assigned)
 	todo, err := unassigned(*dataset, assigned)
 	if err != nil {
 		return err
@@ -125,7 +131,7 @@ func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 		var rest []scanPrinting
 		for _, p := range todo {
 			texts := results[p.file()].texts()
-			name, ok := artists.Decide(artists.Match(texts, known, examples))
+			name, ok := artists.Decide(artists.Match(texts, known, examples, aliases))
 			if !ok {
 				rest = append(rest, p)
 				continue
@@ -401,6 +407,7 @@ type reviewer struct {
 	assigned map[string]map[string]string
 	// examples grow with each answer, so the next matches improve.
 	examples artists.Examples
+	aliases  artists.Aliases
 	in       *bufio.Reader
 	out      io.Writer
 }
@@ -437,6 +444,10 @@ func artistsReview(args []string, stdin io.Reader, stdout io.Writer) error {
 	if r.assigned, err = artists.Load(r.af.dir); err != nil {
 		return err
 	}
+	if r.aliases, err = artists.LoadAliases(r.af.dir); err != nil {
+		return err
+	}
+	r.aliases.CanonicalAll(r.assigned)
 	results, err := readOCRCache(r.af.ocrFile())
 	if err != nil {
 		return err
@@ -473,7 +484,7 @@ func (r *reviewer) askGroup(group []reviewItem, left int) (int, error) {
 	for _, it := range group {
 		readings = append(readings, it.Readings...)
 	}
-	cands := artists.Match(readings, r.known, r.examples)
+	cands := artists.Match(readings, r.known, r.examples, r.aliases)
 	// An artist that the user added can make the match sure now.
 	if name, ok := artists.Decide(cands); ok && len(group) == 1 {
 		_, _ = fmt.Fprintf(
@@ -543,6 +554,7 @@ func (r *reviewer) typed(line string) (string, bool) {
 	if len(line) < 2 {
 		return "", false
 	}
+	line = r.aliases.Canonical(line)
 	for _, k := range r.known {
 		if query.Normalize(k) == query.Normalize(line) {
 			return k, true

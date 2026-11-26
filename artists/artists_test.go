@@ -54,7 +54,7 @@ func TestDecide(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := Decide(Match(tt.readings, known, nil))
+			got, ok := Decide(Match(tt.readings, known, nil, nil))
 			if ok != tt.ok || got != tt.want {
 				t.Errorf("Decide() = %q, %v; want %q, %v", got, ok, tt.want, tt.ok)
 			}
@@ -66,15 +66,39 @@ func TestDecide(t *testing.T) {
 // and past readings of other Michele Giorgi cards.
 func TestDecideExamples(t *testing.T) {
 	readings := []string{"Mobek Goxgi", "Mxbel Coxgi", "Motel Gorgi", "MKhoe Gogi", "Mokel Coxgi"}
-	if name, ok := Decide(Match(readings, known, nil)); ok {
+	if name, ok := Decide(Match(readings, known, nil, nil)); ok {
 		t.Fatalf("Decide() without examples = %q, want not sure", name)
 	}
 	ex := Examples{}
 	ex.Add("Michele Giorgi", []string{"Mobele Goxgi", "Mxbek Goxgi", "Mibele Gexgi", "Motel Coxgi"})
 	ex.Add("Gong Studios", []string{"Gong Stadios", "Gong Seusos", "Cong Sed"})
-	got, ok := Decide(Match(readings, known, ex))
+	got, ok := Decide(Match(readings, known, ex, nil))
 	if !ok || got != "Michele Giorgi" {
 		t.Errorf("Decide() with examples = %q, %v; want Michele Giorgi, true", got, ok)
+	}
+}
+
+// Cards print some artists in two ways. The aliases make one candidate of
+// the two spellings, so a reading of either spelling is a sure match.
+func TestDecideAliases(t *testing.T) {
+	names := []string{"Mateusz Mizak", "Gong Studios", "Michele Giorgi"}
+	aliases := Aliases{"Matthew Mizak": "Mateusz Mizak"}
+	for _, readings := range [][]string{
+		{"Matthew Mizak", "Matthew Mizak", "Mathew Mizak"},
+		{"Mateusz Mizak", "Mateusz Mizak", "Mateuss Mizak"},
+	} {
+		got, ok := Decide(Match(readings, names, nil, aliases))
+		if !ok || got != "Mateusz Mizak" {
+			t.Errorf("Decide(%v) = %q, %v; want Mateusz Mizak, true", readings, got, ok)
+		}
+	}
+	if got := aliases.Canonical("matthew  mizak"); got != "Mateusz Mizak" {
+		t.Errorf("Canonical() = %q, want Mateusz Mizak", got)
+	}
+	m := map[string]map[string]string{"cota": {"101": "Matthew Mizak", "102": "Gong Studios"}}
+	aliases.CanonicalAll(m)
+	if m["cota"]["101"] != "Mateusz Mizak" || m["cota"]["102"] != "Gong Studios" {
+		t.Errorf("CanonicalAll() = %v", m)
 	}
 }
 

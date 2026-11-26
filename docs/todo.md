@@ -110,9 +110,11 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 
 ## Later
 
-- Artist OCR: crop the artist line from each card image and read it with OCR.
-  The user checks each new artist name (for example, the accents). Then add the
-  `artist` field.
+- Deck rules: import the rules of the Archon Arcana `relationships_and_notes`
+  sheet (docs/sources.md). Start with the `always`, `fixed`, `copies`, and
+  `others` rules. Show them as related threads and on the card pages.
+- Artist hints: use the Archon Arcana artist data (docs/sources.md) as hints
+  in `artists:scan`, so that a new set needs fewer review answers.
 - Full deck crawl and deck database (ADR 0003).
 - Images for the other locales.
 - Variant groups, for the card pages.

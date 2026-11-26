@@ -17,9 +17,9 @@ Andrew Bosley
 Angelica Alieva
 Angelina Chernyak
 Ângelo Bortolini
-Anif Wijaya
 Anton Zemskov
 Anzka Nguyen
+Arif Wijaya
 Art Tavern
 Asep Ariyanto
 Atha Kanaani
@@ -92,7 +92,7 @@ JoeP
 John Silva
 Jon Bosco
 Jordan Kerbow
-Jorge Ramos
+Jorge Ramos Márquez
 Josh Corpuz
 Julia Alentseva
 Kaion Luong
@@ -105,7 +105,7 @@ Kristen Pauline
 Kristina Kolesnikova
 Leandro Franci
 Leandro Notado
-Leo Avero
+Leo Aveiro
 Leo Sá
 Leonardo Santanna
 Liiga Smilshkalne
@@ -122,9 +122,9 @@ Mariusz Gandzel
 Mark Bulahao
 Marko Fiedler
 Marzena Piwowar
+Mateusz Mizak
 Matheus Schwartz
 Matt Zeilinger
-Matthew Mizak
 Melvin Chan
 Michael Angelo Dulay
 Michele Giorgi
@@ -132,8 +132,7 @@ Mihai Radu
 Mike Parker
 Milica Čeliković
 Mircea Nicula
-Mo Mukhtar
-Monztre
+Moh Mukhtar
 Nasrul Hakim
 Natalie Russo
 Nathaniel Himawan
@@ -149,6 +148,7 @@ Polar Engine
 Preston Stone
 Quentin de Warren
 Radial Studio
+Ramon Puasa Jr.
 Randall Mackey
 Raphael Massarani
 Regis Torres

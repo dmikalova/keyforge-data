@@ -28,6 +28,56 @@ import (
 // KnownFile is the file of known artists in the artists directory.
 const KnownFile = "known.txt"
 
+// AliasesFile is the file of variant spellings in the artists directory.
+const AliasesFile = "aliases.json"
+
+// Aliases maps a variant spelling of an artist to the canonical name: a
+// native and an anglicized name, a short form, a studio's other name, or a
+// misprint. Cards print some artists in more than one way, and the dataset
+// uses one name for one artist.
+type Aliases map[string]string
+
+// Canonical returns the canonical name of an artist. The match of a variant
+// ignores case, diacritics, and punctuation.
+func (a Aliases) Canonical(name string) string {
+	if c, ok := a[name]; ok {
+		return c
+	}
+	n := query.Normalize(name)
+	for variant, c := range a {
+		if query.Normalize(variant) == n {
+			return c
+		}
+	}
+	return name
+}
+
+// LoadAliases reads the aliases. A missing file is no aliases.
+func LoadAliases(dir string) (Aliases, error) {
+	b, err := os.ReadFile(filepath.Join(dir, AliasesFile))
+	if errors.Is(err, fs.ErrNotExist) {
+		return Aliases{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	a := Aliases{}
+	if err := json.Unmarshal(b, &a); err != nil {
+		return nil, errors.Join(errors.New(AliasesFile), err)
+	}
+	return a, nil
+}
+
+// CanonicalAll replaces each variant spelling in the artists of the
+// printings with its canonical name, in place.
+func (a Aliases) CanonicalAll(m map[string]map[string]string) {
+	for _, nums := range m {
+		for num, name := range nums {
+			nums[num] = a.Canonical(name)
+		}
+	}
+}
+
 // Thresholds of Decide. On a hand-labeled sample of 101 printings, Decide
 // accepted 76 with these values and all 76 were right when it matched the
 // names only. With the examples of the other printings (1986 printings), it
@@ -89,7 +139,29 @@ func (e Examples) Add(artist string, readings []string) {
 //     similar example of the artist, and then the mean of the three best.
 //
 // The mean of three means that a few bad readings do not lower the score.
-func Match(readings, known []string, examples Examples) []Candidate {
+//
+// A variant spelling in aliases is a candidate too, and its score counts
+// for the canonical name. So one artist with two spellings is one
+// candidate, and the second spelling does not lower the margin.
+func Match(readings, known []string, examples Examples, aliases Aliases) []Candidate {
+	raw := match(readings, slices.Concat(known, slices.Collect(maps.Keys(aliases))), examples)
+	if len(aliases) == 0 {
+		return raw
+	}
+	out := make([]Candidate, 0, len(raw))
+	seen := map[string]bool{}
+	// raw is best first, so the first candidate of a name has its best score.
+	for _, c := range raw {
+		name := aliases.Canonical(c.Name)
+		if !seen[name] {
+			seen[name] = true
+			out = append(out, Candidate{Name: name, Score: c.Score})
+		}
+	}
+	return out
+}
+
+func match(readings, known []string, examples Examples) []Candidate {
 	norm := make([]string, 0, len(readings))
 	for _, r := range readings {
 		if n := query.Normalize(r); n != "" {
