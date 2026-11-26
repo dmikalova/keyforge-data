@@ -44,8 +44,11 @@ type SetState struct {
 	Quiet int `json:"quiet"`
 	// Count is the feed's deck count for the set.
 	Count int `json:"count"`
-	// Kept is the number of decks kept.
+	// Kept is the number of decks with a new printing. The stop rule and
+	// the cover use them.
 	Kept int `json:"kept"`
+	// Stored is the number of decks stored: every deck of every page read.
+	Stored int `json:"stored"`
 	// Seen are the target printings seen (TargetKey), sorted.
 	Seen []string `json:"seen"`
 	// Numbers are the card numbers of the set's own target cards.
@@ -141,7 +144,10 @@ func scanSet(
 			return err
 		}
 		kept, added := keepNew(p.Decks, heads, seen, numbers, s.Expansion)
-		if err := c.WriteDecks("en", "feed", kept); err != nil {
+		// Store every deck of the page, not only the kept decks. The page has
+		// the full decks, so storing them costs no request, and the raw store
+		// can answer questions about decks later without a new crawl.
+		if err := c.WriteDecks("en", "feed", p.Decks); err != nil {
 			return err
 		}
 		if _, err := c.PutLinked("en", p.Linked); err != nil {
@@ -149,6 +155,7 @@ func scanSet(
 		}
 		st.Page, st.Count = page, p.Count
 		st.Kept += len(kept)
+		st.Stored += len(p.Decks)
 		if added > 0 {
 			st.Quiet = 0
 		} else {
@@ -157,7 +164,7 @@ func scanSet(
 		st.Seen = sortedKeys(seen)
 		st.Numbers = sortedKeys(numbers)
 		log.Info("page",
-			"set", s.Slug, "page", page, "decks", p.Count, "kept", st.Kept,
+			"set", s.Slug, "page", page, "decks", p.Count, "kept", st.Kept, "stored", st.Stored,
 			"cards", len(seen), "new", added, "quiet", st.Quiet,
 		)
 		switch {

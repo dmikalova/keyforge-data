@@ -339,3 +339,52 @@ func TestFeedSetsResumes(t *testing.T) {
 		}
 	}
 }
+
+func TestFeedSetsStoresEveryDeck(t *testing.T) {
+	// Every deck has the same card, so only the first deck has a new
+	// printing. The scan stores all decks anyway.
+	f := &fakeMV{}
+	for range 25 {
+		f.decks = append(f.decks, []string{"c1"})
+	}
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	store, err := raw.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cotA, _ := sets.BySlug("callofthearchons")
+	c, err := store.OpenCrawl("all", ModeFeedSets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := FeedSets(
+		context.Background(),
+		log,
+		testClient(srv.URL),
+		c,
+		[]sets.Set{cotA},
+		DefaultStop,
+	); err != nil {
+		t.Fatal(err)
+	}
+	var state FeedSetsState
+	if err := c.State(&state); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Close(nil, true); err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for _, err := range store.Records("all") {
+		if err != nil {
+			t.Fatal(err)
+		}
+		n++
+	}
+	st := state[cotA.Slug]
+	if n != 25 || st.Stored != 25 || st.Kept != 1 {
+		t.Errorf("records %d, stored %d, kept %d; want 25, 25, 1", n, st.Stored, st.Kept)
+	}
+}
