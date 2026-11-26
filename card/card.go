@@ -52,6 +52,17 @@ type Card struct {
 	// Flags are the "is:" flags: reference, tokencreature, gigantic,
 	// eviltwin, and the houseless kind labels.
 	Flags []string `json:"flags,omitempty"`
+	// Mentions are the other cards that the text or the flavor text of a
+	// printing names. The site links each title in the text to the card.
+	Mentions []Mention `json:"mentions,omitempty"`
+	// Related are the threads of related cards that the card is in: an evil
+	// twin pair, a named family such as the Four Horsemen, or the cards that
+	// mention this card.
+	Related []Related `json:"related,omitempty"`
+	// Group is the sort group of a card without a house, for example
+	// "anomaly" or "skybeast". The default sort puts the cards without a
+	// house in the order of HouselessGroups.
+	Group string `json:"group,omitempty"`
 	// VariantGroup links the members of one variant family.
 	VariantGroup string `json:"variant_group,omitempty"`
 	// Printings are the card's printings, oldest set first.
@@ -147,3 +158,27 @@ const ImageBase = "https://storage.googleapis.com/mklv-keyforge-cards-public/ima
 
 // DatasetPath is the object path of the dataset in the public bucket.
 const DatasetPath = "data/cards.json"
+
+// Mention is a card that another card names in its text or flavor text.
+type Mention struct {
+	// ID is the card that is named.
+	ID string `json:"id"`
+	// Title is the name as it is in the text.
+	Title string `json:"title"`
+}
+
+// Related is one thread of related cards.
+type Related struct {
+	// Label names the thread for people, for example "Evil twin" or "The
+	// Four Horsemen".
+	Label string `json:"label"`
+	// Cards are the IDs of the other cards in the thread, without this card.
+	Cards []string `json:"cards"`
+}
+
+// HouselessGroups is the default sort order of the cards without a house,
+// after the cards with a house. Reference cards are last.
+var HouselessGroups = []string{
+	"anomaly", "multihouse", "skybeast", "revenant", "mercenary", "houseless",
+	"archonpower", "prophecy", "thetide", "reference",
+}
