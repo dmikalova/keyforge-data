@@ -81,14 +81,15 @@ func TestCardAbilities(t *testing.T) {
 
 func TestDisplay(t *testing.T) {
 	for in, want := range map[string]string{
-		"Play: Gain 1A.":                         "Play: Gain 1 Æmber.",
-		"Reap: Capture 1<A>.":                    "Reap: Capture 1 Æmber.",
-		"Deal 2D to a creature.":                 "Deal 2 damage to a creature.",
-		"Deal 3<D> to each enemy creature.\r":    "Deal 3 damage to each enemy creature.",
-		"If your opponent has more <A> than you": "If your opponent has more Æmber than you",
-		"Enhance .":                            "Enhance Æmber damage.",
-		"Taunt.\u000bReap: Gain 1A.":             "Taunt.\nReap: Gain 1 Æmber.",
-		"Archive 2 cards. Ready A. Vinda.":       "Archive 2 cards. Ready A. Vinda.",
+		"Play: Gain 1A.":                             "Play: Gain 1 Æmber.",
+		"Reap: Capture 1<A>.":                        "Reap: Capture 1 Æmber.",
+		"Deal 2D to a creature.":                     "Deal 2 damage to a creature.",
+		"Deal 3<D> to each enemy creature.\r":        "Deal 3 damage to each enemy creature.",
+		"If your opponent has more <A> than you":     "If your opponent has more Æmber than you",
+		"Enhance .":                                "Enhance Æmber damage.",
+		"Taunt.\u000bReap: Gain 1A.":                 "Taunt.\nReap: Gain 1 Æmber.",
+		"Archive 2 cards. Ready A. Vinda.":           "Archive 2 cards. Ready A. Vinda.",
+		"\uF566 After you raise the tide, ready it.": "{tide} After you raise the tide, ready it.",
 	} {
 		if got := Display(in); got != want {
 			t.Errorf("Display(%q) = %q, want %q", in, got, want)

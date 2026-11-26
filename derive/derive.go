@@ -52,6 +52,7 @@ const (
 	IconDamage  = "damage"
 	IconDraw    = "draw"
 	IconDiscard = "discard"
+	IconTide    = "tide"
 )
 
 // glyphs maps the icon-font glyphs in Master Vault card text to icon names.
@@ -62,6 +63,7 @@ var glyphs = map[rune]string{
 	0xF36E: IconDraw,
 	0xF565: IconCapture,
 	0xF372: IconDiscard,
+	0xF566: IconTide,
 	0xF379: "brobnar",
 	0xF37A: "dis",
 	0xF37B: "ekwidon",
@@ -263,6 +265,10 @@ func CardAbilities(text string) []string {
 	return out
 }
 
+// TideToken stands for the tide icon in Display text. The site replaces it
+// with the icon.
+const TideToken = "{tide}"
+
 // iconWords are the words for the icons in card text.
 var iconWords = map[string]string{
 	IconAember: "Æmber", IconDamage: "damage", IconDraw: "draw", IconCapture: "capture",
@@ -299,6 +305,9 @@ func Display(s string) string {
 		case r == captureFirst && i+1 < len(rs) && rs[i+1] == captureSecond:
 			word = iconWords[IconCapture]
 			i++
+		case glyphs[r] == IconTide:
+			// The tide icon has no word. The site draws it from the token.
+			word = TideToken
 		case glyphs[r] != "":
 			word = cmp.Or(iconWords[glyphs[r]], houseWord(glyphs[r]))
 		}
