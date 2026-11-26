@@ -38,8 +38,17 @@ func registry(t testing.TB) *Registry[card] {
 				Strings: strs(func(c card) string { return c.text }),
 			},
 			{
-				Name: "house", Alias: "h", Kind: KindEnum,
-				Values:  []string{"Brobnar", "Dis", "Logos", "Star Alliance", "Untamed"},
+				Name:  "house",
+				Alias: "h",
+				Kind:  KindEnum,
+				Values: []string{
+					"Brobnar",
+					"Dis",
+					"Logos",
+					"Star Alliance",
+					"staralliance",
+					"Untamed",
+				},
 				Strings: strs(func(c card) string { return c.house }),
 			},
 			{
@@ -197,6 +206,11 @@ func TestParseFormatsCanonically(t *testing.T) {
 		{"is:gigantic,eviltwin", "is:gigantic,eviltwin"},
 		{"x:a,b", "text:a,b"},
 		{"n:a,b", "name:a,b"},
+		// A unique prefix of a value is enough.
+		{"h:br t:act", "house:Brobnar type:action"},
+		{"h:st,u", "house:\"Star Alliance\",Untamed"},
+		{"k:ass>=2", "keyword:assault>=2"},
+		{"is:gig", "is:gigantic"},
 	}
 	for _, c := range cases {
 		q, err := r.Parse(c.in)
@@ -239,6 +253,7 @@ func TestParseErrors(t *testing.T) {
 		{"h:dis,", "empty value", ""},
 		{"h:,dis", "empty value", ""},
 		{"h:dis,diss", "not a house value", "Dis"},
+		{"t:a", "more than one type value: action, artifact", ""},
 		{"k:elusive,assault>=2", "takes only keys", ""},
 	}
 	for _, c := range cases {

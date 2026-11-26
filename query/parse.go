@@ -326,9 +326,30 @@ func enumValue(t token, f FieldInfo, text string) (string, error) {
 		return text, nil
 	}
 	want := Normalize(text)
+	var prefixed []string
+	// Two spellings of one value, for example a set slug and a set name,
+	// are one match.
+	seen := map[string]bool{}
 	for _, v := range f.Values {
-		if Normalize(v) == want {
+		n := Normalize(v)
+		if n == want {
 			return v, nil
+		}
+		if want != "" && strings.HasPrefix(n, want) && !seen[n] {
+			seen[n] = true
+			prefixed = append(prefixed, v)
+		}
+	}
+	// A prefix of one value is enough: "h:ek" is house:Ekwidon.
+	switch len(prefixed) {
+	case 1:
+		return prefixed[0], nil
+	case 0:
+	default:
+		return "", &Error{
+			Pos: t.pos,
+			Msg: fmt.Sprintf("%q can be more than one %s value: %s",
+				text, f.Name, strings.Join(prefixed, ", ")),
 		}
 	}
 	return "", &Error{
