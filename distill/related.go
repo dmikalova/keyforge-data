@@ -68,6 +68,7 @@ func linkCards(cards []card.Card, overrides map[string]Override) {
 	l.megas()
 	l.threads(overrides[threadsKey].Threads)
 	l.rules(overrides[rulesKey].Rules)
+	l.notes(overrides[rulesKey].Notes, overrides[threadsKey].Notes)
 	for _, id := range slices.Sorted(maps.Keys(mentionedBy)) {
 		l.add(id, "Mentioned by", mentionedBy[id])
 	}
@@ -367,4 +368,76 @@ func nameRe(title string) *regexp.Regexp {
 	re := regexp.MustCompile(strings.ReplaceAll(regexp.QuoteMeta(title), " ", "[  ]"))
 	nameRes.Store(title, re)
 	return re
+}
+
+// NoteRule is a note about one card: "Plague Rat: Always 3+ copies". A
+// title can end in " (Evil Twin)", or in a house in parentheses for the card
+// of that house: "Armageddon Cloak (Redemption)".
+type NoteRule struct {
+	Kind  string `json:"kind"`
+	Title string `json:"title"`
+	Text  string `json:"text"`
+}
+
+// notes adds the notes to the cards. A curated note replaces the imported
+// notes of the same card and kind.
+func (l *linker) notes(imported, curated []NoteRule) {
+	type key struct{ id, kind string }
+	replaced := map[key]bool{}
+	for _, n := range curated {
+		if id, ok := l.noteCard(n.Title); ok {
+			replaced[key{id, n.Kind}] = true
+		}
+	}
+	add := func(n NoteRule) {
+		id, ok := l.noteCard(n.Title)
+		if !ok {
+			return
+		}
+		c := &l.cards[l.index[id]]
+		note := card.Note{Kind: n.Kind, Text: n.Text}
+		if !slices.Contains(c.Notes, note) {
+			c.Notes = append(c.Notes, note)
+		}
+	}
+	for _, n := range imported {
+		if id, ok := l.noteCard(n.Title); ok && !replaced[key{id, n.Kind}] {
+			add(n)
+		}
+	}
+	for _, n := range curated {
+		add(n)
+	}
+}
+
+// noteCard returns the card ID of a note title. "Title (House)" is the card
+// of that house if the dataset has it, else the card with the title.
+// "Title (Anomaly)" is the card with the title.
+func (l *linker) noteCard(title string) (string, bool) {
+	if id, ok := l.resolve(title); ok {
+		return id, true
+	}
+	base, house, ok := strings.Cut(title, " (")
+	if !ok {
+		return "", false
+	}
+	house = strings.TrimSuffix(house, ")")
+	id := strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return unicode.ToLower(r)
+		}
+		return -1
+	}, house)
+	if id == "anomaly" {
+		id, ok := l.byTitle[base]
+		return id, ok
+	}
+	// A house card that the dataset does not have yet, for example a
+	// Redemption card of a set that the crawl has not read, gets no note.
+	for _, c := range l.cards {
+		if c.Title == base && c.House == id {
+			return c.ID, true
+		}
+	}
+	return "", false
 }

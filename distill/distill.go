@@ -92,6 +92,10 @@ type Override struct {
 	// Rules are the deck rules of related cards. Only the file
 	// overrides/_deckrules.json has them. kfdata threads rules writes it.
 	Rules []Rule `json:"rules,omitempty"`
+	// Notes are the notes of single cards. The import writes them to
+	// overrides/_deckrules.json. A note in overrides/_threads.json replaces
+	// the imported notes of the same card and kind.
+	Notes []NoteRule `json:"notes,omitempty"`
 }
 
 // CardFix corrects a Master Vault mistake.

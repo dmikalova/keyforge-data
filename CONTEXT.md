@@ -130,6 +130,12 @@ other spellings, so that search finds them.
 The printed rarity that Master Vault gives to house variants. A variant group
 links the members of one variant family.
 
+**Note**:
+A short fact about how a card appears in decks, for example "Always 3+
+copies" or "Always a Maverick". The notes come from the deck rules of the
+Archon Arcana sheet (docs/sources.md). They are overlay data, not Master
+Vault data.
+
 ## Data pipeline
 
 **Master Vault (MV)**:

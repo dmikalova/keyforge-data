@@ -65,3 +65,53 @@ func TestRules(t *testing.T) {
 		}
 	}
 }
+
+func TestNotes(t *testing.T) {
+	cards := []card.Card{
+		{ID: "plaguerat-dis", Title: "Plague Rat", House: "dis"},
+		{ID: "armageddoncloak-sanctum", Title: "Armageddon Cloak", House: "sanctum"},
+		{ID: "exchangeofficer-staralliance", Title: "Exchange Officer", House: "staralliance"},
+		{ID: "orbofwonder-sanctum", Title: "Orb of Wonder", House: "sanctum"},
+	}
+	overrides := map[string]Override{
+		rulesKey: {Notes: []NoteRule{
+			{Kind: "copies", Title: "Plague Rat", Text: "Always 3+ copies"},
+			{
+				Kind:  "houseswap",
+				Title: "Armageddon Cloak",
+				Text:  "Appears in house Redemption in Tokens of Change",
+			},
+			// The dataset has no Redemption card, so the note is dropped.
+			{
+				Kind:  "houseswap",
+				Title: "Armageddon Cloak (Redemption)",
+				Text:  "Was in Sanctum before Redemption",
+			},
+			{
+				Kind:  "anomaly",
+				Title: "Orb of Wonder (Anomaly)",
+				Text:  "Appears in house Sanctum in Mass Mutation",
+			},
+			{Kind: "special", Title: "Exchange Officer", Text: "A long sheet note"},
+		}},
+		threadsKey: {Notes: []NoteRule{
+			{Kind: "special", Title: "Exchange Officer", Text: "Always a Maverick"},
+		}},
+	}
+	linkCards(cards, overrides)
+	want := map[string][]string{
+		"plaguerat-dis":                {"Always 3+ copies"},
+		"armageddoncloak-sanctum":      {"Appears in house Redemption in Tokens of Change"},
+		"exchangeofficer-staralliance": {"Always a Maverick"},
+		"orbofwonder-sanctum":          {"Appears in house Sanctum in Mass Mutation"},
+	}
+	for _, c := range cards {
+		var got []string
+		for _, n := range c.Notes {
+			got = append(got, n.Text)
+		}
+		if !slices.Equal(got, want[c.ID]) {
+			t.Errorf("%s notes = %q, want %q", c.ID, got, want[c.ID])
+		}
+	}
+}

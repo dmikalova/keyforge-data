@@ -52,6 +52,10 @@ type Card struct {
 	// Flags are the "is:" flags: reference, tokencreature, gigantic,
 	// eviltwin, and the houseless kind labels.
 	Flags []string `json:"flags,omitempty"`
+	// Notes are short facts about how the card appears in decks, for example
+	// "Always 3+ copies" or "Always a Maverick". They come from the deck
+	// rules (overlay data), not from Master Vault.
+	Notes []Note `json:"notes,omitempty"`
 	// Mentions are the other cards that the text or the flavor text of a
 	// printing names. The site links each title in the text to the card.
 	Mentions []Mention `json:"mentions,omitempty"`
@@ -188,4 +192,13 @@ type Related struct {
 var HouselessGroups = []string{
 	"anomaly", "skybeast", "revenant", "mercenary", "houseless",
 	"archonpower", "prophecy", "thetide", "reference",
+}
+
+// Note is a short fact about how a card appears in decks.
+type Note struct {
+	// Kind is the rule type of the source: copies, house, houseswap,
+	// anomaly, or special.
+	Kind string `json:"kind"`
+	// Text is the note for people, for example "Always 3+ copies".
+	Text string `json:"text"`
 }

@@ -119,3 +119,18 @@ func TestMegaPair(t *testing.T) {
 		}
 	}
 }
+
+func TestNoteText(t *testing.T) {
+	for _, c := range []struct{ kind, note, want string }{
+		{"copies", "There are always at least 3 copies of this card in a deck. ", "Always 3+ copies"},
+		{"house", "this card always appears in a deck with house Star Alliance.", "Always in a deck with Star Alliance"},
+		{"house", "this card can appear in any house in Mass Mutation.", "Can appear in any house in Mass Mutation"},
+		{"houseswap", "this card belonged to house Sanctum prior to being in house Redemption:", "Was in Sanctum before Redemption"},
+		{"special", "this card always appears in a deck with 2 or 3 legacy maverick artifacts.", "Always with 2 or 3 legacy maverick artifacts"},
+		{"anomaly", "this card first appeared as an Anomaly in Worlds Collide:", "First appeared as an Anomaly in Worlds Collide"},
+	} {
+		if got := noteText(c.kind, c.note); got != c.want {
+			t.Errorf("noteText(%q) = %q, want %q", c.note, got, c.want)
+		}
+	}
+}

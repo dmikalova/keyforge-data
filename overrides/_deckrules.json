@@ -1292,5 +1292,572 @@
         "Scoop Up"
       ]
     }
+  ],
+  "notes": [
+    {
+      "kind": "copies",
+      "title": "Angry Mob",
+      "text": "Always 2+ copies"
+    },
+    {
+      "kind": "copies",
+      "title": "Routine Job",
+      "text": "Always 2+ copies"
+    },
+    {
+      "kind": "copies",
+      "title": "Plague Rat",
+      "text": "Always 3+ copies"
+    },
+    {
+      "kind": "copies",
+      "title": "Moor Wolf",
+      "text": "Always 2+ copies"
+    },
+    {
+      "kind": "house",
+      "title": "Dark Æmber Vault",
+      "text": "Can appear in any house in Mass Mutation"
+    },
+    {
+      "kind": "house",
+      "title": "Brobnar Plant",
+      "text": "Always in a deck with Brobnar"
+    },
+    {
+      "kind": "house",
+      "title": "Dis Plant",
+      "text": "Always in a deck with Dis"
+    },
+    {
+      "kind": "house",
+      "title": "Logos Plant",
+      "text": "Always in a deck with Logos"
+    },
+    {
+      "kind": "house",
+      "title": "Saurian Plant",
+      "text": "Always in a deck with Saurian"
+    },
+    {
+      "kind": "house",
+      "title": "Star Alliance Plant",
+      "text": "Always in a deck with Star Alliance"
+    },
+    {
+      "kind": "house",
+      "title": "Untamed Plant",
+      "text": "Always in a deck with Untamed"
+    },
+    {
+      "kind": "house",
+      "title": "Brobnar Ambassador",
+      "text": "Always in a deck with Brobnar"
+    },
+    {
+      "kind": "house",
+      "title": "Dis Ambassador",
+      "text": "Always in a deck with Dis"
+    },
+    {
+      "kind": "house",
+      "title": "Logos Ambassador",
+      "text": "Always in a deck with Logos"
+    },
+    {
+      "kind": "house",
+      "title": "Mars Ambassador",
+      "text": "Always in a deck with Mars"
+    },
+    {
+      "kind": "house",
+      "title": "Shadows Ambassador",
+      "text": "Always in a deck with Shadows"
+    },
+    {
+      "kind": "house",
+      "title": "Untamed Ambassador",
+      "text": "Always in a deck with Untamed"
+    },
+    {
+      "kind": "special",
+      "title": "Exchange Officer",
+      "text": "Exchange Officer never appears in Star Alliance. Instead, it always appears as a Maverick in one of the other two houses in the deck, while also forcing a creature from that house to appear as a Maverick in Star Alliance"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Orb of Wonder",
+      "text": "First appeared as an Anomaly in Worlds Collide"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Orb of Wonder (Anomaly)",
+      "text": "Appears in house Sanctum in Mass Mutation"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Valoocanth",
+      "text": "First appeared as an Anomaly in Worlds Collide"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Valoocanth (Anomaly)",
+      "text": "Appears in house Unfathomable in Dark Tidings"
+    },
+    {
+      "kind": "copies",
+      "title": "Tentaclid",
+      "text": "Always 2+ copies"
+    },
+    {
+      "kind": "copies",
+      "title": "Hastatus Raptor",
+      "text": "Always 3+ copies"
+    },
+    {
+      "kind": "special",
+      "title": "Antiquities Dealer",
+      "text": "Always with 2 or 3 legacy maverick artifacts"
+    },
+    {
+      "kind": "special",
+      "title": "Frost Giant",
+      "text": "Always with at least 2 cards that ready a creature"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Curse of Forgetfulness",
+      "text": "First appeared as an Anomaly in Winds of Exchange"
+    },
+    {
+      "kind": "anomaly",
+      "title": "Curse of Forgetfulness (Anomaly)",
+      "text": "Appears in house Gesitoid in Grim Reminders"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Armageddon Cloak",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Avenging Aura",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Book of Malefaction",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Eye of Judgment",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Hymn to Duma",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Johnny Longfingers",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Lord Golgotha",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Mantle of the Zealot",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Martyr’s End",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Master of the Grey",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Mighty Lance",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "One Stood Against Many",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Rogue Ogre",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "The Promised Blade",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Champion Tabris",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Dark Centurion",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "First or Last",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Francus",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Glorious Few",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Gorm of Omm",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Grey Abbess",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Professor Terato",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Scrivener Favian",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Bordan the Redeemed",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Bull-wark",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Burning Glare",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Citizen Shrix",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Retribution",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Shifting Battlefield",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Snarette",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Subtle Otto",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Even Ivan",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Odd Clawde",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Alien",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Beast",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Bot",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Fiend",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Saurus",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Thief",
+      "text": "Appears in house Redemption in Tokens of Change"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Armageddon Cloak (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Avenging Aura (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Book of Malefaction (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Eye of Judgment (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Hymn to Duma (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Johnny Longfingers (Redemption)",
+      "text": "Was in Shadows before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Lord Golgotha (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Mantle of the Zealot (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Martyr’s End (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Master of the Grey (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Mighty Lance (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "One Stood Against Many (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Rogue Ogre (Redemption)",
+      "text": "Was in Brobnar before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "The Promised Blade (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Champion Tabris (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Dark Centurion (Redemption)",
+      "text": "Was in Saurian before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "First or Last (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Francus (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Glorious Few (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Gorm of Omm (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Grey Abbess (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Professor Terato (Redemption)",
+      "text": "Was in Logos before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Scrivener Favian (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Bordan the Redeemed (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Bull-wark (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Burning Glare (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Citizen Shrix (Redemption)",
+      "text": "Was in Saurian before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Retribution (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Shifting Battlefield (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Snarette (Redemption)",
+      "text": "Was in Dis before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Subtle Otto (Redemption)",
+      "text": "Was in Shadows before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Even Ivan (Redemption)",
+      "text": "Was in Logos before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Odd Clawde (Redemption)",
+      "text": "Was in Logos before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Alien (Redemption)",
+      "text": "Was in Star Alliance before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Beast (Redemption)",
+      "text": "Was in Untamed before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Bot (Redemption)",
+      "text": "Was in Logos before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Fiend (Redemption)",
+      "text": "Was in Dis before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Saurus (Redemption)",
+      "text": "Was in Saurian before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Sacro-Thief (Redemption)",
+      "text": "Was in Shadows before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Purifier of Souls",
+      "text": "Appears in house Redemption in Prophetic Visions"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Vault’s Blessing",
+      "text": "Appears in house Redemption in Prophetic Visions"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Follow the Leader",
+      "text": "Appears in house Redemption in Prophetic Visions"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Purifier of Souls (Redemption)",
+      "text": "Was in Sanctum before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Vault’s Blessing (Redemption)",
+      "text": "Was in Untamed before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Follow the Leader (Redemption)",
+      "text": "Was in Brobnar before Redemption"
+    },
+    {
+      "kind": "houseswap",
+      "title": "Corrode (Redemption)",
+      "text": "Appears in house Redemption in Prophetic Visions"
+    }
   ]
 }

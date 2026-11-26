@@ -69,20 +69,27 @@ threads of its cards:
   of copies.
 - A rule without page cards is a group. Each card of the group gets the
   other cards.
-- A variant family label drops the hyphen of the sheet: "Dæmo variants",
-  "Fiend variants".
 - A curated thread (`overrides/_threads.json`) wins. A rule adds nothing to
   a card if a thread of the card already has all the rule's cards.
-- Add a curated thread only for cards that no rule links. On 2026-11-26 the
-  rules covered all the curated threads except Monuments, so the other
-  curated threads were removed.
+- Use a curated thread to give a family a better name or to add a card
+  that the sheet does not list. The curated threads name the variant
+  families ("Key Imps", "Banes") and the Mass Mutation mutants ("Dis
+  mutants" for the Dæmo- cards, "Fiend mutants" for the -Fiend cards).
+- The import drops a variant rule of a card and its Mega creature, because
+  distillation links them as "Mega creature".
 
 The command prints the titles that no card has. Most of them are cards from
 sets that the crawl does not have yet. Run `mage threads:rules` again after a
 crawl adds a set.
 
 The `copies`, `house`, `houseswap`, `anomaly`, and `special` rules are about
-one card. They are not imported. The work item is in [todo.md](todo.md).
+one card. The command writes them as notes to `overrides/_deckrules.json`.
+Distillation adds each note to the `notes` of its card, for example "Always 3+
+copies" on Plague Rat. A title with a house in parentheses, such as "Armageddon
+Cloak (Redemption)", is the card of that house. If the dataset does not have
+that card yet, the note is dropped. A note in `overrides/_threads.json`
+replaces the imported notes of the same card and kind, for example to fix a
+long note or a misspelling in the sheet.
 
 ### Other data
 

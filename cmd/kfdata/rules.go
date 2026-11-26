@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/distill"
@@ -43,7 +45,7 @@ func readSheet(r io.Reader) ([]sheetRule, error) {
 	sc := bufio.NewScanner(r)
 	for sc.Scan() {
 		f := strings.Split(sc.Text(), "\t")
-		if len(f) < 4 || !slices.Contains(ruleKinds, f[1]) {
+		if len(f) < 4 || (!slices.Contains(ruleKinds, f[1]) && !slices.Contains(noteKinds, f[1])) {
 			continue
 		}
 		out = append(out, sheetRule{
@@ -136,6 +138,9 @@ func importRules(rows []sheetRule, cards []card.Card) ([]distill.Rule, []string)
 	}
 	var out []distill.Rule
 	for _, r := range rows {
+		if !slices.Contains(ruleKinds, r.kind) {
+			continue
+		}
 		rule := distill.Rule{
 			Kind:  r.kind,
 			Label: ruleLabel(r),
@@ -176,8 +181,12 @@ func threadsRules(w io.Writer, in, file string, cards []card.Card) error {
 		return err
 	}
 	rules, missing := importRules(rows, cards)
+	notes, noteMissing := importNotes(rows, cards)
+	missing = append(missing, noteMissing...)
+	slices.Sort(missing)
+	missing = slices.Compact(missing)
 	b, err := json.Marshal(
-		distill.Override{Rules: rules},
+		distill.Override{Rules: rules, Notes: notes},
 		jsontext.Multiline(true),
 		jsontext.WithIndent("  "),
 	)
@@ -194,8 +203,82 @@ func threadsRules(w io.Writer, in, file string, cards []card.Card) error {
 	for _, k := range ruleKinds {
 		_, _ = fmt.Fprintf(w, "%s: %d rules\n", k, counts[k])
 	}
+	_, _ = fmt.Fprintf(w, "notes: %d\n", len(notes))
 	for _, m := range missing {
 		_, _ = fmt.Fprintf(w, "no card has the title %q\n", m)
 	}
 	return nil
+}
+
+// noteKinds are the rule types of the sheet that are about one card.
+var noteKinds = []string{"copies", "house", "houseswap", "anomaly", "special"}
+
+var (
+	// copiesRe finds the number in "at least 3 copies of this card".
+	copiesRe = regexp.MustCompile(`at least (\d+) copies`)
+	// houseRe finds the house in "always appears in a deck with house Dis".
+	houseRe = regexp.MustCompile(`always appears in a deck with house (.+?)\.?$`)
+	// wasRe finds the houses in "belonged to house Sanctum prior to being in
+	// house Redemption".
+	wasRe = regexp.MustCompile(`belonged to house (.+?) prior to being in house (.+?)\.?$`)
+)
+
+// noteText returns the short text of a note from the sheet note.
+func noteText(kind, note string) string {
+	note = strings.TrimRight(strings.TrimSpace(note), ".: ")
+	switch {
+	case kind == "copies" && copiesRe.MatchString(note):
+		return "Always " + copiesRe.FindStringSubmatch(note)[1] + "+ copies"
+	case houseRe.MatchString(note):
+		return "Always in a deck with " + houseRe.FindStringSubmatch(note)[1]
+	case wasRe.MatchString(note):
+		m := wasRe.FindStringSubmatch(note)
+		return "Was in " + m[1] + " before " + m[2]
+	}
+	note = strings.TrimRight(strings.TrimPrefix(note, "this card "), ".: ")
+	note = strings.Replace(note, "always appears in a deck with ", "always with ", 1)
+	if note == "" {
+		return ""
+	}
+	r, size := utf8.DecodeRuneInString(note)
+	return string(unicode.ToUpper(r)) + note[size:]
+}
+
+// importNotes turns the sheet rows about one card into notes. It returns
+// the notes and the titles that no card has.
+func importNotes(rows []sheetRule, cards []card.Card) ([]distill.NoteRule, []string) {
+	t := titleResolver{known: map[string]bool{}}
+	for _, c := range cards {
+		t.known[c.Title] = true
+	}
+	var out []distill.NoteRule
+	var missing []string
+	for _, r := range rows {
+		if !slices.Contains(noteKinds, r.kind) {
+			continue
+		}
+		text := noteText(r.kind, r.note)
+		for _, p := range r.pages {
+			base, _, _ := strings.Cut(p, " (")
+			title, ok := t.resolve(base)
+			if !ok {
+				if !slices.Contains(missing, p) {
+					missing = append(missing, p)
+				}
+				continue
+			}
+			if text != "" {
+				out = append(
+					out,
+					distill.NoteRule{
+						Kind:  r.kind,
+						Title: title + strings.TrimPrefix(p, base),
+						Text:  text,
+					},
+				)
+			}
+		}
+	}
+	slices.Sort(missing)
+	return out, missing
 }
