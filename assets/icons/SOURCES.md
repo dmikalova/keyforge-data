@@ -45,10 +45,10 @@ All set references are Archon Arcana images. The files are in `_refs/archonarcan
 | `set/darktidings.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/Dt.png> | Traced from Dt.png | |
 | `set/windsofexchange.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/WoE.png> | Traced from WoE.png | |
 | `set/unchained2022.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/UC23.png> | Traced from UC23.png | Unchained 2022 and Unchained 2023 use the same symbol. |
-| `set/vaultmasters2023.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/VM23.png> | Traced from VM23.png | |
+| `set/vaultmasters2023.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/609.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "23". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
 | `set/grimreminders.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/GR.png> | Traced from GR.png | |
 | `set/menagerie.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/M24.png> | Traced from M24.png | Not sure. We think M24 is the Menagerie (2024) symbol. Check it. |
-| `set/vaultmasters2024.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/VM24.png> | Traced from VM24.png | VM24.png and VM23.png are the same file. The two SVGs are the same. |
+| `set/vaultmasters2024.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/737.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "24". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
 | `set/aemberskies.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/AS.png> | Traced from AS.png | |
 | `set/tokensofchange.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/ToC.png> | Traced from ToC.png | |
 | `set/propheticvisions.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/PV.png> | Traced from PV.png | |
@@ -57,8 +57,8 @@ All set references are Archon Arcana images. The files are in `_refs/archonarcan
 | `set/crucibleclash.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/CC.png> | Traced from CC.png | |
 | `set/draconianmeasures.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/DM.png> | Traced from DM.png | |
 | `set/moremutation.svg` | None | Missing | No reference found. |
-| `set/vaultmasters2025.svg` | None | Missing | No reference found. It can be the same as the other Vault Masters symbols. Check a card. |
-| `set/vaultmasters2026.svg` | None | Missing | No reference found. It can be the same as the other Vault Masters symbols. Check a card. |
+| `set/vaultmasters2025.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/939.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "25". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
+| `set/vaultmasters2026.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/964.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "26". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
 
 ## Rarity
 
