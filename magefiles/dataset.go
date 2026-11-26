@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
@@ -38,6 +39,8 @@ type Dataset mg.Namespace
 // Distill writes tmp/cards.json and docs/dataset-problems.md from ./raw.
 func (Dataset) Distill() error {
 	return kfdata(
+		"-root",
+		rawRoot(),
 		"distill",
 		"-out",
 		datasetFile,
@@ -62,11 +65,15 @@ func (Dataset) Publish() error {
 			return err
 		}
 	}
-	local, err := version(datasetFile)
+	local, cards, err := version(datasetFile)
 	if err != nil {
 		return err
 	}
-	if remote := publishedVersion(); remote == local {
+	remote, remoteCards := publishedVersion()
+	if err := checkShrink(cards, remoteCards); err != nil {
+		return err
+	}
+	if remote == local {
 		fmt.Println("dataset", local, "is already published")
 	} else {
 		if err := sh.RunV("gcloud", "storage", "cp", "-Z",
@@ -80,38 +87,60 @@ func (Dataset) Publish() error {
 	return notifyProblems()
 }
 
-func version(path string) (string, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	var d struct {
-		Version string `json:"version"`
-	}
-	if err := json.Unmarshal(b, &d); err != nil {
-		return "", err
-	}
-	return d.Version, nil
+// datasetHead is the part of a dataset that publish reads.
+type datasetHead struct {
+	Version string           `json:"version"`
+	Cards   []jsontext.Value `json:"cards"`
 }
 
-// publishedVersion returns the version of the published dataset, or empty.
-func publishedVersion() string {
+// version returns the version and the card count of a dataset file.
+func version(path string) (string, int, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", 0, err
+	}
+	var d datasetHead
+	if err := json.Unmarshal(b, &d); err != nil {
+		return "", 0, err
+	}
+	return d.Version, len(d.Cards), nil
+}
+
+// checkShrink refuses a dataset that is empty or has less than 90% of the
+// cards of the published dataset. A wrong raw store path once published an
+// empty dataset, and the site showed no cards. Set KFDATA_FORCE=1 to publish
+// a smaller dataset on purpose.
+func checkShrink(cards, published int) error {
+	if os.Getenv("KFDATA_FORCE") == "1" {
+		return nil
+	}
+	if cards == 0 || cards < published*9/10 {
+		return fmt.Errorf(
+			"the dataset has %d cards and the published dataset has %d: not published (set KFDATA_FORCE=1 to publish it)",
+			cards,
+			published,
+		)
+	}
+	return nil
+}
+
+// publishedVersion returns the version and the card count of the published
+// dataset, or empty and 0.
+func publishedVersion() (string, int) {
 	client := &http.Client{Timeout: time.Minute}
 	resp, err := client.Get(datasetURL)
 	if err != nil {
-		return ""
+		return "", 0
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
-		return ""
+		return "", 0
 	}
-	var d struct {
-		Version string `json:"version"`
-	}
+	var d datasetHead
 	if err := json.UnmarshalRead(resp.Body, &d); err != nil {
-		return ""
+		return "", 0
 	}
-	return d.Version
+	return d.Version, len(d.Cards)
 }
 
 // notifyProblems posts the problems summary to the maintenance Discord
@@ -250,4 +279,13 @@ func fillImages() (int, error) {
 		n++
 	}
 	return n, nil
+}
+
+// rawRoot is the raw store directory: KFDATA_ROOT, or ./raw. A worktree sets
+// KFDATA_ROOT to the main checkout's raw store.
+func rawRoot() string {
+	if r := os.Getenv("KFDATA_ROOT"); r != "" {
+		return r
+	}
+	return "raw"
 }
