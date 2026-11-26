@@ -60,8 +60,8 @@ houseless cards have the flag `is:houseless`. There are three groups:
   mercenaries (a later set). The overrides give each kind a label, and the
   label becomes a flag (`is:skybeast`).
 - The anomalies that have no printing in a playable set.
-- The multi-house cards: Master Vault prints one card object for each house
-  of the deck (Dark Æmber Vault, It's Coming...). The flag is
+- The cards that Master Vault prints in the house of the deck (Dark Æmber
+  Vault, It's Coming...). The flag is
   `is:multihouse`.
 
 **Anomaly**:

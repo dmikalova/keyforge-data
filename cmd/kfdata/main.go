@@ -271,6 +271,7 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	fs := flag.NewFlagSet("distill", flag.ContinueOnError)
 	out := fs.String("out", "tmp/cards.json", "dataset file")
 	problemsOut := fs.String("problems", "docs/dataset-problems.md", "problems file")
+	problemsJSON := fs.String("problems-json", "tmp/problems.json", "problems file as JSON")
 	overridesDir := fs.String("overrides", "overrides", "overrides directory")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -295,6 +296,13 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 		return err
 	}
 	if err := os.WriteFile(*out, b, 0o600); err != nil {
+		return err
+	}
+	pj, err := json.Marshal(problems)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(*problemsJSON, pj, 0o600); err != nil {
 		return err
 	}
 	f, err := os.Create(*problemsOut)

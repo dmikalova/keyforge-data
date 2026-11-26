@@ -44,6 +44,7 @@ type mvCard struct {
 	IsMaverick bool           `json:"is_maverick"`
 	IsAnomaly  bool           `json:"is_anomaly"`
 	IsEnhanced bool           `json:"is_enhanced"`
+	FrontImage string         `json:"front_image"`
 }
 
 // Input is everything that distillation reads.
@@ -97,6 +98,7 @@ const (
 	ProblemUnknownType    = "unknown card type"
 	ProblemBadObject      = "unreadable card object"
 	ProblemGiganticNoBase = "gigantic without a base half"
+	ProblemOnlyMavericks  = "printing with only mavericks"
 )
 
 // referenceHouses are the Master Vault pseudo-houses of reference cards.
@@ -116,10 +118,6 @@ const (
 	FlagTokenCreature = "tokencreature"
 	FlagGigantic      = "gigantic"
 	FlagEvilTwin      = "eviltwin"
-	// FlagMultiHouse marks a card that Master Vault prints once for each
-	// house of the deck, for example Dark Æmber Vault. Anomalies are not
-	// multi-house cards.
-	FlagMultiHouse = "multihouse"
 	// FlagHouseless marks every card without a house that is not a reference
 	// card: anomalies, multi-house cards, and the houseless kinds.
 	FlagHouseless = "houseless"
@@ -238,7 +236,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Number:  k.number,
 		Rarity:  base.Rarity,
 		Anomaly: base.IsAnomaly,
-		Image:   r.image(set, k),
+		Image:   r.image(set, k, base.FrontImage),
 	}
 	if base.Flavor != nil {
 		p.Flavor = strings.TrimSpace(*base.Flavor)
@@ -294,12 +292,10 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 	}
 	h := query.Normalize(base.House)
 	switch {
-	case len(houses) > 1 && base.IsAnomaly:
-		// An anomaly takes the house of the deck. It is houseless, but it is
-		// not a multi-house card.
-		return "", []string{FlagHouseless}
 	case len(houses) > 1:
-		return "", []string{FlagMultiHouse, FlagHouseless}
+		// Master Vault prints the card in the house of the deck: an anomaly,
+		// or a card such as Dark Æmber Vault. The card is houseless.
+		return "", []string{FlagHouseless}
 	case referenceHouses[h]:
 		return "", []string{FlagReference}
 	case realHouses[h]:
@@ -345,7 +341,7 @@ func (r *run) stats(set sets.Set, k printingKey, base mvCard, ov Override) (*car
 // image returns the image path of a printing under images/cards/, or empty.
 // The path is <set>/<number>.webp, or <set>/<number>-<name>.webp when two
 // cards in a set share a number.
-func (r *run) image(set sets.Set, k printingKey) string {
+func (r *run) image(set sets.Set, k printingKey, front string) string {
 	names := r.images[set.Slug+"/"+k.number]
 	want := set.Slug + "/" + k.number + "-" + Slug(k.title) + "."
 	for _, n := range names {
@@ -358,7 +354,9 @@ func (r *run) image(set sets.Set, k printingKey) string {
 			return n
 		}
 	}
-	r.problem(Problem{Kind: ProblemMissingImage, Set: set.Slug, Number: k.number, Title: k.title})
+	r.problem(Problem{
+		Kind: ProblemMissingImage, Set: set.Slug, Number: k.number, Title: k.title, Detail: front,
+	})
 	return ""
 }
 
@@ -546,8 +544,10 @@ const (
 // anomalies of expansion 453. An anomaly with a printing in a playable set
 // uses that printing, so its expansion 453 objects are dropped. Other
 // anomalies become printings of the set whose decks have them.
+// A printing that has only maverick objects is kept, in the house of the
+// card's other printings (see maverickOnly).
 func (r *run) parse(raws [][]byte) []mvCard {
-	var objs []mvCard
+	var objs, mavericks []mvCard
 	playable := map[string]bool{}
 	for _, b := range raws {
 		var c mvCard
@@ -556,6 +556,7 @@ func (r *run) parse(raws [][]byte) []mvCard {
 			continue
 		}
 		if c.IsMaverick {
+			mavericks = append(mavericks, c)
 			continue
 		}
 		if c.Expansion != anomalyExpansion {
@@ -563,6 +564,7 @@ func (r *run) parse(raws [][]byte) []mvCard {
 		}
 		objs = append(objs, c)
 	}
+	objs = append(objs, r.maverickOnly(objs, mavericks)...)
 	out := objs[:0]
 	for _, c := range objs {
 		if c.Expansion == anomalyExpansion {
@@ -572,6 +574,54 @@ func (r *run) parse(raws [][]byte) []mvCard {
 			c.Expansion = anomalyDeckSetExp
 			c.IsAnomaly = true
 		}
+		out = append(out, c)
+	}
+	return out
+}
+
+// maverickOnly returns the printings that Master Vault sends only as
+// mavericks, moved to the card's own house. Some cards are always mavericks
+// (Exchange Officer in Vault Masters 2023), so no deck has the printing in
+// its own house. The card's other printings give the house. Other mavericks
+// are copies of a printing that the gallery already has, and are dropped.
+func (r *run) maverickOnly(objs, mavericks []mvCard) []mvCard {
+	type key struct {
+		exp           int
+		number, title string
+	}
+	have := map[key]bool{}
+	houses := map[string]map[string]bool{}
+	for _, c := range objs {
+		have[key{c.Expansion, c.Number, c.Title}] = true
+		t := query.Normalize(c.Title)
+		if houses[t] == nil {
+			houses[t] = map[string]bool{}
+		}
+		houses[t][c.House] = true
+	}
+	var out []mvCard
+	missing := map[key]bool{}
+	for _, c := range mavericks {
+		k := key{c.Expansion, c.Number, c.Title}
+		if have[k] {
+			continue
+		}
+		hs := houses[query.Normalize(c.Title)]
+		if len(hs) != 1 {
+			if !missing[k] {
+				missing[k] = true
+				set, _ := sets.ByExpansion(c.Expansion)
+				r.problem(Problem{
+					Kind: ProblemOnlyMavericks, Set: set.Slug, Number: c.Number, Title: c.Title,
+					Detail: fmt.Sprintf("%d houses in other printings", len(hs)),
+				})
+			}
+			continue
+		}
+		for h := range hs {
+			c.House = h
+		}
+		c.IsMaverick = false
 		out = append(out, c)
 	}
 	return out

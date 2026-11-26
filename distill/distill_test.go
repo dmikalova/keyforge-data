@@ -94,6 +94,22 @@ func TestRun(t *testing.T) {
 				`"card_title":"Sky Whale","house":"Skybeast","card_type":"Creature","power":"6","rarity":"Rare","card_number":"400","expansion":800`,
 			),
 			obj(
+				"e1",
+				`"card_title":"Exchange Officer","house":"Star Alliance","card_type":"Creature","power":"3","rarity":"Rare","card_number":"341","expansion":479`,
+			),
+			obj(
+				"e2",
+				`"card_title":"Exchange Officer","house":"Dis","card_type":"Creature","power":"3","rarity":"Rare","card_number":"282","expansion":609,"is_maverick":true`,
+			),
+			obj(
+				"e3",
+				`"card_title":"Exchange Officer","house":"Logos","card_type":"Creature","power":"3","rarity":"Rare","card_number":"282","expansion":609,"is_maverick":true`,
+			),
+			obj(
+				"o1",
+				`"card_title":"Lonely Maverick","house":"Dis","card_type":"Action","rarity":"Rare","card_number":"099","expansion":609,"is_maverick":true`,
+			),
+			obj(
 				"b1",
 				`"card_title":"ANT1-10NY","house":"Logos","card_type":"Creature","power":"3","rarity":"Rare","card_number":"100","expansion":800`,
 			),
@@ -130,7 +146,7 @@ func TestRun(t *testing.T) {
 	}
 
 	gf := find(t, d, "ghostform-none")
-	if gf.HasFlag(FlagMultiHouse) || !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
+	if !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
 		gf.Printings[0].Set != "worldscollide" || gf.Printings[0].Image != "worldscollide/A01.webp" {
 		t.Errorf("anomaly: %+v", gf)
 	}
@@ -167,11 +183,19 @@ func TestRun(t *testing.T) {
 		t.Errorf("aliases: %v", ant.Aliases)
 	}
 
+	// A printing with only maverick objects takes the house of the card's
+	// other printings.
+	eo := find(t, d, "exchangeofficer-staralliance")
+	if len(eo.Printings) != 2 || eo.Printings[1].Set != "vaultmasters2023" ||
+		len(eo.Printings[1].MVIDs) != 2 {
+		t.Errorf("exchange officer: %+v", eo.Printings)
+	}
+
 	// Reference cards sort last, after the cards without a house.
 	if last := d.Cards[len(d.Cards)-1]; last.ID != "forgeahead-none" {
 		t.Errorf("last card is %s", last.ID)
 	}
-	if len(d.Sets) != 6 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
+	if len(d.Sets) != 7 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
 		t.Errorf("sets %v version %q", d.Sets, d.Version)
 	}
 
@@ -179,6 +203,7 @@ func TestRun(t *testing.T) {
 	for _, want := range []string{
 		"missing image aemberskies 100",
 		"missing image massmutation 028",
+		"printing with only mavericks vaultmasters2023 099",
 		"unlabeled houseless kind aemberskies 400",
 	} {
 		if !strings.Contains(got, want) {

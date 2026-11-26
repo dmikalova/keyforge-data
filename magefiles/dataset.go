@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ const (
 	datasetURL    = "https://storage.googleapis.com/mklv-keyforge-cards-public/data/cards.json"
 	datasetFile   = "tmp/cards.json"
 	problemsFile  = "docs/dataset-problems.md"
+	problemsJSON  = "tmp/problems.json"
 	// notifiedFile is the problems file of the last Discord post.
 	notifiedFile = "tmp/dataset-problems.notified.md"
 	repo         = "dmikalova/keyforge-data"
@@ -35,13 +37,31 @@ type Dataset mg.Namespace
 
 // Distill writes tmp/cards.json and docs/dataset-problems.md from ./raw.
 func (Dataset) Distill() error {
-	return kfdata("distill", "-out", datasetFile, "-problems", problemsFile)
+	return kfdata(
+		"distill",
+		"-out",
+		datasetFile,
+		"-problems",
+		problemsFile,
+		"-problems-json",
+		problemsJSON,
+	)
 }
 
-// Publish distills the dataset, uploads it to the public bucket if its
+// Publish distills the dataset, fills missing card images from Master
+// Vault, uploads it to the public bucket if its
 // version changed, and posts changed problems to the maintenance Discord channel.
 func (Dataset) Publish() error {
 	mg.Deps(Dataset.Distill)
+	filled, err := fillImages()
+	if err != nil {
+		return err
+	}
+	if filled > 0 {
+		if err := (Dataset{}).Distill(); err != nil {
+			return err
+		}
+	}
 	local, err := version(datasetFile)
 	if err != nil {
 		return err
@@ -163,4 +183,69 @@ func problemsSummary(body string) string {
 		}
 	}
 	return strings.Join(parts, "\n")
+}
+
+// Images fills the missing card images that the last distillation found.
+func (Dataset) Images() error {
+	_, err := fillImages()
+	return err
+}
+
+// fillImages downloads each missing card image from the Master Vault URL in
+// tmp/problems.json, makes a 300×420 webp, and uploads it with the image
+// path rule. It returns the number of images that it uploaded.
+func fillImages() (int, error) {
+	b, err := os.ReadFile(problemsJSON)
+	if err != nil {
+		return 0, err
+	}
+	var problems []struct {
+		Kind   string `json:"kind"`
+		Set    string `json:"set"`
+		Number string `json:"number"`
+		Detail string `json:"detail"`
+	}
+	if err := json.Unmarshal(b, &problems); err != nil {
+		return 0, err
+	}
+	dir, err := os.MkdirTemp("tmp", "images-")
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _ = os.RemoveAll(dir) }()
+	n := 0
+	for _, p := range problems {
+		if p.Kind != "missing image" || !strings.HasPrefix(p.Detail, "https://") {
+			continue
+		}
+		png := filepath.Join(dir, p.Set+"-"+p.Number+".png")
+		webp := strings.TrimSuffix(png, ".png") + ".webp"
+		if err := sh.Run("curl", "-sfL", "-o", png, p.Detail); err != nil {
+			fmt.Println("download failed:", p.Set, p.Number, err)
+			continue
+		}
+		if err := sh.Run(
+			"cwebp",
+			"-quiet",
+			"-q",
+			"80",
+			"-resize",
+			"300",
+			"420",
+			png,
+			"-o",
+			webp,
+		); err != nil {
+			return n, err
+		}
+		dst := "gs://mklv-keyforge-cards-public/images/cards/" + p.Set + "/" + p.Number + ".webp"
+		if err := sh.Run("gcloud", "storage", "cp",
+			"--cache-control=public, max-age=31536000, immutable",
+			"--content-type=image/webp", webp, dst); err != nil {
+			return n, err
+		}
+		fmt.Println("uploaded", dst)
+		n++
+	}
+	return n, nil
 }
