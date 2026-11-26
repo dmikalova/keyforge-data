@@ -191,8 +191,29 @@ type Dataset struct {
 // relative to.
 const ImageBase = "https://storage.googleapis.com/mklv-keyforge-cards-public/images/cards/"
 
-// DatasetPath is the object path of the dataset in the public bucket.
+// DatasetPath is the object path of the current dataset in the public bucket.
+// It stays until every site reads LatestPath (ADR 0007).
 const DatasetPath = "data/cards.json"
+
+// LatestPath is the object path of the pointer to the current dataset
+// version. Read it, then read the version file that it names.
+const LatestPath = "data/latest.json"
+
+// VersionPath returns the object path of a dataset version file. The file
+// never changes, and a bucket rule deletes it after 90 days.
+func VersionPath(version string) string {
+	return "data/cards/" + version + ".json"
+}
+
+// Latest is the pointer file at LatestPath.
+type Latest struct {
+	Version string `json:"version"`
+	// URL is the public URL of the version file.
+	URL       string    `json:"url"`
+	Generated time.Time `json:"generated"`
+	Cards     int       `json:"cards"`
+	Sets      int       `json:"sets"`
+}
 
 // Mention is a card that another card names in its text or flavor text.
 type Mention struct {

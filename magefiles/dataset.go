@@ -79,10 +79,7 @@ func (Dataset) Publish() error {
 	if remote == local {
 		fmt.Println("dataset", local, "is already published")
 	} else {
-		if err := sh.RunV("gcloud", "storage", "cp", "-Z",
-			"--cache-control=public, max-age=60",
-			"--content-type=application/json",
-			datasetFile, datasetObject); err != nil {
+		if err := uploadVersion(local); err != nil {
 			return err
 		}
 		fmt.Println("published dataset", local, "over", remote)
@@ -291,4 +288,53 @@ func rawRoot() string {
 		return r
 	}
 	return "raw"
+}
+
+// The dataset files of ADR 0007 in the public bucket.
+const (
+	publicBucket = "gs://mklv-keyforge-cards-public/"
+	feedFile     = "tmp/feed.xml"
+	latestFile   = "tmp/latest.json"
+)
+
+// uploadVersion uploads a new dataset version: the version file
+// data/cards/<version>.json, then data/feed.xml, then the pointer
+// data/latest.json, then data/cards.json. A client that reads the pointer
+// always finds the version file. data/cards.json stays until every site
+// reads data/latest.json.
+func uploadVersion(version string) error {
+	// The published dataset and feed give the feed entry its card changes.
+	// A first publish has neither, so remove the copies of a run before.
+	_ = os.Remove("tmp/published.json")
+	_ = os.Remove("tmp/published-feed.xml")
+	_ = sh.Run("gcloud", "storage", "cp", datasetObject, "tmp/published.json")
+	_ = sh.Run("gcloud", "storage", "cp", publicBucket+"data/feed.xml", "tmp/published-feed.xml")
+	if err := kfdata(
+		"feed",
+		"-dataset",
+		datasetFile,
+		"-old",
+		"tmp/published.json",
+		"-old-feed",
+		"tmp/published-feed.xml",
+		"-out-feed",
+		feedFile,
+		"-out-latest",
+		latestFile,
+	); err != nil {
+		return err
+	}
+	for _, u := range []struct{ src, dst, cache, typ string }{
+		{datasetFile, "data/cards/" + version + ".json", "public, max-age=31536000, immutable", "application/json"},
+		{feedFile, "data/feed.xml", "public, max-age=60", "application/atom+xml"},
+		{latestFile, "data/latest.json", "public, max-age=60", "application/json"},
+		{datasetFile, "data/cards.json", "public, max-age=60", "application/json"},
+	} {
+		if err := sh.RunV("gcloud", "storage", "cp", "-Z",
+			"--cache-control="+u.cache, "--content-type="+u.typ,
+			u.src, publicBucket+u.dst); err != nil {
+			return err
+		}
+	}
+	return nil
 }

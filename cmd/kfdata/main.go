@@ -68,6 +68,8 @@ commands:
   check-art [-workers n]                print the card images with a blank art box
   threads <todo|add|rules> ...           list and edit the curated threads of related cards
   overrides lint [-dataset f]            check the override files against the dataset
+  feed [-dataset f] [-old f] [-old-feed f]
+                                        write data/latest.json and data/feed.xml for a new dataset
   distill [-out file] [-problems file] [-overrides dir] [-artists dir]
                                         write the dataset and its problems
   artists-scan [-dataset file] [-ocr bin] [-dir dir] [-cache dir]
@@ -154,6 +156,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return threadsCmd(rest, stdout)
 	case "overrides":
 		return overridesCmd(rest, stdout)
+	case "feed":
+		return feedCmd(rest, stdout)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
 	case "artists-scan":
