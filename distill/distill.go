@@ -64,6 +64,9 @@ type Input struct {
 	// Artists are the artists of the printings, by set slug and collector
 	// number (overrides/artists/<set>.json).
 	Artists map[string]map[string]string
+	// ArtistAliases maps another spelling of an artist to the canonical
+	// name (overrides/artists/aliases.json). It is optional.
+	ArtistAliases map[string]string
 	// DeckSets maps a card object ID to the expansions of the stored decks
 	// that have it. Anomalies use it to find their set.
 	DeckSets map[string][]int
@@ -445,16 +448,41 @@ func (r *run) dataset(cards map[string]*card.Card) card.Dataset {
 			strings.Compare(a.Number, b.Number), strings.Compare(a.Title, b.Title),
 		)
 	})
-	d := card.Dataset{Generated: r.in.Now.UTC(), Sets: ss, Cards: out}
+	d := card.Dataset{
+		Generated: r.in.Now.UTC(), Sets: ss, Cards: out,
+		ArtistAliases: usedAliases(r.in.ArtistAliases, out),
+	}
 	b, err := json.Marshal(struct {
-		Sets  []sets.Set
-		Cards []card.Card
-	}{ss, out}, json.Deterministic(true))
+		Sets    []sets.Set
+		Cards   []card.Card
+		Aliases map[string]string
+	}{ss, out, d.ArtistAliases}, json.Deterministic(true))
 	if err == nil {
 		sum := sha256.Sum256(b)
 		d.Version = hex.EncodeToString(sum[:6])
 	}
 	return d
+}
+
+// usedAliases returns the aliases whose canonical name is the artist of a
+// printing, or nil.
+func usedAliases(aliases map[string]string, cards []card.Card) map[string]string {
+	used := map[string]bool{}
+	for _, c := range cards {
+		for _, p := range c.Printings {
+			used[p.Artist] = true
+		}
+	}
+	var out map[string]string
+	for variant, name := range aliases {
+		if used[name] && variant != name {
+			if out == nil {
+				out = map[string]string{}
+			}
+			out[variant] = name
+		}
+	}
+	return out
 }
 
 // compareCards is the default order: house, then name. Cards without a

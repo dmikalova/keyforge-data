@@ -1,6 +1,7 @@
 package distill
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -326,5 +327,20 @@ func TestSlug(t *testing.T) {
 		if got := Slug(in); got != want {
 			t.Errorf("Slug(%q) = %q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestUsedAliases(t *testing.T) {
+	cards := []card.Card{{Printings: []card.Printing{{Artist: "Mateusz Mizak"}}}}
+	got := usedAliases(map[string]string{
+		"Matthew Mizak": "Mateusz Mizak",
+		"Jorge Ramos":   "Jorge Ramos Márquez",
+	}, cards)
+	want := map[string]string{"Matthew Mizak": "Mateusz Mizak"}
+	if !maps.Equal(got, want) {
+		t.Errorf("usedAliases = %v, want %v", got, want)
+	}
+	if got := usedAliases(nil, cards); got != nil {
+		t.Errorf("usedAliases(nil) = %v, want nil", got)
 	}
 }

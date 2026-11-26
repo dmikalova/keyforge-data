@@ -153,6 +153,10 @@ type Dataset struct {
 	Sets []sets.Set `json:"sets"`
 	// Cards are the cards in the default sort order.
 	Cards []Card `json:"cards"`
+	// ArtistAliases maps another spelling of an artist to the artist name
+	// that the printings use, for example "Matthew Mizak" to "Mateusz
+	// Mizak". Search can match the other spelling.
+	ArtistAliases map[string]string `json:"artistAliases,omitempty"`
 }
 
 // ImageBase is the public URL that Printing.Image and Localization.Image are

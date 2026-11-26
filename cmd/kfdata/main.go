@@ -334,13 +334,14 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 		return err
 	}
 	d, problems := distill.Run(distill.Input{
-		Cards:     cards,
-		Images:    images,
-		Overrides: overrides,
-		Artists:   printingArtists,
-		Decks:     decks,
-		DeckSets:  deckSets,
-		Now:       time.Now(),
+		Cards:         cards,
+		Images:        images,
+		Overrides:     overrides,
+		Artists:       printingArtists,
+		ArtistAliases: aliases,
+		Decks:         decks,
+		DeckSets:      deckSets,
+		Now:           time.Now(),
 	})
 	b, err := json.Marshal(d, json.Deterministic(true))
 	if err != nil {

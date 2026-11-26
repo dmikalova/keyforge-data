@@ -314,6 +314,10 @@ func Load(dir string) (map[string]map[string]string, error) {
 	}
 	out := map[string]map[string]string{}
 	for _, f := range files {
+		// The aliases file is not a set.
+		if filepath.Base(f) == AliasesFile {
+			continue
+		}
 		b, err := os.ReadFile(f)
 		if err != nil {
 			return nil, err

@@ -2,6 +2,8 @@ package artists
 
 import (
 	"maps"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -141,5 +143,23 @@ func TestSaveKnown(t *testing.T) {
 		if got[i] != want[i] {
 			t.Errorf("LoadKnown()[%d] = %q, want %q", i, got[i], want[i])
 		}
+	}
+}
+
+func TestLoadSkipsAliases(t *testing.T) {
+	dir := t.TempDir()
+	if err := Save(dir, "worldscollide", map[string]string{"001": "Mateusz Mizak"}); err != nil {
+		t.Fatal(err)
+	}
+	b := []byte(`{"Matthew Mizak": "Mateusz Mizak"}`)
+	if err := os.WriteFile(filepath.Join(dir, AliasesFile), b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	m, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := m["aliases"]; ok || len(m) != 1 {
+		t.Errorf("Load = %v, want only worldscollide", m)
 	}
 }
