@@ -94,3 +94,5 @@ tmp/
 # This project's additions, from ignore.git in mklv.config.json. Edit them there.
 /bin/
 /tmp/
+/raw/
+/assets/icons/_refs/
