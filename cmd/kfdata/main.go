@@ -1,0 +1,233 @@
+// Command kfdata crawls Master Vault into the raw store and computes the
+// cover decks.
+//
+// Usage:
+//
+//	kfdata [-root dir] crawl-sets [-crawl id] <set...|all>
+//	kfdata [-root dir] cover -crawl id <set...|all>
+//	kfdata [-root dir] refresh [-crawl id] [-locales en,de,...] <set...|all>
+//	kfdata [-root dir] status [-crawl id]
+//
+// crawl-sets scans the deck feed of each set and keeps the decks that add a
+// card. cover writes sources/mv/cover/<set>.json from a crawl-sets crawl.
+// refresh fetches the cover decks of each set in each language. A stopped
+// crawl continues when you run the same command with the same crawl ID.
+package main
+
+import (
+	"context"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"log/slog"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"strings"
+	"syscall"
+	"time"
+
+	"github.com/dmikalova/keyforge-data/crawl"
+	"github.com/dmikalova/keyforge-data/mv"
+	"github.com/dmikalova/keyforge-data/raw"
+	"github.com/dmikalova/keyforge-data/sets"
+)
+
+// coverDir is where the cover files go, relative to the repository root.
+const coverDir = "sources/mv/cover"
+
+const usage = `usage: kfdata [-root dir] <command> [flags] [args]
+
+commands:
+  crawl-sets [-crawl id] <set...|all>   scan the deck feed of each set
+  cover -crawl id <set...|all>          write the cover decks of each set
+  refresh [-crawl id] [-locales l,...] <set...|all>
+                                        fetch the cover decks in each language
+  status [-crawl id]                    print the state of the crawls
+`
+
+func main() {
+	if err := runWithSignals(os.Args[1:]); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "kfdata:", err)
+		os.Exit(1)
+	}
+}
+
+// runWithSignals runs the command and cancels it on an interrupt, so a crawl
+// saves its state before it stops.
+func runWithSignals(args []string) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return run(ctx, args, os.Stdout, os.Stderr)
+}
+
+func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+	fs := flag.NewFlagSet("kfdata", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	root := fs.String("root", "raw", "raw store directory")
+	fs.Usage = func() { _, _ = io.WriteString(stderr, usage) }
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() == 0 {
+		fs.Usage()
+		return errors.New("no command")
+	}
+	log := slog.New(slog.NewTextHandler(stderr, nil))
+	store, err := raw.Open(*root)
+	if err != nil {
+		return err
+	}
+	cmd, rest := fs.Arg(0), fs.Args()[1:]
+	switch cmd {
+	case "crawl-sets":
+		return crawlSets(ctx, log, store, rest)
+	case "cover":
+		return cover(log, store, rest)
+	case "refresh":
+		return refresh(ctx, log, store, rest)
+	case "status":
+		return status(store, rest, stdout)
+	default:
+		fs.Usage()
+		return fmt.Errorf("unknown command %q", cmd)
+	}
+}
+
+func crawlSets(ctx context.Context, log *slog.Logger, store *raw.Store, args []string) error {
+	fs := flag.NewFlagSet("crawl-sets", flag.ContinueOnError)
+	id := fs.String("crawl", "sets-"+time.Now().UTC().Format("20060102"), "crawl ID")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	targets, err := sets.Select(fs.Args())
+	if err != nil {
+		return err
+	}
+	c, err := store.OpenCrawl(*id, crawl.ModeFeedSets)
+	if err != nil {
+		return err
+	}
+	log.Info("crawl", "id", *id, "dir", c.Dir())
+	runErr := crawl.FeedSets(ctx, log, mv.New(log), c, targets, crawl.DefaultStop)
+	state := crawl.FeedSetsState{}
+	if err := c.State(&state); err != nil {
+		return errors.Join(runErr, err)
+	}
+	done := runErr == nil
+	for _, s := range targets {
+		if st := state[s.Slug]; st == nil || !st.Done {
+			done = false
+		}
+	}
+	return errors.Join(runErr, c.Close(state, done))
+}
+
+func cover(log *slog.Logger, store *raw.Store, args []string) error {
+	fs := flag.NewFlagSet("cover", flag.ContinueOnError)
+	id := fs.String("crawl", "", "crawl-sets crawl ID")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *id == "" {
+		return errors.New("cover needs -crawl")
+	}
+	targets, err := sets.Select(fs.Args())
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(coverDir, 0o750); err != nil {
+		return err
+	}
+	for _, s := range targets {
+		cv, err := crawl.ComputeCover(store, *id, s)
+		if err != nil {
+			return fmt.Errorf("cover %s: %w", s.Slug, err)
+		}
+		path := filepath.Join(coverDir, s.Slug+".json")
+		b, err := json.Marshal(cv, jsontext.WithIndent("  "))
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(path, append(b, '\n'), 0o600); err != nil {
+			return err
+		}
+		log.Info("cover", "set", s.Slug, "cards", cv.Cards, "decks", len(cv.Decks), "file", path)
+	}
+	return nil
+}
+
+func refresh(ctx context.Context, log *slog.Logger, store *raw.Store, args []string) error {
+	fs := flag.NewFlagSet("refresh", flag.ContinueOnError)
+	id := fs.String("crawl", "refresh-"+time.Now().UTC().Format("20060102"), "crawl ID")
+	locales := fs.String("locales", strings.Join(mv.LocaleOrder, ","), "languages")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	targets, err := sets.Select(fs.Args())
+	if err != nil {
+		return err
+	}
+	var deckIDs []string
+	for _, s := range targets {
+		b, err := os.ReadFile(filepath.Join(coverDir, s.Slug+".json"))
+		if err != nil {
+			return fmt.Errorf("read the cover of %s (run cover first): %w", s.Slug, err)
+		}
+		var cv crawl.Cover
+		if err := json.Unmarshal(b, &cv); err != nil {
+			return err
+		}
+		deckIDs = append(deckIDs, cv.Decks...)
+	}
+	c, err := store.OpenCrawl(*id, crawl.ModeRefresh)
+	if err != nil {
+		return err
+	}
+	log.Info("refresh", "id", *id, "decks", len(deckIDs), "locales", *locales)
+	return crawl.Refresh(ctx, log, mv.New(log), c, deckIDs, strings.Split(*locales, ","))
+}
+
+func status(store *raw.Store, args []string, stdout io.Writer) error {
+	fs := flag.NewFlagSet("status", flag.ContinueOnError)
+	id := fs.String("crawl", "", "crawl ID; empty lists every crawl")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	ids := []string{*id}
+	if *id == "" {
+		var err error
+		if ids, err = store.Crawls(); err != nil {
+			return err
+		}
+	}
+	for _, cid := range ids {
+		b, err := os.ReadFile(filepath.Join(store.Root, "crawls", cid, "manifest.json"))
+		if err != nil {
+			return err
+		}
+		var m raw.Manifest
+		if err := json.Unmarshal(b, &m); err != nil {
+			return err
+		}
+		_, _ = fmt.Fprintf(stdout, "%s  mode=%s decks=%d shards=%d done=%t updated=%s\n",
+			m.ID, m.Mode, m.Decks, len(m.Shards), m.Done, m.Updated.Format(time.RFC3339))
+		if m.Mode != crawl.ModeFeedSets {
+			continue
+		}
+		var st crawl.FeedSetsState
+		if err := json.Unmarshal(m.State, &st); err != nil {
+			return err
+		}
+		for _, s := range sets.All {
+			if x := st[s.Slug]; x != nil {
+				_, _ = fmt.Fprintf(stdout, "  %-20s page=%-5d kept=%-4d cards=%-4d done=%t %s\n",
+					s.Slug, x.Page, x.Kept, len(x.Seen), x.Done, x.Reason)
+			}
+		}
+	}
+	return nil
+}
