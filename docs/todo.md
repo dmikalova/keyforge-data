@@ -90,14 +90,16 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   and scaled to one card tile.
 - Upload with the existing path rule and the immutable cache header.
 
-## Phase 6: Move keyfordle to keyforge-data
+## Phase 6: Move keyfordle and the amasser to keyforge-data
 
+- Move the amasser to keyforge-data and the data.keyforge.cards files.
 - Replace `internal/cards` and the catalog build with keyforge-data.
 - Keep the `card_name` column. Add a test: every name in the old pool resolves
   in keyforge-data.
 
 ## Phase 7: Move vex to keyforge-data
 
+- On hold: the user wants to wait with vex.
 - Use the keyforge-data types and data.
 - Keep the simulator data in vex.
 - Delete `internal/cards/provenance` and the import code in
@@ -108,17 +110,37 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 
 - Build search.keyforge.cards. The plan is in the keyforge-card-search repo.
 
-## Later
+## Phase 9: data.keyforge.cards (ADR 0006, ADR 0007)
 
-- Deck rules: `mage threads:rules` imports the rules that link cards
-  (docs/sources.md). Run it again after each crawl that adds a set.
-- Deck rules about one card: show the `copies`, `house`, `houseswap`,
-  `anomaly`, and `special` rules of the Archon Arcana sheet on the card
-  pages.
-- Artist hints: use the Archon Arcana artist data (docs/sources.md) as hints
-  in `artists:scan`, so that a new set needs fewer review answers.
-- Full deck crawl and deck database (ADR 0003).
-- Images for the other locales.
-- Variant groups, for the card pages.
+- Make data.keyforge.cards the master crawler. All Master Vault calls go
+  through its one paced client. The Mac does not crawl.
+- After the card crawl is complete, change the crawler to a deck crawler that
+  runs on the data.keyforge.cards container (ADR 0003).
+- Done: `mage dataset:publish` writes the versioned dataset files
+  (`data/cards/<version>.json`), the pointer (`data/latest.json`), and the
+  Atom feed (`data/feed.xml`).
+- Add the bucket lifecycle rule in infrastructure: delete
+  `data/cards/<version>.json` after 90 days.
+- Move each site to `data/latest.json`. Then stop writing `data/cards.json`.
+- Document the endpoints with the standard that all repos use. Add an MCP
+  server so that AI clients can search cards (ADR 0007).
 - Discord card bot: a `/card` slash command and `[[Card Name]]` in messages
   (ADR 0007).
+
+## Later
+
+- Deck rules: `mage threads:rules` imports the rules that link cards and the
+  notes about one card (docs/sources.md). Run it again after each crawl that
+  adds a set.
+- Artist hints: use the Archon Arcana artist data (docs/sources.md) as hints
+  in `artists:scan`, so that a new set needs fewer review answers.
+- Artist scan: run it for each set that the crawl adds, so that the new
+  printings get artists.
+- "Seen in N decks" on the card view, and the cards that a card is often
+  with. This needs the deck crawl.
+- A full breakdown of each card and its mechanics. This needs vex first.
+- Localization: translate the whole search page, with a language button
+  ("en") next to the download button. Use the official translated terms.
+  This needs the crawl of the other languages.
+- Images for the other locales.
+- Print proxies of the results. This is only an idea. It is not planned.
