@@ -34,7 +34,7 @@ type Card struct {
 	Type string `json:"type"`
 	// Traits are the traits in lowercase.
 	Traits []string `json:"traits,omitempty"`
-	// Text is the English card text with icons spelled as words.
+	// Text is the English card text with icons spelled as words ("Gain 1 Æmber").
 	Text string `json:"text,omitempty"`
 	// Power is the power of a creature.
 	Power *Power `json:"power,omitempty"`

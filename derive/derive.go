@@ -4,6 +4,7 @@
 package derive
 
 import (
+	"cmp"
 	"regexp"
 	"slices"
 	"strconv"
@@ -257,4 +258,66 @@ func CardAbilities(text string) []string {
 		}
 	}
 	return out
+}
+
+// iconWords are the words for the icons in card text.
+var iconWords = map[string]string{
+	IconAember: "Æmber", IconDamage: "damage", IconDraw: "draw", IconCapture: "capture",
+	IconDiscard: "discard",
+}
+
+// amountRe finds an amount with an icon: "1A", "2<D>", "X<A>".
+var amountRe = regexp.MustCompile(`\b(\d+|X) ?(?:<([AD])>|([AD]))(\W|$)`)
+
+// tokenRe finds an icon token without an amount: "<A>".
+var tokenRe = regexp.MustCompile(`<([ACDR])>`)
+
+// Display returns the card text for people: line breaks as newlines, and
+// icons as words. "Gain 1A" becomes "Gain 1 Æmber", "Deal 2<D>" becomes
+// "Deal 2 damage", and the icon-font glyphs become their names. Keywords and
+// Enhance read the text as Master Vault sends it, not this text.
+func Display(s string) string {
+	s = strings.TrimSpace(strings.NewReplacer("\u000b", "\n", "\r\n", "\n", "\r", "\n").Replace(s))
+	s = amountRe.ReplaceAllStringFunc(s, func(m string) string {
+		p := amountRe.FindStringSubmatch(m)
+		icon := cmp.Or(p[2], p[3])
+		return p[1] + " " + iconWords[markup[icon]] + p[4]
+	})
+	s = tokenRe.ReplaceAllStringFunc(s, func(m string) string {
+		return iconWords[markup[m[1:2]]]
+	})
+	var b strings.Builder
+	rs := []rune(s)
+	prevIcon := false
+	for i := 0; i < len(rs); i++ {
+		r := rs[i]
+		word := ""
+		switch {
+		case r == captureFirst && i+1 < len(rs) && rs[i+1] == captureSecond:
+			word = iconWords[IconCapture]
+			i++
+		case glyphs[r] != "":
+			word = cmp.Or(iconWords[glyphs[r]], houseWord(glyphs[r]))
+		}
+		if word == "" {
+			b.WriteRune(r)
+			prevIcon = false
+			continue
+		}
+		if prevIcon {
+			b.WriteByte(' ')
+		}
+		b.WriteString(word)
+		prevIcon = true
+	}
+	return b.String()
+}
+
+// houseWord returns a house icon name as a word: "staralliance" becomes
+// "Star Alliance".
+func houseWord(name string) string {
+	if name == "staralliance" {
+		return "Star Alliance"
+	}
+	return strings.ToUpper(name[:1]) + name[1:]
 }

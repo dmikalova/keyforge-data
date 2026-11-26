@@ -221,7 +221,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	c.House = house
 	c.Type = typ
 	c.Traits = traits(base.Traits)
-	c.Text = text(base.Text)
+	c.Text = derive.Display(base.Text)
 	c.Aember = base.Amber
 	c.Keywords = nilIfEmpty(derive.CardKeywords(base.Text))
 	c.Enhance = derive.Enhance(base.Text)
@@ -236,7 +236,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	p := card.Printing{
 		Set:     set.Slug,
 		Number:  k.number,
-		Rarity:  base.Rarity,
+		Rarity:  rarity(base),
 		Anomaly: base.IsAnomaly,
 		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
 	}
@@ -483,9 +483,18 @@ func traits(s *string) []string {
 	return out
 }
 
-func text(s string) string {
-	s = strings.NewReplacer("\u000b", "\n", "\r\n", "\n", "\r", "\n").Replace(s)
-	return strings.TrimSpace(s)
+// rarity returns the printed rarity. Master Vault calls the rarity of the
+// fixed cards of a deck "FIXED": the Horsemen, the Mega creatures, Velum,
+// the anomalies. The cards print the special rarity, and the anomalies
+// print their own anomaly rarity.
+func rarity(c mvCard) string {
+	switch {
+	case c.Rarity != "FIXED":
+		return c.Rarity
+	case c.IsAnomaly:
+		return "Anomaly"
+	}
+	return "Special"
 }
 
 func number(v jsontext.Value) (int, bool) {

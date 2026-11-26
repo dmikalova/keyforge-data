@@ -110,6 +110,10 @@ func TestRun(t *testing.T) {
 				`"card_title":"Lonely Maverick","house":"Dis","card_type":"Action","rarity":"Rare","card_number":"099","expansion":609,"is_maverick":true`,
 			),
 			obj(
+				"h1",
+				`"card_title":"Horseman of Famine","house":"Sanctum","card_type":"Creature","card_text":"Play/Fight/Reap: Gain 1A.","power":"3","rarity":"FIXED","card_number":"247","expansion":341`,
+			),
+			obj(
 				"b1",
 				`"card_title":"ANT1-10NY","house":"Logos","card_type":"Creature","power":"3","rarity":"Rare","card_number":"100","expansion":800`,
 			),
@@ -150,6 +154,9 @@ func TestRun(t *testing.T) {
 	}
 
 	gf := find(t, d, "ghostform-none")
+	if gf.Printings[0].Rarity != "Anomaly" {
+		t.Errorf("anomaly rarity: %q", gf.Printings[0].Rarity)
+	}
 	if !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
 		gf.Printings[0].Set != "worldscollide" || gf.Printings[0].Image != "worldscollide/A01.webp" {
 		t.Errorf("anomaly: %+v", gf)
@@ -193,6 +200,11 @@ func TestRun(t *testing.T) {
 	if len(eo.Printings) != 2 || eo.Printings[1].Set != "vaultmasters2023" ||
 		len(eo.Printings[1].MVIDs) != 2 {
 		t.Errorf("exchange officer: %+v", eo.Printings)
+	}
+
+	hf := find(t, d, "horsemanoffamine-sanctum")
+	if hf.Printings[0].Rarity != "Special" || hf.Text != "Play/Fight/Reap: Gain 1 Æmber." {
+		t.Errorf("horseman: %q %q", hf.Printings[0].Rarity, hf.Text)
 	}
 
 	// Reference cards sort last, after the cards without a house.
