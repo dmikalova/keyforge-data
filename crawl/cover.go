@@ -18,7 +18,7 @@ type Cover struct {
 	Expansion int `json:"expansion"`
 	// Crawl is the ID of the crawl that the cover comes from.
 	Crawl string `json:"crawl"`
-	// Cards is the number of target card objects that the decks contain.
+	// Cards is the number of target printings (TargetKey) that the decks contain.
 	Cards int `json:"cards"`
 	// Decks are the deck IDs, in the order that the greedy cover chose them.
 	Decks []string `json:"decks"`
@@ -104,7 +104,7 @@ func ComputeCover(store *raw.Store, crawlID string, s sets.Set) (Cover, error) {
 				return Cover{}, fmt.Errorf("deck %s: card %s is not in the store", d.ID, c)
 			}
 			if IsTarget(h) {
-				dc.Cards = append(dc.Cards, c)
+				dc.Cards = append(dc.Cards, TargetKey(h))
 			}
 		}
 		decks = append(decks, dc)

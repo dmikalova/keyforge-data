@@ -59,19 +59,22 @@ func TestHasGap(t *testing.T) {
 	}
 }
 
-func TestKeepNewSkipsMavericksAndSeenCards(t *testing.T) {
+func TestKeepNewSkipsMavericksSeenCardsAndCopies(t *testing.T) {
 	heads := map[string]mv.CardHead{
 		"c1": {ID: "c1", Expansion: 341, CardNumber: "001"},
 		"c2": {ID: "c2", Expansion: 341, CardNumber: "002"},
 		"m1": {ID: "m1", Expansion: 341, CardNumber: "003", IsMaverick: true},
 		"l1": {ID: "l1", Expansion: 435, CardNumber: "010"},
+		// e1 is an enhanced copy of c2: a new object of the same printing.
+		"e1": {ID: "e1", Expansion: 341, CardNumber: "002"},
 	}
-	seen := map[string]bool{"c1": true}
+	seen := map[string]bool{TargetKey(heads["c1"]): true}
 	numbers := map[string]bool{}
 	decks := []mv.Deck{
 		{ID: "d1", CardIDs: []string{"c1", "m1"}},
 		{ID: "d2", CardIDs: []string{"c1", "c2", "c2"}},
 		{ID: "d3", CardIDs: []string{"l1"}},
+		{ID: "d4", CardIDs: []string{"e1"}},
 	}
 	kept, added := keepNew(decks, heads, seen, numbers, 341)
 	var ids []string

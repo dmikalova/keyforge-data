@@ -43,6 +43,8 @@ type CardHead struct {
 	ID         string `json:"id"`
 	Expansion  int    `json:"expansion"`
 	CardNumber string `json:"card_number"`
+	Title      string `json:"card_title"`
+	House      string `json:"house"`
 	IsMaverick bool   `json:"is_maverick"`
 }
 

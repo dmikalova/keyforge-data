@@ -46,7 +46,7 @@ type SetState struct {
 	Count int `json:"count"`
 	// Kept is the number of decks kept.
 	Kept int `json:"kept"`
-	// Seen are the target card IDs seen, sorted.
+	// Seen are the target printings seen (TargetKey), sorted.
 	Seen []string `json:"seen"`
 	// Numbers are the card numbers of the set's own target cards.
 	Numbers []string `json:"numbers"`
@@ -64,6 +64,14 @@ type FeedSetsState map[string]*SetState
 // card object is a target, so the data shows what Master Vault sends.
 func IsTarget(c mv.CardHead) bool {
 	return !c.IsMaverick
+}
+
+// TargetKey is the printing of a target card object: the expansion, the
+// number, the title, and the house. Master Vault makes a new card object
+// for each enhanced copy, so object IDs never stop being new in a set with
+// Enhance. The scan and the cover count printings, not objects.
+func TargetKey(c mv.CardHead) string {
+	return fmt.Sprintf("%d/%s/%s/%s", c.Expansion, c.CardNumber, c.Title, c.House)
 }
 
 // FeedSets scans the deck feed of each set, oldest decks first. It stores
@@ -186,20 +194,21 @@ func keepNew(
 	var kept []mv.Deck
 	added := 0
 	for _, d := range decks {
-		var fresh []string
+		var fresh, freshIDs []string
 		for _, id := range d.CardIDs {
 			h, ok := heads[id]
-			if !ok || !IsTarget(h) || seen[id] || slices.Contains(fresh, id) {
+			if !ok || !IsTarget(h) || seen[TargetKey(h)] || slices.Contains(fresh, TargetKey(h)) {
 				continue
 			}
-			fresh = append(fresh, id)
+			fresh = append(fresh, TargetKey(h))
+			freshIDs = append(freshIDs, id)
 		}
 		if len(fresh) == 0 {
 			continue
 		}
 		kept = append(kept, d)
-		for _, id := range fresh {
-			seen[id] = true
+		for i, id := range freshIDs {
+			seen[fresh[i]] = true
 			if h := heads[id]; h.Expansion == expansion {
 				numbers[h.CardNumber] = true
 			}
