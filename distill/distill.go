@@ -141,7 +141,7 @@ const (
 	FlagGigantic      = "gigantic"
 	FlagEvilTwin      = "eviltwin"
 	// FlagHouseless marks every card without a house that is not a reference
-	// card: anomalies, multi-house cards, and the houseless kinds.
+	// card: anomalies and the houseless kinds.
 	FlagHouseless = "houseless"
 )
 
@@ -202,7 +202,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	}
 	house, kindFlags := r.house(set, base, objs, ov)
 	flags = append(flags, kindFlags...)
-	group := houselessGroup(house, base, objs, kindFlags)
+	group := houselessGroup(house, base, kindFlags)
 	typ := strings.ToLower(base.Type)
 	if strings.Contains(typ, "token") {
 		typ = "creature"
@@ -742,10 +742,10 @@ func (r *run) printingImage(
 }
 
 // houselessGroup returns the sort group of a card without a house: the
-// reference kind (archonpower, prophecy, thetide), "anomaly", "multihouse"
-// for a card that Master Vault prints in the house of the deck, or the
-// houseless kind label.
-func houselessGroup(house string, base mvCard, objs []mvCard, kindFlags []string) string {
+// reference kind (archonpower, prophecy, thetide), "anomaly", or the houseless
+// kind label. A card that Master Vault prints in the house of the deck, such
+// as Dark Æmber Vault, is houseless.
+func houselessGroup(house string, base mvCard, kindFlags []string) string {
 	if house != "" {
 		return ""
 	}
@@ -754,13 +754,6 @@ func houselessGroup(house string, base mvCard, objs []mvCard, kindFlags []string
 	}
 	if base.IsAnomaly {
 		return "anomaly"
-	}
-	houses := map[string]bool{}
-	for _, o := range objs {
-		houses[o.House] = true
-	}
-	if len(houses) > 1 {
-		return "multihouse"
 	}
 	for _, f := range kindFlags {
 		if f != FlagHouseless {

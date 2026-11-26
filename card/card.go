@@ -182,6 +182,6 @@ type Related struct {
 // HouselessGroups is the default sort order of the cards without a house,
 // after the cards with a house. Reference cards are last.
 var HouselessGroups = []string{
-	"anomaly", "multihouse", "skybeast", "revenant", "mercenary", "houseless",
+	"anomaly", "skybeast", "revenant", "mercenary", "houseless",
 	"archonpower", "prophecy", "thetide", "reference",
 }
