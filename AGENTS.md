@@ -12,14 +12,17 @@ Conventions for this repository. The vocabulary is in
 
 ## Package layout
 
-| Path         | Role                                                         |
-| ------------ | ------------------------------------------------------------ |
-| `sets`       | The set table with the Master Vault expansion IDs            |
-| `mv`         | The paced Master Vault client and the response parser        |
-| `raw`        | The raw store: deck shards, linked objects, crawl manifests  |
-| `crawl`      | The crawl modes (feed scan, refresh) and the greedy cover    |
-| `cmd/kfdata` | The CLI that the `raw:*` mage targets run                    |
-| `sources/mv` | Committed crawl outputs, for example the cover deck lists    |
+| Path                | Role                                                        |
+| ------------------- | ----------------------------------------------------------- |
+| `sets`              | The set table with the Master Vault expansion IDs           |
+| `mv`                | The paced Master Vault client and the response parser       |
+| `raw`               | The raw store: deck shards, linked objects, crawl manifests |
+| `crawl`             | The crawl modes (feed scan, refresh) and the greedy cover   |
+| `cmd/kfdata`        | The CLI that the `raw:*` mage targets run                   |
+| `sources/mv`        | Committed crawl outputs, for example the cover deck lists   |
+| `artists`           | The match of OCR readings to the known artists              |
+| `tools/artistocr`   | The Swift OCR tool (macOS Vision) for the artist line       |
+| `overrides/artists` | The known artists and the artist of each printing           |
 
 ## Rules
 

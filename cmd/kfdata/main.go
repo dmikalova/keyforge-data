@@ -38,6 +38,7 @@ import (
 
 	_ "golang.org/x/image/webp"
 
+	"github.com/dmikalova/keyforge-data/artists"
 	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/crawl"
 	"github.com/dmikalova/keyforge-data/distill"
@@ -66,8 +67,12 @@ commands:
                                         put another printing's art under a blank image
   check-art [-workers n]                print the card images with a blank art box
   threads <todo|add> ...                 list and edit the curated threads of related cards
-  distill [-out file] [-problems file] [-overrides dir]
+  distill [-out file] [-problems file] [-overrides dir] [-artists dir]
                                         write the dataset and its problems
+  artists-scan [-dataset file] [-ocr bin] [-dir dir] [-cache dir]
+                                        OCR the artist of each printing without one
+  artists-review [-show auto|kitty|inline|open|none] [-dir dir] [-cache dir]
+                                        ask for the artists that the scan was not sure of
 `
 
 func report(store *raw.Store, args []string) error {
@@ -148,6 +153,10 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return threadsCmd(rest, stdout)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
+	case "artists-scan":
+		return artistsScan(ctx, rest, stdout)
+	case "artists-review":
+		return artistsReview(rest, os.Stdin, stdout)
 	default:
 		fs.Usage()
 		return fmt.Errorf("unknown command %q", cmd)
@@ -295,7 +304,12 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	problemsOut := fs.String("problems", "docs/dataset-problems.md", "problems file")
 	problemsJSON := fs.String("problems-json", "tmp/problems.json", "problems file as JSON")
 	overridesDir := fs.String("overrides", "overrides", "overrides directory")
+	artistsDir := fs.String("artists", "overrides/artists", "artists directory")
 	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	printingArtists, err := artists.Load(*artistsDir)
+	if err != nil {
 		return err
 	}
 	cards, err := distill.LoadCards(store)
@@ -318,6 +332,7 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 		Cards:     cards,
 		Images:    images,
 		Overrides: overrides,
+		Artists:   printingArtists,
 		Decks:     decks,
 		DeckSets:  deckSets,
 		Now:       time.Now(),

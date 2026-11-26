@@ -61,6 +61,9 @@ type Input struct {
 	Images []string
 	// Overrides are the curated corrections, by set slug.
 	Overrides map[string]Override
+	// Artists are the artists of the printings, by set slug and collector
+	// number (overrides/artists/<set>.json).
+	Artists map[string]map[string]string
 	// DeckSets maps a card object ID to the expansions of the stored decks
 	// that have it. Anomalies use it to find their set.
 	DeckSets map[string][]int
@@ -276,6 +279,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Rarity:  rarity(base),
 		Anomaly: base.IsAnomaly,
 		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
+		Artist:  r.in.Artists[set.Slug][k.number],
 	}
 	if base.Flavor != nil {
 		p.Flavor = derive.Flavor(*base.Flavor)

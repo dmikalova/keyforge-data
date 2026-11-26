@@ -111,6 +111,15 @@ total and per icon type. Distillation derives it from the card text.
 A rules keyword in the card text (Elusive, Assault 2, Deploy …). Distillation
 derives it from the card text.
 
+**Artist**:
+The artist name that a printing prints at the bottom left. Master Vault does
+not send it. An OCR scan reads it from the card image and matches it to the
+known artists. The user answers the matches that are not sure.
+
+**Known artists**:
+The list of artist names that the scan can match. The user adds a name in the
+review.
+
 **Variant**:
 The printed rarity that Master Vault gives to house variants. A variant group
 links the members of one variant family.
