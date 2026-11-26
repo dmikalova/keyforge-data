@@ -22,11 +22,9 @@ const (
 	datasetURL    = "https://storage.googleapis.com/mklv-keyforge-cards-public/data/cards.json"
 	datasetFile   = "tmp/cards.json"
 	problemsFile  = "docs/dataset-problems.md"
-	// problemsIssue is the title of the GitHub issue that lists the dataset
-	// problems. A change in the problems adds a comment, so the user gets a
-	// notification.
-	problemsIssue = "Dataset problems"
 	repo          = "dmikalova/keyforge-data"
+	// discordSecrets holds the maintenance channel webhook.
+	discordSecrets = "../infrastructure/secrets/discord.sops.json"
 )
 
 // Dataset holds the targets that make and publish the card dataset.
@@ -38,7 +36,7 @@ func (Dataset) Distill() error {
 }
 
 // Publish distills the dataset, uploads it to the public bucket if its
-// version changed, and updates the "Dataset problems" GitHub issue.
+// version changed, and posts changed problems to the maintenance Discord channel.
 func (Dataset) Publish() error {
 	mg.Deps(Dataset.Distill)
 	local, err := version(datasetFile)
@@ -56,7 +54,7 @@ func (Dataset) Publish() error {
 		}
 		fmt.Println("published dataset", local, "over", remote)
 	}
-	return updateProblemsIssue()
+	return notifyProblems()
 }
 
 func version(path string) (string, error) {
@@ -93,71 +91,61 @@ func publishedVersion() string {
 	return d.Version
 }
 
-// gh runs the GitHub CLI with the keyring login. The GITHUB_TOKEN in the
-// environment is not valid for this user.
-func gh(args ...string) (string, error) {
-	return sh.OutputWith(map[string]string{"GITHUB_TOKEN": ""}, "gh", args...)
-}
-
-// updateProblemsIssue makes the issue body the problems file. If the
-// problems changed, it adds a comment with the new summary line, so the user
-// gets a notification. With no problems, it closes the issue.
-func updateProblemsIssue() error {
+// notifyProblems posts the problems summary to the maintenance Discord
+// channel when the problems differ from the committed problems file. Commit
+// the problems file after a publish, so the next publish compares against
+// it.
+func notifyProblems() error {
 	body, err := os.ReadFile(problemsFile)
 	if err != nil {
 		return err
 	}
-	number, err := gh("issue", "list", "-R", repo, "--state", "all", "--search",
-		"in:title \""+problemsIssue+"\"", "--json", "number", "--jq", ".[0].number // empty")
+	old, err := sh.Output("git", "show", "HEAD:"+problemsFile)
 	if err != nil {
-		return err
+		old = ""
 	}
-	summary := problemsSummary(string(body))
-	clean := strings.Contains(summary, "Problems: 0.")
-	if number == "" {
-		if clean {
-			return nil
-		}
-		return sh.RunWith(
-			map[string]string{"GITHUB_TOKEN": ""},
-			"gh",
-			"issue",
-			"create",
-			"-R",
-			repo,
-			"--title",
-			problemsIssue,
-			"--body-file",
-			problemsFile,
-			"--assignee",
-			"dmikalova",
-		)
-	}
-	old, err := gh("issue", "view", number, "-R", repo, "--json", "body", "--jq", ".body")
-	if err != nil {
-		return err
-	}
-	if strings.TrimSpace(old) == string(bytes.TrimSpace(body)) {
+	if withoutVersion(old) == withoutVersion(string(body)) {
+		fmt.Println("the dataset problems did not change")
 		return nil
 	}
-	if _, err := gh("issue", "edit", number, "-R", repo, "--body-file", problemsFile); err != nil {
-		return err
-	}
-	if clean {
-		_, err = gh("issue", "close", number, "-R", repo, "--comment", summary)
-		return err
-	}
-	state, err := gh("issue", "view", number, "-R", repo, "--json", "state", "--jq", ".state")
+	secrets, err := sh.Output("sops", "-d", discordSecrets)
 	if err != nil {
 		return err
 	}
-	if state != "OPEN" {
-		if _, err := gh("issue", "reopen", number, "-R", repo); err != nil {
-			return err
+	var s struct {
+		URL string `json:"MAINTENANCE_WEBHOOK_URL"`
+	}
+	if err := json.Unmarshal([]byte(secrets), &s); err != nil {
+		return err
+	}
+	msg := "**keyforge-data: the dataset problems changed**\n" + problemsSummary(string(body)) +
+		"\nSee docs/dataset-problems.md in " + repo + "."
+	payload, err := json.Marshal(map[string]string{"content": msg})
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post(s.URL, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("discord: %s", resp.Status)
+	}
+	fmt.Println("posted the dataset problems to Discord")
+	return nil
+}
+
+// withoutVersion drops the line with the dataset version, which changes on
+// every distillation.
+func withoutVersion(s string) string {
+	var out []string
+	for line := range strings.SplitSeq(s, "\n") {
+		if !strings.HasPrefix(line, "Dataset version") {
+			out = append(out, line)
 		}
 	}
-	_, err = gh("issue", "comment", number, "-R", repo, "--body", "The problems changed. "+summary)
-	return err
+	return strings.TrimSpace(strings.Join(out, "\n"))
 }
 
 // problemsSummary returns the "Dataset version ... Problems: n." line and the
