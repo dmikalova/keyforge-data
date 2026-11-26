@@ -226,7 +226,7 @@ func TestRun(t *testing.T) {
 	if ref.HasFlag(FlagHouseless) {
 		t.Errorf("a reference card is not houseless")
 	}
-	if !ref.HasFlag(FlagReference) || ref.Type != "prophecy" {
+	if !ref.HasFlag(FlagReference) || ref.Type != "reference" {
 		t.Errorf("reference: %+v", ref)
 	}
 	sky := find(t, d, "skywhale-none")

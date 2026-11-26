@@ -189,7 +189,7 @@ func findTitles(text string, titles []string, own string) []string {
 			if slices.Contains(used[i:end], true) || !wordEdge(text, i, end) {
 				continue
 			}
-			if !strings.Contains(t, " ") && sentenceStart(text, i) {
+			if !strings.Contains(t, " ") && (sentenceStart(text, i) || inLongerName(text, i, end)) {
 				continue
 			}
 			for k := i; k < end; k++ {
@@ -227,4 +227,22 @@ func sentenceStart(text string, i int) bool {
 	}
 	r, _ := utf8.DecodeLastRuneInString(s)
 	return strings.ContainsRune(".!?:\n“\"(", r)
+}
+
+// inLongerName reports whether the match is part of a longer proper name: a
+// capitalized word is next to it, as in "Squire Duma" for the card Squire.
+func inLongerName(text string, i, end int) bool {
+	next := strings.TrimLeft(text[end:], "  ")
+	if r, _ := utf8.DecodeRuneInString(next); unicode.IsUpper(r) && len(next) < len(text[end:]) {
+		return true
+	}
+	prev := strings.TrimRight(text[:i], "  ")
+	if len(prev) == len(text[:i]) {
+		return false
+	}
+	// The word before: a capital at the start of a sentence ("If Narp") is not
+	// part of a name.
+	start := strings.LastIndexAny(prev, " \n\u00a0") + 1
+	r, _ := utf8.DecodeRuneInString(prev[start:])
+	return unicode.IsUpper(r) && !sentenceStart(prev, start)
 }

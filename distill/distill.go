@@ -212,6 +212,11 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		typ = rest
 		flags = append(flags, FlagEvilTwin)
 	}
+	// A reference card (an archon power, a prophecy, the tide) is not one of
+	// the four card types. Its kind is in the card group.
+	if slices.Contains(flags, FlagReference) {
+		typ = "reference"
+	}
 	switch {
 	case slices.Contains([]string{"action", "artifact", "creature", "upgrade"}, typ),
 		slices.Contains(flags, FlagReference):

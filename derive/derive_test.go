@@ -82,6 +82,7 @@ func TestCardAbilities(t *testing.T) {
 func TestDisplay(t *testing.T) {
 	for in, want := range map[string]string{
 		"Play: Gain 1A.":                             "Play: Gain 1 Æmber.",
+		"Reap: Deal 2 to a creature.":               "Reap: Deal 2 damage to a creature.",
 		"Reap: Capture 1<A>.":                        "Reap: Capture 1 Æmber.",
 		"Deal 2D to a creature.":                     "Deal 2 damage to a creature.",
 		"Deal 3<D> to each enemy creature.\r":        "Deal 3 damage to each enemy creature.",

@@ -316,7 +316,7 @@ func Display(s string) string {
 			prevIcon = false
 			continue
 		}
-		if prevIcon {
+		if prevIcon || endsWithDigit(&b) {
 			b.WriteByte(' ')
 		}
 		b.WriteString(word)
@@ -374,4 +374,11 @@ var attributionRe = regexp.MustCompile(`([”"])\s*[-–—]+\s*`)
 // quote, a line break, an em dash, and the name ("”\n—Squire Alys").
 func Flavor(s string) string {
 	return attributionRe.ReplaceAllString(Clean(s), "$1\n—")
+}
+
+// endsWithDigit reports whether the text so far ends with a digit, so that
+// "2" and a damage glyph become "2 damage".
+func endsWithDigit(b *strings.Builder) bool {
+	s := b.String()
+	return s != "" && s[len(s)-1] >= '0' && s[len(s)-1] <= '9'
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func TestFindTitles(t *testing.T) {
-	titles := []string{"Mega Narp", "Sucker Punch", "Old Bruno", "Narp", "Punch", "Fear"}
+	titles := []string{"Mega Narp", "Sucker Punch", "Old Bruno", "Narp", "Punch", "Fear", "Squire"}
 	cases := []struct {
 		text, own string
 		want      []string
@@ -18,6 +18,8 @@ func TestFindTitles(t *testing.T) {
 		{"Fear. Play: Return a creature.", "Hex", nil},
 		{"Play a Fear card.", "Hex", []string{"Fear"}},
 		{"Narpish things.", "Hex", nil},
+		{"“Remember me.”\n—Squire Duma", "Duma", nil},
+		{"Ready a Squire creature.", "Hex", []string{"Squire"}},
 	}
 	for _, c := range cases {
 		if got := findTitles(c.text, titles, c.own); !slices.Equal(got, c.want) {
