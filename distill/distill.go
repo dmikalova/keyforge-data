@@ -52,7 +52,8 @@ type Input struct {
 	// Cards are the English card objects as Master Vault sent them.
 	Cards [][]byte
 	// Images are the object names under images/cards/ in the public bucket,
-	// for example "massmutation/125.webp".
+	// for example "massmutation/125.webp?v=1764000000000000". The version
+	// query is optional.
 	Images []string
 	// Overrides are the curated corrections, by set slug.
 	Overrides map[string]Override

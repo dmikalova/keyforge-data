@@ -127,7 +127,7 @@ func TestRun(t *testing.T) {
 			),
 		},
 		Images: []string{
-			"callofthearchons/046.webp", "ageofascension/012.webp", "massmutation/125.webp",
+			"callofthearchons/046.webp?v=7", "ageofascension/012.webp", "massmutation/125.webp",
 			"worldscollide/A01.webp", "worldscollide/170.webp",
 			"aemberskies/400-other-card.webp", "aemberskies/400-sky-whale.webp",
 		},
@@ -143,6 +143,9 @@ func TestRun(t *testing.T) {
 	if len(troll.Printings) != 2 || troll.Printings[0].Set != "callofthearchons" ||
 		troll.Printings[1].Rarity != "Rare" {
 		t.Errorf("troll printings: %+v", troll.Printings)
+	}
+	if img := troll.Printings[0].Image; img != "callofthearchons/046.webp?v=7" {
+		t.Errorf("troll image %q keeps the version", img)
 	}
 	if got := troll.Printings[0].MVIDs; !slices.Equal(got, []string{"t1", "t2"}) {
 		t.Errorf("troll MV IDs: %v (the maverick must not count)", got)

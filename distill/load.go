@@ -61,7 +61,10 @@ func LoadOverrides(dir string) (map[string]Override, error) {
 const PublicBucket = "mklv-keyforge-cards-public"
 
 // ListImages returns the object names under images/cards/ in the public
-// bucket, without that prefix. The bucket is public, so the list needs no
+// bucket, without that prefix. Each name ends with "?v=<generation>". The
+// generation changes when an object is replaced, so the image URL changes
+// and browsers and caches load the new image. The bucket caches each URL for
+// a year. The bucket is public, so the list needs no
 // credentials.
 func ListImages(ctx context.Context, client *http.Client) ([]string, error) {
 	const prefix = "images/cards/"
@@ -70,7 +73,7 @@ func ListImages(ctx context.Context, client *http.Client) ([]string, error) {
 	for {
 		q := url.Values{
 			"prefix": {prefix},
-			"fields": {"items(name),nextPageToken"},
+			"fields": {"items(name,generation),nextPageToken"},
 		}
 		if token != "" {
 			q.Set("pageToken", token)
@@ -94,7 +97,8 @@ func ListImages(ctx context.Context, client *http.Client) ([]string, error) {
 		}
 		var page struct {
 			Items []struct {
-				Name string `json:"name"`
+				Name       string `json:"name"`
+				Generation string `json:"generation"`
 			} `json:"items"`
 			NextPageToken string `json:"nextPageToken"`
 		}
@@ -102,7 +106,11 @@ func ListImages(ctx context.Context, client *http.Client) ([]string, error) {
 			return nil, err
 		}
 		for _, it := range page.Items {
-			out = append(out, strings.TrimPrefix(it.Name, prefix))
+			name := strings.TrimPrefix(it.Name, prefix)
+			if it.Generation != "" {
+				name += "?v=" + it.Generation
+			}
+			out = append(out, name)
 		}
 		if token = page.NextPageToken; token == "" {
 			return out, nil
