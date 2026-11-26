@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/derive"
@@ -104,6 +105,7 @@ const (
 	ProblemGiganticNoBase  = "gigantic without a base half"
 	ProblemOnlyMavericks   = "printing with only mavericks"
 	ProblemMissingGigantic = "missing gigantic image"
+	ProblemForeignText     = "flavor text not in English"
 )
 
 // referenceHouses are the Master Vault pseudo-houses of reference cards.
@@ -257,7 +259,20 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
 	}
 	if base.Flavor != nil {
-		p.Flavor = strings.TrimSpace(*base.Flavor)
+		p.Flavor = derive.Flavor(*base.Flavor)
+		if foreign(p.Flavor) {
+			// Master Vault has text in another language in the English data.
+			r.problem(
+				Problem{
+					Kind:   ProblemForeignText,
+					Set:    set.Slug,
+					Number: k.number,
+					Title:  k.title,
+					Detail: p.Flavor,
+				},
+			)
+			p.Flavor = ""
+		}
 	}
 	for _, o := range objs {
 		p.MVIDs = append(p.MVIDs, o.ID)
@@ -714,4 +729,15 @@ func houselessGroup(house string, base mvCard, objs []mvCard, kindFlags []string
 		}
 	}
 	return "houseless"
+}
+
+// foreign reports whether text has letters from a script that English card
+// text does not use, for example Hangul.
+func foreign(s string) bool {
+	for _, r := range s {
+		if unicode.IsLetter(r) && !unicode.In(r, unicode.Latin, unicode.Greek) {
+			return true
+		}
+	}
+	return false
 }

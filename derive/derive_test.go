@@ -96,3 +96,37 @@ func TestDisplay(t *testing.T) {
 		}
 	}
 }
+
+func TestClean(t *testing.T) {
+	for in, want := range map[string]string{
+		"“They said they’d bring it right back.” <softreturn>—Squire<nonbreak>Alys": "“They said they’d bring it right back.”\n—Squire\u00a0Alys",
+		"Play: Return 2\u202fenemy creatures.\r\n":                                  "Play: Return 2 enemy creatures.",
+		"non\u2011Star Alliance":                                                    "non-Star Alliance",
+		"Gain 1<nonbreak><A>.":                                                      "Gain 1\u00a0<A>.",
+	} {
+		if got := Clean(in); got != want {
+			t.Errorf("Clean(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if got := Display("Gain 1<nonbreak><A>."); got != "Gain 1 Æmber." {
+		t.Errorf("Display with a non-breaking space = %q", got)
+	}
+}
+
+func TestFlavor(t *testing.T) {
+	want := "“Remember me.”\n—Squire Duma"
+	for _, in := range []string{
+		"“Remember me.” - Squire Duma",
+		"“Remember me.” – Squire Duma",
+		"“Remember me.” –Squire Duma",
+		"“Remember me.”—Squire Duma",
+		"“Remember me.” <softreturn>—Squire Duma",
+	} {
+		if got := Flavor(in); got != want {
+			t.Errorf("Flavor(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if got := Flavor("A well-known fact."); got != "A well-known fact." {
+		t.Errorf("Flavor changed a hyphen: %q", got)
+	}
+}

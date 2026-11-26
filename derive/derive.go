@@ -276,7 +276,7 @@ var iconWords = map[string]string{
 }
 
 // amountRe finds an amount with an icon: "1A", "2<D>", "X<A>".
-var amountRe = regexp.MustCompile(`\b(\d+|X) ?(?:<([AD])>|([AD]))(\W|$)`)
+var amountRe = regexp.MustCompile(`\b(\d+|X)[ \x{a0}]?(?:<([AD])>|([AD]))(\W|$)`)
 
 // tokenRe finds an icon token without an amount: "<A>".
 var tokenRe = regexp.MustCompile(`<([ACDR])>`)
@@ -286,7 +286,7 @@ var tokenRe = regexp.MustCompile(`<([ACDR])>`)
 // "Deal 2 damage", and the icon-font glyphs become their names. Keywords and
 // Enhance read the text as Master Vault sends it, not this text.
 func Display(s string) string {
-	s = strings.TrimSpace(strings.NewReplacer("\u000b", "\n", "\r\n", "\n", "\r", "\n").Replace(s))
+	s = Clean(s)
 	s = amountRe.ReplaceAllStringFunc(s, func(m string) string {
 		p := amountRe.FindStringSubmatch(m)
 		icon := cmp.Or(p[2], p[3])
@@ -332,4 +332,46 @@ func houseWord(name string) string {
 		return "Star Alliance"
 	}
 	return strings.ToUpper(name[:1]) + name[1:]
+}
+
+// cleaner turns the Master Vault markup and the typesetting characters into
+// plain text.
+var cleaner = strings.NewReplacer(
+	"\r\n", "\n", "\r", "\n", "\u000b", "\n",
+	// A soft return is a line break inside a paragraph.
+	"<softreturn>", "\n",
+	// A non-breaking space keeps two words on one line: "Squire Alys".
+	"<nonbreak>", "\u00a0",
+	// The narrow no-break space is used as a normal space.
+	"\u202f", " ",
+	// The non-breaking hyphen is a normal hyphen for search.
+	"\u2011", "-",
+)
+
+// spacesRe finds runs of spaces and the spaces next to a line break.
+var spacesRe = regexp.MustCompile(` *\n *| {2,}`)
+
+// Clean returns text or flavor text without the Master Vault markup:
+// <softreturn> becomes a line break, <nonbreak> a non-breaking space, and
+// the typesetting spaces and hyphens become plain ones. It also removes the
+// spaces at the ends of lines and runs of spaces.
+func Clean(s string) string {
+	s = cleaner.Replace(s)
+	s = spacesRe.ReplaceAllStringFunc(s, func(m string) string {
+		if strings.Contains(m, "\n") {
+			return "\n"
+		}
+		return " "
+	})
+	return strings.TrimSpace(s)
+}
+
+// attributionRe finds the dash of a flavor text attribution after the
+// closing quote, with any dash and spacing: "” - Name", "” –Name".
+var attributionRe = regexp.MustCompile(`([”"])\s*[-–—]+\s*`)
+
+// Flavor returns clean flavor text with one style of attribution: the
+// quote, a line break, an em dash, and the name ("”\n—Squire Alys").
+func Flavor(s string) string {
+	return attributionRe.ReplaceAllString(Clean(s), "$1\n—")
 }
