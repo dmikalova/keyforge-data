@@ -3,8 +3,10 @@ package distill
 import (
 	"cmp"
 	"maps"
+	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"unicode"
 	"unicode/utf8"
 
@@ -62,13 +64,13 @@ func (l *linker) mentions() map[string][]string {
 		}
 		seen := map[string]bool{c.ID: true}
 		for _, text := range texts {
-			for _, t := range findTitles(text, titles, c.Title) {
-				id := l.byTitle[t]
+			for _, f := range findTitles(text, titles, c.Title) {
+				id := l.byTitle[f.Title]
 				if seen[id] {
 					continue
 				}
 				seen[id] = true
-				c.Mentions = append(c.Mentions, card.Mention{ID: id, Title: t})
+				c.Mentions = append(c.Mentions, card.Mention{ID: id, Title: f.Text})
 				mentionedBy[id] = append(mentionedBy[id], c.ID)
 			}
 		}
@@ -155,7 +157,7 @@ func titleIndex(cards []card.Card) map[string]string {
 // the characters next to it must not be letters or digits. A title of one
 // word must not start a sentence, because most one-word titles are also
 // common words ("Fear", "Punch").
-func findTitles(text string, titles []string, own string) []string {
+func findTitles(text string, titles []string, own string) []found {
 	if text == "" {
 		return nil
 	}
@@ -173,18 +175,16 @@ func findTitles(text string, titles []string, own string) []string {
 		}
 		from = i + len(own)
 	}
-	var out []string
+	var out []found
 	for _, t := range titles {
 		if t == own || len(t) < 3 {
 			continue
 		}
 		for from := 0; ; {
-			i := strings.Index(text[from:], t)
+			i, end := indexName(text, from, t)
 			if i < 0 {
 				break
 			}
-			i += from
-			end := i + len(t)
 			from = end
 			if slices.Contains(used[i:end], true) || !wordEdge(text, i, end) {
 				continue
@@ -195,7 +195,7 @@ func findTitles(text string, titles []string, own string) []string {
 			for k := i; k < end; k++ {
 				used[k] = true
 			}
-			out = append(out, t)
+			out = append(out, found{Title: t, Text: text[i:end]})
 			break
 		}
 	}
@@ -245,4 +245,42 @@ func inLongerName(text string, i, end int) bool {
 	start := strings.LastIndexAny(prev, " \n\u00a0") + 1
 	r, _ := utf8.DecodeRuneInString(prev[start:])
 	return unicode.IsUpper(r) && !sentenceStart(prev, start)
+}
+
+// found is a title that a text names, and the name as it is in the text.
+type found struct {
+	Title string
+	Text  string
+}
+
+// indexName finds title in text from a byte offset, and returns the start
+// and the end of the match, or -1. A space in the title also matches a
+// non-breaking space, because Master Vault keeps names on one line with one
+// ("Ol’ Paddy").
+func indexName(text string, from int, title string) (int, int) {
+	if !strings.Contains(title, " ") {
+		i := strings.Index(text[from:], title)
+		if i < 0 {
+			return -1, -1
+		}
+		return from + i, from + i + len(title)
+	}
+	re := nameRe(title)
+	loc := re.FindStringIndex(text[from:])
+	if loc == nil {
+		return -1, -1
+	}
+	return from + loc[0], from + loc[1]
+}
+
+// nameRes caches the patterns of the titles with spaces.
+var nameRes sync.Map
+
+func nameRe(title string) *regexp.Regexp {
+	if re, ok := nameRes.Load(title); ok {
+		return re.(*regexp.Regexp)
+	}
+	re := regexp.MustCompile(strings.ReplaceAll(regexp.QuoteMeta(title), " ", "[  ]"))
+	nameRes.Store(title, re)
+	return re
 }
