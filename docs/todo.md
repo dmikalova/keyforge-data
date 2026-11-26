@@ -55,6 +55,12 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   token creature.
 - Check the anomaly rarity icon (`rarity/anomaly.svg`) against a printed
   anomaly.
+- When the crawl has a set with Redemption cards, give a card a second
+  house. A card that Master Vault prints in its own house and in Redemption
+  has two houses, for example Shadows and Redemption. Redemption is always
+  the second house when the card has another house. Then replace the
+  "Appears in house Redemption in Tokens of Change" notes with the second
+  house. Do not do this before the crawl has the Redemption cards.
 - Run `kfdata check-art` after each image fill. Fix a blank art box with
   `kfdata fix-art` and the art of another printing.
 - Move the scheduled crawl and publish to the data.keyforge.cards service

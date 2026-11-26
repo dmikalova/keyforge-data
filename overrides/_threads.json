@@ -96,7 +96,7 @@
       ]
     },
     {
-      "label": "Dis mutants",
+      "label": "Dæmo mutants",
       "titles": [
         "Dæmo-Alien",
         "Dæmo-Beast",
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "label": "Saurian mutants",
+      "label": "Dino mutants",
       "titles": [
         "Dino-Alien",
         "Dino-Beast",
@@ -118,7 +118,7 @@
       ]
     },
     {
-      "label": "Untamed mutants",
+      "label": "Lyco mutants",
       "titles": [
         "Lyco-Alien",
         "Lyco-Bot",
@@ -129,7 +129,7 @@
       ]
     },
     {
-      "label": "Sanctum mutants",
+      "label": "Sacro mutants",
       "titles": [
         "Sacro-Alien",
         "Sacro-Beast",
@@ -140,7 +140,7 @@
       ]
     },
     {
-      "label": "Logos mutants",
+      "label": "Techno mutants",
       "titles": [
         "Techno-Alien",
         "Techno-Beast",
@@ -151,7 +151,7 @@
       ]
     },
     {
-      "label": "Shadows mutants",
+      "label": "Umbra mutants",
       "titles": [
         "Umbra-Alien",
         "Umbra-Beast",
@@ -162,7 +162,7 @@
       ]
     },
     {
-      "label": "Mars mutants",
+      "label": "Xeno mutants",
       "titles": [
         "Xeno-Beast",
         "Xeno-Bot",
