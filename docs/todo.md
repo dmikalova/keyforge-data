@@ -120,3 +120,5 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 - Full deck crawl and deck database (ADR 0003).
 - Images for the other locales.
 - Variant groups, for the card pages.
+- Discord card bot: a `/card` slash command and `[[Card Name]]` in messages
+  (ADR 0007).

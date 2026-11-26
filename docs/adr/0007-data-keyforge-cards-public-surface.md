@@ -1,7 +1,7 @@
 # data.keyforge.cards public surface
 
-Status: proposed. It adds to ADR 0006 and follows project-standards ADR 0009
-(the OpenAPI contract and the MCP endpoint).
+Status: accepted. It adds to ADR 0006 and follows project-standards ADR 0009
+(the OpenAPI contract and the MCP endpoint). The Discord bot is for later.
 
 ## Context
 
@@ -54,7 +54,19 @@ grammar (ADR 0004).
 - Do not make a JSON Feed in addition. The pointer and the Atom feed cover
   programs and people.
 
+### Search engine
+
+- The search fields and the search engine move from
+  `keyforge-card-search/internal/search` to a keyforge-data package. The API,
+  the MCP tools, and the bot use the same fields as the site.
+- The deck search uses the same engine later, with the deck fields.
+- search.keyforge.cards becomes only a frontend. It imports the engine for
+  the pages, and it calls no search code of its own.
+
 ### API endpoints
+
+The endpoints are huma operations (project-standards ADR 0009), so the
+service generates `/openapi.json`, `/docs`, and `/llms.txt`.
 
 | Endpoint | Content |
 | --- | --- |
@@ -66,18 +78,15 @@ grammar (ADR 0004).
 | `GET /api/decks/{id}`, `GET /api/decks?q=` | Later, after the deck crawl |
 | `POST /api/decks/{id}/import` | Later. It adds a deck to the crawl queue. |
 
-- The search fields and the search engine move from
-  `keyforge-card-search/internal/search` to a keyforge-data package. The site
-  imports them. The API, the MCP tools, and the bot then use the same fields
-  as the site.
 - The search site keeps its own `/api/cards` until the data service is live.
   Then it redirects to the data service.
 
 ### MCP tools
 
-The service serves `/mcp` (project-standards ADR 0009). The tools:
+The service serves `/mcp`. Each tool is an API operation with the `x-mcp`
+mark (project-standards ADR 0009):
 
-| Tool | Input | Output |
+| Tool (`operationId`) | Input | Output |
 | --- | --- | --- |
 | `search_cards` | A query in the shared grammar, a limit | The matching cards, in short form |
 | `get_card` | A card ID or a card name | The full card |
@@ -86,28 +95,22 @@ The service serves `/mcp` (project-standards ADR 0009). The tools:
 
 Later: `get_deck` and `search_decks`.
 
-### Discord bot
+The operation descriptions are written for an AI reader, with an example
+query each.
 
-- The bot is a Discord application with an HTTP interactions endpoint at
-  `POST /discord/interactions` in the data service. It needs no gateway
-  connection, so it needs no always-on instance.
-- The bot has the slash command `/card name:<name>`. The name option uses
-  Discord autocomplete, which also comes over the interactions endpoint.
-- The bot also has a message command "Find cards". A user selects it on a
-  message. The bot finds the card names in the message with the mention
-  matcher of distillation, and answers with those cards.
-- Do not read `[[Card Name]]` in every message. That needs a gateway
-  connection with the message content intent, and an instance that always
-  runs. That costs money each hour.
-- A cold start can take more than 3 seconds, and Discord waits 3 seconds. The
-  endpoint sends a deferred answer first, and then sends the cards as a
-  follow-up message.
+### Discord bot (later)
+
+- The user accepts Cloud Run apps that run all the time. The bot can then
+  keep a Discord gateway connection open in the data service.
+- With the gateway connection and the message content intent, the bot reads
+  `[[Card Name]]` in messages and answers with those cards. It finds the
+  names with the mention matcher of distillation.
+- The bot also has the slash command `/card name:<name>`, with Discord
+  autocomplete.
 - Each answer is an embed: the card name links to the card page on
   search.keyforge.cards, the image comes from the public bucket, and the
   description is the card text.
-- The service checks the Ed25519 signature of each request with the
-  application public key. The bot token is used only to register the
-  commands, from a mage target. It is in sops in the infrastructure repo.
+- The bot token is in sops in the infrastructure repo.
 
 ## Consequences
 
@@ -117,5 +120,7 @@ Later: `get_deck` and `search_decks`.
   endpoints, so that the site and the API do not have two copies.
 - The service gets the `api: true` setting and the `httpapi` module of
   project-standards ADR 0009.
+- The bot needs an instance that always runs, with `cpu_idle = false` and a
+  minimum of one instance (ADR 0006, Scheduling). That costs money each hour.
 - The Discord application and its secrets are new. The infrastructure repo
   holds the secrets.
