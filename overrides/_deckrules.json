@@ -2,7 +2,7 @@
   "rules": [
     {
       "kind": "always",
-      "label": "Always with 2+",
+      "label": "Always with",
       "cards": [
         "Faygin"
       ],
@@ -22,7 +22,7 @@
     },
     {
       "kind": "always",
-      "label": "Always with 2+",
+      "label": "Always with",
       "cards": [
         "Niffle Queen"
       ],
@@ -42,7 +42,7 @@
     },
     {
       "kind": "always",
-      "label": "Always with 2+",
+      "label": "Always with",
       "cards": [
         "Ortannu the Chained"
       ],
@@ -62,7 +62,7 @@
     },
     {
       "kind": "always",
-      "label": "Always with 2+",
+      "label": "Always with",
       "cards": [
         "Grumpus Tamer"
       ],
@@ -452,7 +452,7 @@
     },
     {
       "kind": "others",
-      "label": "Always with 2+ others",
+      "label": "Always with others",
       "with": [
         "Pride",
         "Desire",
@@ -678,7 +678,7 @@
     },
     {
       "kind": "variant",
-      "label": "Dino- variants",
+      "label": "Dino variants",
       "with": [
         "Dino-Bot",
         "Dino-Fiend",
@@ -690,7 +690,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Bot variants",
+      "label": "Bot variants",
       "with": [
         "Dino-Bot",
         "Dæmo-Bot",
@@ -702,7 +702,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Thief variants",
+      "label": "Thief variants",
       "with": [
         "Dino-Thief",
         "Dæmo-Thief",
@@ -714,7 +714,7 @@
     },
     {
       "kind": "variant",
-      "label": "Dæmo- variants",
+      "label": "Dæmo variants",
       "with": [
         "Dæmo-Thief",
         "Dæmo-Saurus",
@@ -726,7 +726,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Saurus variants",
+      "label": "Saurus variants",
       "with": [
         "Dæmo-Saurus",
         "Lyco-Saurus",
@@ -738,7 +738,7 @@
     },
     {
       "kind": "variant",
-      "label": "Techno- variants",
+      "label": "Techno variants",
       "with": [
         "Techno-Saurus",
         "Techno-Alien",
@@ -750,7 +750,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Beast variants",
+      "label": "Beast variants",
       "with": [
         "Techno-Beast",
         "Dæmo-Beast",
@@ -762,7 +762,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Knight variants",
+      "label": "Knight variants",
       "with": [
         "Techno-Knight",
         "Dæmo-Knight",
@@ -774,7 +774,7 @@
     },
     {
       "kind": "variant",
-      "label": "Xeno- variants",
+      "label": "Xeno variants",
       "with": [
         "Xeno-Knight",
         "Xeno-Fiend",
@@ -786,7 +786,7 @@
     },
     {
       "kind": "variant",
-      "label": "Lyco- variants",
+      "label": "Lyco variants",
       "with": [
         "Lyco-Knight",
         "Lyco-Fiend",
@@ -798,7 +798,7 @@
     },
     {
       "kind": "variant",
-      "label": "Umbra- variants",
+      "label": "Umbra variants",
       "with": [
         "Umbra-Knight",
         "Umbra-Fiend",
@@ -810,7 +810,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Alien variants",
+      "label": "Alien variants",
       "with": [
         "Umbra-Alien",
         "Lyco-Alien",
@@ -822,7 +822,7 @@
     },
     {
       "kind": "variant",
-      "label": "-Fiend variants",
+      "label": "Fiend variants",
       "with": [
         "Dino-Fiend",
         "Lyco-Fiend",
@@ -834,7 +834,7 @@
     },
     {
       "kind": "variant",
-      "label": "Sacro- variants",
+      "label": "Sacro variants",
       "with": [
         "Sacro-Fiend",
         "Sacro-Bot",
@@ -1159,7 +1159,7 @@
     },
     {
       "kind": "always",
-      "label": "Always with 2+",
+      "label": "Always with",
       "cards": [
         "Omnipus"
       ],

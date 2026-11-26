@@ -26,7 +26,7 @@ func TestRuleLabel(t *testing.T) {
 				pages: []string{"A"},
 				note:  "this card always appears in a deck with at least 2 copies of:",
 			},
-			"Always with 2+",
+			"Always with",
 		},
 		{sheetRule{kind: "sometimes", pages: []string{"A"}}, "Sometimes with"},
 		{
@@ -46,7 +46,7 @@ func TestRuleLabel(t *testing.T) {
 				kind: "others",
 				note: "this card always appears in a deck with at least two other Sins:",
 			},
-			"Always with 2+ others",
+			"Always with others",
 		},
 		{
 			sheetRule{
@@ -57,7 +57,11 @@ func TestRuleLabel(t *testing.T) {
 		},
 		{
 			sheetRule{kind: "variant", note: `Other "Dæmo-" variants of this card are:`},
-			"Dæmo- variants",
+			"Dæmo variants",
+		},
+		{
+			sheetRule{kind: "variant", note: `Other "-Fiend" variants of this card are:`},
+			"Fiend variants",
 		},
 		{sheetRule{kind: "variant", note: "Other variants of this card are:"}, "Variants"},
 	}

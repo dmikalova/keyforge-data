@@ -31,7 +31,8 @@ On 2026-11-26 we compared the artist scan with `illustrators.csv`:
 - 2423 of 2486 printings agreed.
 - 46 printings had a different spelling of one artist. The aliases in
   [../overrides/artists/aliases.json](../overrides/artists/aliases.json) now
-  join the spellings.
+  join the spellings. The artist files use only the canonical names. The
+  dataset `artistAliases` map gives the other spellings to search.
 - 18 printings disagreed. In all 18, the card image showed that the scan was
   correct. The CSV gives a studio for an artist (Art Tavern for Anton
   Zemskov), and it swaps the artists of related cards (Teliga and Hunting
@@ -64,11 +65,17 @@ the `fixed`, `always`, `sometimes`, `others`, and `variant` rules to
 threads of its cards:
 
 - A rule with page cards links each page card to the other cards, for
-  example "Faygin: Always with 2+ Urchin".
+  example "Faygin: Always with Urchin". The label does not give the number
+  of copies.
 - A rule without page cards is a group. Each card of the group gets the
   other cards.
+- A variant family label drops the hyphen of the sheet: "Dæmo variants",
+  "Fiend variants".
 - A curated thread (`overrides/_threads.json`) wins. A rule adds nothing to
   a card if a thread of the card already has all the rule's cards.
+- Add a curated thread only for cards that no rule links. On 2026-11-26 the
+  rules covered all the curated threads except Monuments, so the other
+  curated threads were removed.
 
 The command prints the titles that no card has. Most of them are cards from
 sets that the crawl does not have yet. Run `mage threads:rules` again after a

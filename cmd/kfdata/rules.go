@@ -9,7 +9,6 @@ import (
 	"os"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/dmikalova/keyforge-data/card"
@@ -22,11 +21,10 @@ import (
 var ruleKinds = []string{"fixed", "always", "sometimes", "others", "variant"}
 
 var (
-	// copiesRe finds "at least 2 copies of" in a rule note.
-	copiesRe = regexp.MustCompile(`at least (\d+) copies`)
 	// othersRe finds "at least two other Sins" in a rule note.
 	othersRe = regexp.MustCompile(`at least (\w+) other `)
-	// prefixRe finds the family in `Other "Dæmo-" variants`.
+	// prefixRe finds the family in `Other "Dæmo-" variants`. The label drops
+	// the hyphen: "Dæmo variants".
 	prefixRe = regexp.MustCompile(`"([^"]+)" variants`)
 )
 
@@ -76,7 +74,7 @@ func ruleLabel(r sheetRule) string {
 		return "Sometimes with"
 	case "variant":
 		if m := prefixRe.FindStringSubmatch(r.note); m != nil {
-			return m[1] + " variants"
+			return strings.Trim(m[1], "-") + " variants"
 		}
 		return "Variants"
 	case "fixed":
@@ -88,25 +86,13 @@ func ruleLabel(r sheetRule) string {
 	case strings.Contains(r.note, "one of") || strings.Contains(r.note, "at least 1 of"):
 		return "Always with one of"
 	case othersRe.MatchString(r.note):
-		n := othersRe.FindStringSubmatch(r.note)[1]
-		if n == "one" || n == "1" {
+		// The label does not give the number of copies or of other cards.
+		if n := othersRe.FindStringSubmatch(r.note)[1]; n == "one" || n == "1" {
 			return "Always with another"
 		}
-		return "Always with " + number(n) + "+ others"
-	}
-	if m := copiesRe.FindStringSubmatch(r.note); m != nil {
-		return "Always with " + m[1] + "+"
+		return "Always with others"
 	}
 	return "Always with"
-}
-
-// number returns the digits of a small number word.
-func number(s string) string {
-	words := []string{"zero", "one", "two", "three", "four", "five"}
-	if i := slices.Index(words, s); i >= 0 {
-		return strconv.Itoa(i)
-	}
-	return s
 }
 
 // titleResolver maps a sheet title to a dataset title.
