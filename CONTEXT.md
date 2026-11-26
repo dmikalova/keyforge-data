@@ -19,6 +19,9 @@ suffix for an evil twin (`ancient-bear-untamed`,
 **Printing**:
 One appearance of a card in one set, with that set's collector number, rarity,
 image, and anomaly status. A reprint is a printing of a card in a later set.
+Its text is in the printing only when it differs from the card text, which
+is the text of the newest printing. Master Vault changes the text of a
+reprint for errata and new wording.
 
 **Localization**:
 The text of a printing in one language: the title, the card text, the flavor

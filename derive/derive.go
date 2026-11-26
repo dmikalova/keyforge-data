@@ -322,8 +322,17 @@ func Display(s string) string {
 		b.WriteString(word)
 		prevIcon = true
 	}
-	return b.String()
+	return bareAemberRe.ReplaceAllString(b.String(), "${1} "+iconWords[IconAember]+"${2}")
 }
+
+// bareAemberRe finds an old printing's "A" for Æmber in the middle of a
+// sentence: "their remaining A.", "each creature with A on it". The "A"
+// follows a lowercase word, and punctuation or a word such as "on" or
+// "than" follows it. A capital "A" at the start of a sentence is the
+// article: "Action: A friendly creature".
+var bareAemberRe = regexp.MustCompile(
+	`(\b(?:[a-z]+|Your|Their|Each|All|Any|No|The)) A([.,;:]|\s+(?:on|from|in|cannot|than|equal|spent|to|and|or|you|that|they|would|is|are|lost|stolen|bonus|by)\b|\s+\()`,
+)
 
 // houseWord returns a house icon name as a word: "staralliance" becomes
 // "Star Alliance".

@@ -276,6 +276,8 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Anomaly: base.IsAnomaly,
 		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
 		Artist:  r.in.Artists[set.Slug][k.number],
+		// dataset keeps the text only where it differs from the card text.
+		Text: derive.Display(base.Text),
 	}
 	if base.Flavor != nil {
 		p.Flavor = derive.Flavor(*base.Flavor)
@@ -426,6 +428,13 @@ func (r *run) dataset(cards map[string]*card.Card) card.Dataset {
 			used[p.Set] = true
 		}
 		out = append(out, *c)
+	}
+	for i := range out {
+		for j := range out[i].Printings {
+			if p := &out[i].Printings[j]; sameText(p.Text, out[i].Text) {
+				p.Text = ""
+			}
+		}
 	}
 	linkCards(out, r.in.Overrides)
 	slices.SortFunc(out, compareCards)
@@ -879,4 +888,10 @@ func (r *run) datasetLabels() map[string]map[string]string {
 		maps.Copy(out[kind], m)
 	}
 	return out
+}
+
+// sameText reports whether two card texts differ only in white space: a
+// line break in one printing and a space in another.
+func sameText(a, b string) bool {
+	return strings.Join(strings.Fields(a), " ") == strings.Join(strings.Fields(b), " ")
 }

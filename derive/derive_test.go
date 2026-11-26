@@ -81,16 +81,23 @@ func TestCardAbilities(t *testing.T) {
 
 func TestDisplay(t *testing.T) {
 	for in, want := range map[string]string{
-		"Play: Gain 1A.":                             "Play: Gain 1 Æmber.",
-		"Reap: Deal 2 to a creature.":               "Reap: Deal 2 damage to a creature.",
-		"Reap: Capture 1<A>.":                        "Reap: Capture 1 Æmber.",
-		"Deal 2D to a creature.":                     "Deal 2 damage to a creature.",
-		"Deal 3<D> to each enemy creature.\r":        "Deal 3 damage to each enemy creature.",
-		"If your opponent has more <A> than you":     "If your opponent has more Æmber than you",
-		"Enhance .":                                "Enhance Æmber damage.",
-		"Taunt.\u000bReap: Gain 1A.":                 "Taunt.\nReap: Gain 1 Æmber.",
-		"Archive 2 cards. Ready A. Vinda.":           "Archive 2 cards. Ready A. Vinda.",
-		"\uF566 After you raise the tide, ready it.": "{tide} After you raise the tide, ready it.",
+		"Play: Gain 1A.":                                                   "Play: Gain 1 Æmber.",
+		"Reap: Deal 2 to a creature.":                                     "Reap: Deal 2 damage to a creature.",
+		"Reap: Capture 1<A>.":                                              "Reap: Capture 1 Æmber.",
+		"Deal 2D to a creature.":                                           "Deal 2 damage to a creature.",
+		"Deal 3<D> to each enemy creature.\r":                              "Deal 3 damage to each enemy creature.",
+		"If your opponent has more <A> than you":                           "If your opponent has more Æmber than you",
+		"Enhance .":                                                      "Enhance Æmber damage.",
+		"Taunt.\u000bReap: Gain 1A.":                                       "Taunt.\nReap: Gain 1 Æmber.",
+		"Archive 2 cards. Ready A. Vinda.":                                 "Archive 2 cards. Ready A. Vinda.",
+		"\uF566 After you raise the tide, ready it.":                       "{tide} After you raise the tide, ready it.",
+		"After a player forges a key, they lose all of their remaining A.": "After a player forges a key, they lose all of their remaining Æmber.",
+		"Your A cannot be stolen.":                                         "Your Æmber cannot be stolen.",
+		"The player loses half their A (rounding down).":                   "The player loses half their Æmber (rounding down).",
+		"Draw 2 cards for each A lost.":                                    "Draw 2 cards for each Æmber lost.",
+		"Destroy each creature with A on it.":                              "Destroy each creature with Æmber on it.",
+		"If you have more A than your opponent":                            "If you have more Æmber than your opponent",
+		"Action: A friendly creature captures 1A.":                         "Action: A friendly creature captures 1 Æmber.",
 	} {
 		if got := Display(in); got != want {
 			t.Errorf("Display(%q) = %q, want %q", in, got, want)

@@ -96,6 +96,10 @@ type Printing struct {
 	// card and is not repeated here.
 	Localizations map[string]Localization `json:"localizations,omitempty"`
 	// Flavor is the English flavor text.
+	// Text is the card text of this printing when it differs from the card
+	// text, which is the text of the newest printing. Master Vault changes
+	// the text of a reprint for errata and new wording.
+	Text   string `json:"text,omitempty"`
 	Flavor string `json:"flavor,omitempty"`
 	// Artist is the artist as printed on the card. It comes from
 	// the "artists" section of overrides/<set>.json, not from Master Vault.
