@@ -3,6 +3,7 @@ package query
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 type tokenKind int
@@ -36,16 +37,18 @@ func lex(src string) []token {
 	i := 0
 	for i < len(src) {
 		c := src[i]
+		if w := spaceAt(src, i); w > 0 {
+			i += w
+			continue
+		}
 		switch {
-		case isSpace(c):
-			i++
 		case c == '(':
 			out = append(out, token{kind: tokLParen, text: "(", pos: Span{i, i + 1}})
 			i++
 		case c == ')':
 			out = append(out, token{kind: tokRParen, text: ")", pos: Span{i, i + 1}})
 			i++
-		case c == '-' && i+1 < len(src) && !isSpace(src[i+1]) && src[i+1] != ')':
+		case c == '-' && i+1 < len(src) && spaceAt(src, i+1) == 0 && src[i+1] != ')':
 			out = append(out, token{kind: tokNot, text: "-", pos: Span{i, i + 1}})
 			i++
 		default:
@@ -72,7 +75,7 @@ func lexWord(src string, start int) (token, int) {
 			i++
 			continue
 		}
-		if !inQuote && (isSpace(c) || c == '(' || c == ')') {
+		if !inQuote && (spaceAt(src, i) > 0 || c == '(' || c == ')') {
 			break
 		}
 		b.WriteByte(c)
@@ -97,6 +100,19 @@ func lexWord(src string, start int) (token, int) {
 	return token{kind: tokWord, text: text, quoted: quoted, anyQuoted: anyQuoted, pos: pos}, i
 }
 
-func isSpace(c byte) bool {
-	return unicode.IsSpace(rune(c))
+// spaceAt returns the byte length of the white space character at byte i of
+// src, or 0. It reads the whole UTF-8 character: the bytes 0x85 and 0xA0
+// are also the second byte of a letter such as "à" (C3 A0), and a test of
+// one byte split "voilà" in two.
+func spaceAt(src string, i int) int {
+	r, w := utf8.DecodeRuneInString(src[i:])
+	if unicode.IsSpace(r) {
+		return w
+	}
+	return 0
+}
+
+// hasSpace reports whether s has a character that ends a word.
+func hasSpace(s string) bool {
+	return strings.IndexFunc(s, unicode.IsSpace) >= 0
 }

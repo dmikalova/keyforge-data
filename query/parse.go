@@ -224,7 +224,10 @@ func value(t token, f FieldInfo, op Op, text string, quoted bool) (*Term, error)
 		if err != nil {
 			return nil, err
 		}
-		term.Value = Value{Text: v, Quoted: quoted}
+		// Quotes do not change the match of an enum value, so the term
+		// does not keep them: h:"star alliance" and h:star-alliance are one
+		// term, and String quotes a value with a space.
+		term.Value = Value{Text: v}
 	case KindNumber:
 		v, err := numberValue(t, f, op, text)
 		if err != nil {
@@ -380,7 +383,14 @@ func numberValue(t token, f FieldInfo, op Op, text string) (Value, error) {
 				Msg: fmt.Sprintf("%q is not a range like 2..4", text),
 			}
 		}
-		return Value{Text: text, Num: a, Hi: b, Range: true}, nil
+		// The text of a range is in the form that String writes: "2..04"
+		// is 2..4.
+		return Value{
+			Text:  strconv.Itoa(a) + ".." + strconv.Itoa(b),
+			Num:   a,
+			Hi:    b,
+			Range: true,
+		}, nil
 	}
 	n, err := strconv.Atoi(text)
 	if err != nil {

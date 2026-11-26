@@ -20,10 +20,8 @@
 // and a keyed field takes a list of keys with ":". A comma inside quotes is
 // part of the value.
 //
-// A directive term (sort:, order:, unique:, seed:) changes the
-// display, and does not filter.| "#" value | word | "quoted words"
-//
-//	op      = ":" | "=" | "!=" | "<" | "<=" | ">" | ">="
+// String writes the canonical form of a query. Parse of the canonical form
+// gives the same AST, without the positions (FuzzRoundTrip).
 //
 // A directive term (sort:, order:, unique:, seed:) changes the display and
 // does not filter. Directives are allowed only at the top level, joined by
@@ -272,13 +270,17 @@ func formatValue(v Value) string {
 		return strconv.Itoa(v.Num) + ".." + strconv.Itoa(v.Hi)
 	case v.Quoted:
 		return quote(v.Text)
+	case v.Text == "":
+		// "x:" has an empty value without quotes. `x:""` is another term:
+		// a quoted name value matches in another way.
+		return ""
 	default:
 		return quoteIfNeeded(v.Text)
 	}
 }
 
 func quoteIfNeeded(s string) string {
-	if s == "" || strings.ContainsAny(s, " \t\"()") {
+	if s == "" || hasSpace(s) || strings.ContainsAny(s, "\"()") {
 		return quote(s)
 	}
 	return s
