@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -22,7 +23,9 @@ const (
 	datasetURL    = "https://storage.googleapis.com/mklv-keyforge-cards-public/data/cards.json"
 	datasetFile   = "tmp/cards.json"
 	problemsFile  = "docs/dataset-problems.md"
-	repo          = "dmikalova/keyforge-data"
+	// notifiedFile is the problems file of the last Discord post.
+	notifiedFile = "tmp/dataset-problems.notified.md"
+	repo         = "dmikalova/keyforge-data"
 	// discordSecrets holds the maintenance channel webhook.
 	discordSecrets = "../infrastructure/secrets/discord.sops.json"
 )
@@ -92,19 +95,18 @@ func publishedVersion() string {
 }
 
 // notifyProblems posts the problems summary to the maintenance Discord
-// channel when the problems differ from the committed problems file. Commit
-// the problems file after a publish, so the next publish compares against
-// it.
+// channel when the problems differ from the last problems that it posted
+// (tmp/dataset-problems.notified.md).
 func notifyProblems() error {
 	body, err := os.ReadFile(problemsFile)
 	if err != nil {
 		return err
 	}
-	old, err := sh.Output("git", "show", "HEAD:"+problemsFile)
-	if err != nil {
-		old = ""
+	old, err := os.ReadFile(notifiedFile)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
 	}
-	if withoutVersion(old) == withoutVersion(string(body)) {
+	if withoutVersion(string(old)) == withoutVersion(string(body)) {
 		fmt.Println("the dataset problems did not change")
 		return nil
 	}
@@ -133,7 +135,7 @@ func notifyProblems() error {
 		return fmt.Errorf("discord: %s", resp.Status)
 	}
 	fmt.Println("posted the dataset problems to Discord")
-	return nil
+	return os.WriteFile(notifiedFile, body, 0o600)
 }
 
 // withoutVersion drops the line with the dataset version, which changes on
