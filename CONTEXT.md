@@ -53,10 +53,28 @@ the tide. Master Vault gives these cards a pseudo-house (`archonpower`,
 `prophecy`, `thetide`). The flag is `is:reference`.
 
 **Houseless card**:
-A creature that is in a deck but not in one of the deck's three houses.
-Examples: skybeasts (Æmber Skies), revenants (Grim Reminders), mercenaries (a
-later set). The overrides give each kind a label, and the label becomes a flag
-(`is:skybeast`).
+A card that is in a deck but not in one of the deck's three houses. All
+houseless cards have the flag `is:houseless`. There are three groups:
+
+- The houseless kinds: skybeasts (Æmber Skies), revenants (Grim Reminders),
+  mercenaries (a later set). The overrides give each kind a label, and the
+  label becomes a flag (`is:skybeast`).
+- The anomalies that have no printing in a playable set.
+- The multi-house cards: Master Vault prints one card object for each house
+  of the deck (Dark Æmber Vault, It's Coming...). The flag is
+  `is:multihouse`.
+
+**Anomaly**:
+A card with the anomaly frame and its own rarity symbol. Master Vault keeps
+the Worlds Collide anomalies in a separate expansion (453). Players never see
+that expansion: the anomalies come in Worlds Collide decks, so they are
+Worlds Collide printings with the numbers A01 to A10. If an anomaly has a
+printing in a playable set, that printing replaces the expansion 453 card.
+
+**Enhanced copy**:
+A card object that Master Vault makes for a card with Enhance icons in one
+deck. A deck needs the icons. The card gallery ignores enhanced copies: they
+are the same card as the base card.
 
 **Gigantic creature**:
 One card with two halves: the base half and the art half. The base half has the

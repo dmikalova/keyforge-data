@@ -45,6 +45,17 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 
 ## Phase 4: Distillation
 
+- Done in the first pass (distill package): enhanced copies merge into
+  the base card, gigantic halves join, the expansion 453 anomalies become
+  Worlds Collide printings, and houseless cards get `is:houseless`.
+  `mage dataset:publish` uploads the dataset and posts changed problems to
+  the maintenance Discord channel.
+- Check the Winds of Exchange token creatures when the crawl reaches that
+  set. The user expects about 28. Find where Master Vault puts a deck's
+  token creature.
+- Draw the anomaly rarity icon (a lightning bolt).
+- Move the scheduled crawl and publish to the cloud, so they do not depend
+  on this Mac.
 - Look at the raw data of each set before you write the rules. Make a report
   of what Master Vault does with gigantic halves, houseless creatures, evil
   twins, token creatures, reference cards, and X power in each set. Give it to
