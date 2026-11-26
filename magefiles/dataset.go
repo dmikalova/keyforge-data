@@ -84,6 +84,9 @@ func (Dataset) Publish() error {
 		}
 		fmt.Println("published dataset", local, "over", remote)
 	}
+	if err := pruneVersions(local); err != nil {
+		return err
+	}
 	return notifyProblems()
 }
 
@@ -335,6 +338,37 @@ func uploadVersion(version string) error {
 			u.src, publicBucket+u.dst); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// versionMaxAge is the age at which publish deletes an old version file.
+const versionMaxAge = 90 * 24 * time.Hour
+
+// pruneVersions deletes the version files under data/cards/ that are older
+// than versionMaxAge. It never deletes the current version, so
+// data/latest.json always points to a file, also when no new version was
+// published for a long time. A bucket lifecycle rule cannot make this
+// exception.
+func pruneVersions(current string) error {
+	out, err := sh.Output("gcloud", "storage", "ls", "-l", publicBucket+"data/cards/")
+	if err != nil {
+		return err
+	}
+	keep := publicBucket + "data/cards/" + current + ".json"
+	for line := range strings.SplitSeq(out, "\n") {
+		f := strings.Fields(line)
+		if len(f) != 3 || !strings.HasSuffix(f[2], ".json") || f[2] == keep {
+			continue
+		}
+		created, err := time.Parse(time.RFC3339, f[1])
+		if err != nil || time.Since(created) < versionMaxAge {
+			continue
+		}
+		if err := sh.Run("gcloud", "storage", "rm", f[2]); err != nil {
+			return err
+		}
+		fmt.Println("deleted the old dataset version", f[2])
 	}
 	return nil
 }

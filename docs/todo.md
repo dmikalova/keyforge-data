@@ -119,8 +119,6 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 - Done: `mage dataset:publish` writes the versioned dataset files
   (`data/cards/<version>.json`), the pointer (`data/latest.json`), and the
   Atom feed (`data/feed.xml`).
-- Add the bucket lifecycle rule in infrastructure: delete
-  `data/cards/<version>.json` after 90 days.
 - Move each site to `data/latest.json`. Then stop writing `data/cards.json`.
 - Document the endpoints with the standard that all repos use. Add an MCP
   server so that AI clients can search cards (ADR 0007).

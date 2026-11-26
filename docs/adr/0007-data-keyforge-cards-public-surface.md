@@ -37,8 +37,10 @@ grammar (ADR 0004).
 
 - The publisher writes the version file first, then the feed, then the
   pointer. A client that reads the pointer always finds the version file.
-- A bucket lifecycle rule deletes version files after 90 days. The publisher
-  does not delete files.
+- The publisher deletes version files that are older than 90 days. It never
+  deletes the current version. A bucket lifecycle rule cannot make that
+  exception: when no new version comes for 90 days, the rule deletes the
+  file that the pointer names.
 - The files stay in the bucket, not in the service. The sites keep working
   when the service is down.
 
