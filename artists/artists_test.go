@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/dmikalova/keyforge-data/overlay"
 )
 
 var known = []string{
@@ -146,20 +148,47 @@ func TestSaveKnown(t *testing.T) {
 	}
 }
 
-func TestLoadSkipsAliases(t *testing.T) {
+func TestLoadSkipsSharedFiles(t *testing.T) {
 	dir := t.TempDir()
 	if err := Save(dir, "worldscollide", map[string]string{"001": "Mateusz Mizak"}); err != nil {
 		t.Fatal(err)
 	}
-	b := []byte(`{"Matthew Mizak": "Mateusz Mizak"}`)
-	if err := os.WriteFile(filepath.Join(dir, AliasesFile), b, 0o600); err != nil {
+	b := []byte(`{"artistAliases": {"Matthew Mizak": "Mateusz Mizak"}}`)
+	if err := os.WriteFile(filepath.Join(dir, "_artists.json"), b, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	m, err := Load(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := m["aliases"]; ok || len(m) != 1 {
+	if len(m) != 1 || m["worldscollide"]["001"] != "Mateusz Mizak" {
 		t.Errorf("Load = %v, want only worldscollide", m)
+	}
+	a, err := LoadAliases(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a["Matthew Mizak"] != "Mateusz Mizak" {
+		t.Errorf("LoadAliases = %v", a)
+	}
+}
+
+// TestSaveKeepsSections checks that Save keeps the other sections of a set
+// file.
+func TestSaveKeepsSections(t *testing.T) {
+	dir := t.TempDir()
+	b := []byte(`{"cards": {"028": {"power": "0", "note": "Picaroon"}}}`)
+	if err := os.WriteFile(filepath.Join(dir, "massmutation.json"), b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := Save(dir, "massmutation", map[string]string{"028": "Brolken"}); err != nil {
+		t.Fatal(err)
+	}
+	f, err := overlay.Load(dir, "massmutation")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.Cards["028"].Note != "Picaroon" || f.Artists["028"] != "Brolken" {
+		t.Errorf("file = %+v", f)
 	}
 }

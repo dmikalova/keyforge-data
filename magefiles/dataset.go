@@ -56,6 +56,9 @@ func (Dataset) Distill() error {
 // version changed, and posts changed problems to the maintenance Discord channel.
 func (Dataset) Publish() error {
 	mg.Deps(Dataset.Distill)
+	if err := kfdata("overrides", "lint", "-dataset", datasetFile); err != nil {
+		return err
+	}
 	filled, err := fillImages()
 	if err != nil {
 		return err

@@ -56,6 +56,11 @@ type Card struct {
 	// "Always 3+ copies" or "Always a Maverick". They come from the deck
 	// rules (overlay data), not from Master Vault.
 	Notes []Note `json:"notes,omitempty"`
+	// Overlay names the fields of this card that an override sets in place
+	// of the Master Vault value, for example "power" for a creature that
+	// Master Vault gives no power. The fields that are always overlay data
+	// are in the Dataset comment.
+	Overlay []string `json:"overlay,omitempty"`
 	// Mentions are the other cards that the text or the flavor text of a
 	// printing names. The site links each title in the text to the card.
 	Mentions []Mention `json:"mentions,omitempty"`
@@ -93,7 +98,7 @@ type Printing struct {
 	// Flavor is the English flavor text.
 	Flavor string `json:"flavor,omitempty"`
 	// Artist is the artist as printed on the card. It comes from
-	// overrides/artists/<set>.json, not from Master Vault.
+	// the "artists" section of overrides/<set>.json, not from Master Vault.
 	Artist string `json:"artist,omitempty"`
 }
 
@@ -147,6 +152,16 @@ func (c *Card) HasFlag(flag string) bool {
 // Dataset is the published card data. The site reads it from the public
 // bucket and reloads it when it changes, so a new card or set needs no
 // deploy.
+//
+// Most fields come from Master Vault. Some fields are overlay data from
+// the override files (ADR 0008), never from Master Vault:
+//
+//   - Printing.Artist and ArtistAliases.
+//   - Card.Notes.
+//   - The Related entries other than "Evil twin", "Mega creature", and
+//     "Mentioned by", which distillation derives.
+//   - The Card.Aliases from the set files.
+//   - The fields that Card.Overlay names.
 type Dataset struct {
 	// Version changes each time the content changes. It is a hash of the
 	// sets and the cards.

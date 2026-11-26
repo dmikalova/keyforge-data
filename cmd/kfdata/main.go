@@ -67,6 +67,7 @@ commands:
                                         put another printing's art under a blank image
   check-art [-workers n]                print the card images with a blank art box
   threads <todo|add|rules> ...           list and edit the curated threads of related cards
+  overrides lint [-dataset f]            check the override files against the dataset
   distill [-out file] [-problems file] [-overrides dir] [-artists dir]
                                         write the dataset and its problems
   artists-scan [-dataset file] [-ocr bin] [-dir dir] [-cache dir]
@@ -151,6 +152,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return checkArt(ctx, rest, stdout)
 	case "threads":
 		return threadsCmd(rest, stdout)
+	case "overrides":
+		return overridesCmd(rest, stdout)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
 	case "artists-scan":
@@ -304,7 +307,7 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	problemsOut := fs.String("problems", "docs/dataset-problems.md", "problems file")
 	problemsJSON := fs.String("problems-json", "tmp/problems.json", "problems file as JSON")
 	overridesDir := fs.String("overrides", "overrides", "overrides directory")
-	artistsDir := fs.String("artists", "overrides/artists", "artists directory")
+	artistsDir := fs.String("artists", "overrides", "overrides directory with the artists")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}

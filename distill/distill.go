@@ -23,6 +23,7 @@ import (
 
 	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/derive"
+	"github.com/dmikalova/keyforge-data/overlay"
 	"github.com/dmikalova/keyforge-data/query"
 	"github.com/dmikalova/keyforge-data/sets"
 )
@@ -62,10 +63,10 @@ type Input struct {
 	// Overrides are the curated corrections, by set slug.
 	Overrides map[string]Override
 	// Artists are the artists of the printings, by set slug and collector
-	// number (overrides/artists/<set>.json).
+	// number (the "artists" section of overrides/<set>.json).
 	Artists map[string]map[string]string
 	// ArtistAliases maps another spelling of an artist to the canonical
-	// name (overrides/artists/aliases.json). It is optional.
+	// name (overrides/_artists.json). It is optional.
 	ArtistAliases map[string]string
 	// DeckSets maps a card object ID to the expansions of the stored decks
 	// that have it. Anomalies use it to find their set.
@@ -77,33 +78,11 @@ type Input struct {
 	Now time.Time
 }
 
-// Override is the curated data for one set (overrides/<set>.json).
-type Override struct {
-	// Kinds maps a Master Vault house of houseless cards to its kind label,
-	// for example "Skybeast" to "skybeast".
-	Kinds map[string]string `json:"kinds,omitempty"`
-	// Aliases maps a card title to extra names for name search.
-	Aliases map[string][]string `json:"aliases,omitempty"`
-	// Cards maps a card number to corrections for that printing's card.
-	Cards map[string]CardFix `json:"cards,omitempty"`
-	// Threads are curated threads of related cards. Only the file
-	// overrides/_threads.json has them.
-	Threads []Thread `json:"threads,omitempty"`
-	// Rules are the deck rules of related cards. Only the file
-	// overrides/_deckrules.json has them. kfdata threads rules writes it.
-	Rules []Rule `json:"rules,omitempty"`
-	// Notes are the notes of single cards. The import writes them to
-	// overrides/_deckrules.json. A note in overrides/_threads.json replaces
-	// the imported notes of the same card and kind.
-	Notes []NoteRule `json:"notes,omitempty"`
-}
+// Override is one override file (package overlay).
+type Override = overlay.File
 
 // CardFix corrects a Master Vault mistake.
-type CardFix struct {
-	Power *card.Power `json:"power,omitempty"`
-	Armor *int        `json:"armor,omitempty"`
-	Note  string      `json:"note,omitempty"`
-}
+type CardFix = overlay.CardFix
 
 // Problem is a card that the rules do not recognize, or data that is
 // missing. The user fixes a problem with an override or new data.
@@ -281,6 +260,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	c.Power, c.Armor = nil, 0
 	if typ == "creature" {
 		c.Power, c.Armor = r.stats(set, k, base, ov)
+		c.Overlay = overlaid(ov.Cards[k.number])
 	}
 
 	p := card.Printing{
@@ -845,6 +825,18 @@ func (r *run) anomalySets(objs []mvCard) map[string]int {
 				out[c.Number] = exp
 			}
 		}
+	}
+	return out
+}
+
+// overlaid returns the card fields that a card fix sets: "power", "armor".
+func overlaid(fix CardFix) []string {
+	var out []string
+	if fix.Power != nil {
+		out = append(out, "power")
+	}
+	if fix.Armor != nil {
+		out = append(out, "armor")
 	}
 	return out
 }

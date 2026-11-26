@@ -20,9 +20,9 @@ const (
 type Artists mg.Namespace
 
 // Scan distills the dataset, then reads the artist of each printing that
-// has none in overrides/artists/<set>.json.
+// has none in overrides/<set>.json.
 //
-// It writes the sure matches to overrides/artists/<set>.json and the others to the
+// It writes the sure matches to overrides/<set>.json and the others to the
 // review queue (tmp/artists/review.json). Run artists:review next, then
 // dataset:publish.
 func (Artists) Scan() error {
@@ -33,7 +33,7 @@ func (Artists) Scan() error {
 // Review asks for the artist of each printing in the review queue.
 //
 // Press Enter to take the first candidate, type a number to take another,
-// or type the name. A name that is not in overrides/artists/known.txt is added after
+// or type the name. A name that is not in overrides/_artists.json is added after
 // you confirm it. The image shows in the terminal in Ghostty, kitty, iTerm2,
 // and VS Code (with terminal.integrated.enableImages), and in Preview in
 // other terminals. Set KFDATA_SHOW to kitty, inline, open, or none to choose.

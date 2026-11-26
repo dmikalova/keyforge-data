@@ -76,7 +76,7 @@ type artistFlags struct {
 }
 
 func (a *artistFlags) register(fs *flag.FlagSet) {
-	fs.StringVar(&a.dir, "dir", "overrides/artists", "artists directory")
+	fs.StringVar(&a.dir, "dir", "overrides", "overrides directory")
 	fs.StringVar(&a.cache, "cache", "tmp/artists", "image, OCR, and review cache")
 }
 
@@ -86,7 +86,7 @@ func (a artistFlags) imageDir() string   { return filepath.Join(a.cache, "images
 
 // artistsScan reads the artist of each printing that has none: it downloads
 // the image, runs artistocr, and matches the readings to the known artists.
-// It writes the sure matches to overrides/artists/<set>.json and the others to the
+// It writes the sure matches to overrides/<set>.json and the others to the
 // review queue.
 func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 	fs := flag.NewFlagSet("artists-scan", flag.ContinueOnError)
@@ -287,7 +287,16 @@ func runOCR(
 	if len(paths) == 0 {
 		return results, nil
 	}
-	lines, err := ocrParallel(ctx, bin, filepath.Join(af.dir, artists.KnownFile), paths, workers)
+	// artistocr reads the known artists from a file, one name per line.
+	known, err := artists.LoadKnown(af.dir)
+	if err != nil {
+		return nil, err
+	}
+	knownFile := filepath.Join(af.cache, "known.txt")
+	if err := os.WriteFile(knownFile, []byte(strings.Join(known, "\n")+"\n"), 0o600); err != nil {
+		return nil, err
+	}
+	lines, err := ocrParallel(ctx, bin, knownFile, paths, workers)
 	if err != nil {
 		return nil, err
 	}

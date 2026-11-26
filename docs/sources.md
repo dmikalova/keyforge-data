@@ -30,7 +30,7 @@ On 2026-11-26 we compared the artist scan with `illustrators.csv`:
 
 - 2423 of 2486 printings agreed.
 - 46 printings had a different spelling of one artist. The aliases in
-  [../overrides/artists/aliases.json](../overrides/artists/aliases.json) now
+  [../overrides/_artists.json](../overrides/_artists.json) now
   join the spellings. The artist files use only the canonical names. The
   dataset `artistAliases` map gives the other spellings to search.
 - 18 printings disagreed. In all 18, the card image showed that the scan was

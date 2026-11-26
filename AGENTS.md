@@ -22,7 +22,8 @@ Conventions for this repository. The vocabulary is in
 | `sources/mv`        | Committed crawl outputs, for example the cover deck lists   |
 | `artists`           | The match of OCR readings to the known artists              |
 | `tools/artistocr`   | The Swift OCR tool (macOS Vision) for the artist line       |
-| `overrides/artists` | The known artists and the artist of each printing           |
+| `overlay`           | The format of the override files, and their lint            |
+| `overrides`         | The override files: the overlay over the Master Vault data  |
 
 ## Rules
 

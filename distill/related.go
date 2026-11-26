@@ -11,40 +11,23 @@ import (
 	"unicode/utf8"
 
 	"github.com/dmikalova/keyforge-data/card"
+	"github.com/dmikalova/keyforge-data/overlay"
 )
 
-// Thread is a curated thread of related cards (overrides/_threads.json).
-// Distillation adds a Related entry with the thread's label to each card in
-// it.
-type Thread struct {
-	Label  string   `json:"label"`
-	Titles []string `json:"titles"`
-}
+// Thread is a curated thread of related cards (package overlay).
+type Thread = overlay.Thread
 
-// Rule is a deck rule of related cards (overrides/_deckrules.json), for
-// example "Faygin always appears in a deck with at least 2 copies of Urchin".
-//
-//   - A rule with Cards adds a Related entry with the label and the With
-//     cards to each of the Cards.
-//   - A rule without Cards is a group: each of the With cards gets the
-//     others.
-//
-// A rule does not add an entry that an earlier thread of the card already
-// has: the curated threads win.
-type Rule struct {
-	// Kind is the rule type of the source, for example "always".
-	Kind  string   `json:"kind"`
-	Label string   `json:"label"`
-	Cards []string `json:"cards,omitempty"`
-	With  []string `json:"with"`
-}
+// Rule is a deck rule of related cards (package overlay).
+type Rule = overlay.Rule
 
-// threadsKey is the overrides key of the curated threads. It is not a set
-// slug.
-const threadsKey = "_threads"
+// NoteRule is a note about one card (package overlay).
+type NoteRule = overlay.NoteRule
 
-// rulesKey is the overrides key of the deck rules.
-const rulesKey = "_deckrules"
+// The override files of the threads and the deck rules.
+const (
+	threadsKey = overlay.ThreadsFile
+	rulesKey   = overlay.RulesFile
+)
 
 // evilTwinSuffix marks the evil twin in a rule title: "Prof. Garwynne (Evil
 // Twin)".
@@ -368,15 +351,6 @@ func nameRe(title string) *regexp.Regexp {
 	re := regexp.MustCompile(strings.ReplaceAll(regexp.QuoteMeta(title), " ", "[  ]"))
 	nameRes.Store(title, re)
 	return re
-}
-
-// NoteRule is a note about one card: "Plague Rat: Always 3+ copies". A
-// title can end in " (Evil Twin)", or in a house in parentheses for the card
-// of that house: "Armageddon Cloak (Redemption)".
-type NoteRule struct {
-	Kind  string `json:"kind"`
-	Title string `json:"title"`
-	Text  string `json:"text"`
 }
 
 // notes adds the notes to the cards. A curated note replaces the imported

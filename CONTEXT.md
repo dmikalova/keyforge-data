@@ -161,8 +161,17 @@ fetch. It runs again in seconds after a rule change.
 _Avoid_: import (for this step).
 
 **Overrides**:
-Curated corrections and labels, one file per set: Master Vault mistakes,
-houseless kind labels, aliases, and variant groups.
+The files in overrides/. They are the overlay: the curated data that
+distillation puts over the Master Vault data (ADR 0008). All files have one
+format (package overlay). A set file has the card fixes, the artists, the
+houseless kind labels, and the name aliases of one set. The shared files
+start with "_": the curated threads and notes, the deck rules, and the
+artists. `mage overrides:lint` checks them.
+
+**Overlay**:
+The data that the overrides add to the Master Vault data, or put in its
+place. The dataset keeps the Master Vault data where it can. `Card.Overlay`
+names the card fields that an override set.
 
 **Anomaly report**:
 The list of cards that the distillation rules do not recognize. Distillation

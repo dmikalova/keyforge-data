@@ -1,35 +1,24 @@
 // Package artists matches the artist line of card images to the known
 // artists, and reads and writes the curated artist files.
 //
-// The files are in overrides/artists:
+// The data is in the override files (package overlay):
 //
-//   - known.txt has the known artists, one name per line.
-//   - <set>.json maps each collector number of the set to its artist.
+//   - overrides/_artists.json has the known artists and the aliases.
+//   - overrides/<set>.json maps each collector number of the set to its
+//     artist, in its "artists" section.
 //
 // The OCR is not here: the artistocr tool reads the images (macOS Vision),
 // and this package only decides which known artist a set of readings names.
 package artists
 
 import (
-	"bufio"
 	"cmp"
-	"encoding/json/v2"
-	"errors"
-	"io/fs"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
-	"strings"
 
+	"github.com/dmikalova/keyforge-data/overlay"
 	"github.com/dmikalova/keyforge-data/query"
 )
-
-// KnownFile is the file of known artists in the artists directory.
-const KnownFile = "known.txt"
-
-// AliasesFile is the file of variant spellings in the artists directory.
-const AliasesFile = "aliases.json"
 
 // Aliases maps a variant spelling of an artist to the canonical name: a
 // native and an anglicized name, a short form, a studio's other name, or a
@@ -52,19 +41,14 @@ func (a Aliases) Canonical(name string) string {
 	return name
 }
 
-// LoadAliases reads the aliases. A missing file is no aliases.
+// LoadAliases reads the aliases from the overrides directory.
 func LoadAliases(dir string) (Aliases, error) {
-	b, err := os.ReadFile(filepath.Join(dir, AliasesFile))
-	if errors.Is(err, fs.ErrNotExist) {
-		return Aliases{}, nil
-	}
+	f, err := overlay.Load(dir, overlay.ArtistsFile)
 	if err != nil {
 		return nil, err
 	}
 	a := Aliases{}
-	if err := json.Unmarshal(b, &a); err != nil {
-		return nil, errors.Join(errors.New(AliasesFile), err)
-	}
+	maps.Copy(a, f.ArtistAliases)
 	return a, nil
 }
 
@@ -269,24 +253,10 @@ func levenshtein(a, b string) int {
 	return prev[len(b)]
 }
 
-// LoadKnown reads the known artists. A missing file is an empty list.
+// LoadKnown reads the known artists from the overrides directory.
 func LoadKnown(dir string) ([]string, error) {
-	f, err := os.Open(filepath.Join(dir, KnownFile))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = f.Close() }()
-	var out []string
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		if name := strings.TrimSpace(sc.Text()); name != "" {
-			out = append(out, name)
-		}
-	}
-	return out, sc.Err()
+	f, err := overlay.Load(dir, overlay.ArtistsFile)
+	return f.KnownArtists, err
 }
 
 // SaveKnown writes the known artists, sorted by folded name, without
@@ -298,57 +268,31 @@ func SaveKnown(dir string, names []string) error {
 		func(a, b string) int { return cmp.Compare(query.Fold(a), query.Fold(b)) },
 	)
 	names = slices.Compact(names)
-	return os.WriteFile(
-		filepath.Join(dir, KnownFile),
-		[]byte(strings.Join(names, "\n")+"\n"),
-		0o600,
+	return overlay.Update(
+		dir,
+		overlay.ArtistsFile,
+		func(f *overlay.File) { f.KnownArtists = names },
 	)
 }
 
-// Load reads every <set>.json: the artist of each printing, by set slug and
-// collector number. A missing directory is an empty map.
+// Load reads the artist of each printing, by set slug and collector number,
+// from the set files of the overrides directory.
 func Load(dir string) (map[string]map[string]string, error) {
-	files, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	files, err := overlay.LoadAll(dir)
 	if err != nil {
 		return nil, err
 	}
 	out := map[string]map[string]string{}
-	for _, f := range files {
-		// The aliases file is not a set.
-		if filepath.Base(f) == AliasesFile {
-			continue
+	for name, f := range files {
+		if overlay.IsSet(name) && len(f.Artists) > 0 {
+			out[name] = f.Artists
 		}
-		b, err := os.ReadFile(f)
-		if err != nil {
-			return nil, err
-		}
-		m := map[string]string{}
-		if err := json.Unmarshal(b, &m); err != nil {
-			return nil, errors.Join(errors.New(f), err)
-		}
-		out[strings.TrimSuffix(filepath.Base(f), ".json")] = m
 	}
 	return out, nil
 }
 
-// Save writes the artists of one set to <set>.json, sorted by number.
+// Save writes the artists of one set to the set file of the overrides
+// directory. It keeps the other sections of the file.
 func Save(dir, set string, m map[string]string) error {
-	// One printing per line keeps the diffs small.
-	lines := make([]string, 0, len(m))
-	for _, num := range slices.Sorted(maps.Keys(m)) {
-		k, err := json.Marshal(num)
-		if err != nil {
-			return err
-		}
-		v, err := json.Marshal(m[num])
-		if err != nil {
-			return err
-		}
-		lines = append(lines, "  "+string(k)+": "+string(v))
-	}
-	s := "{}\n"
-	if len(lines) > 0 {
-		s = "{\n" + strings.Join(lines, ",\n") + "\n}\n"
-	}
-	return os.WriteFile(filepath.Join(dir, set+".json"), []byte(s), 0o600)
+	return overlay.Update(dir, set, func(f *overlay.File) { f.Artists = m })
 }

@@ -7,11 +7,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/dmikalova/keyforge-data/overlay"
 	"github.com/dmikalova/keyforge-data/raw"
 )
 
@@ -38,23 +37,7 @@ func LoadCards(store *raw.Store) ([][]byte, error) {
 // LoadOverrides reads overrides/<set>.json. A missing directory is not an
 // error.
 func LoadOverrides(dir string) (map[string]Override, error) {
-	files, err := filepath.Glob(filepath.Join(dir, "*.json"))
-	if err != nil {
-		return nil, err
-	}
-	out := map[string]Override{}
-	for _, f := range files {
-		b, err := os.ReadFile(f)
-		if err != nil {
-			return nil, err
-		}
-		var o Override
-		if err := json.Unmarshal(b, &o); err != nil {
-			return nil, fmt.Errorf("%s: %w", f, err)
-		}
-		out[strings.TrimSuffix(filepath.Base(f), ".json")] = o
-	}
-	return out, nil
+	return overlay.LoadAll(dir)
 }
 
 // PublicBucket is the bucket that holds the card images and the dataset.
