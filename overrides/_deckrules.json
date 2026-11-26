@@ -1,0 +1,1456 @@
+{
+  "rules": [
+    {
+      "kind": "always",
+      "label": "Always with 2+",
+      "cards": [
+        "Faygin"
+      ],
+      "with": [
+        "Urchin"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Bear Flute"
+      ],
+      "with": [
+        "Ancient Bear"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with 2+",
+      "cards": [
+        "Niffle Queen"
+      ],
+      "with": [
+        "Niffle Ape"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Troop Call"
+      ],
+      "with": [
+        "Niffle Ape"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with 2+",
+      "cards": [
+        "Ortannu the Chained"
+      ],
+      "with": [
+        "Ortannu’s Binding"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Ortannu’s Binding"
+      ],
+      "with": [
+        "Ortannu the Chained"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with 2+",
+      "cards": [
+        "Grumpus Tamer"
+      ],
+      "with": [
+        "War Grumpus"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Project Z.Y.X."
+      ],
+      "with": [
+        "Z.Y.X. Researcher",
+        "Director of Z.Y.X."
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Chan’s Blaster"
+      ],
+      "with": [
+        "Commander Chan"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Frane’s Blaster"
+      ],
+      "with": [
+        "First Officer Frane"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Garcia’s Blaster"
+      ],
+      "with": [
+        "Sensor Chief Garcia"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Ingram’s Blaster"
+      ],
+      "with": [
+        "Medic Ingram"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Khrkhar’s Blaster"
+      ],
+      "with": [
+        "Lieutenant Khrkhar"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Kirby’s Blaster"
+      ],
+      "with": [
+        "Com. Officer Kirby"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Molina’s Blaster"
+      ],
+      "with": [
+        "Armsmaster Molina"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Qincan’s Blaster"
+      ],
+      "with": [
+        "Sci. Officer Qincan"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Walls’ Blaster"
+      ],
+      "with": [
+        "Chief Engineer Walls"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Chain Gang"
+      ],
+      "with": [
+        "Subtle Chain"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Monument to Ludo"
+      ],
+      "with": [
+        "Praefectus Ludo"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Monument to Shrix"
+      ],
+      "with": [
+        "Citizen Shrix"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Monument to Faust"
+      ],
+      "with": [
+        "Faust the Great"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Monument to Primus"
+      ],
+      "with": [
+        "Consul Primus"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Monument to Octavia"
+      ],
+      "with": [
+        "Cornicen Octavia"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Mutation of Fury"
+      ],
+      "with": [
+        "Dark Harbinger"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Mutation of Instinct"
+      ],
+      "with": [
+        "Dark Harbinger"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Mutation of Cunning"
+      ],
+      "with": [
+        "Dark Harbinger"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Dark Queen Gloriana"
+      ],
+      "with": [
+        "Gloriana’s Attendant"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Horseman of Death",
+        "Horseman of Famine",
+        "Horseman of Pestilence",
+        "Horseman of War"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Timetraveller",
+        "Help from Future Self"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Hyde",
+        "Velum"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Igon the Green",
+        "Igon the Terrible"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Xenos Bloodshadow",
+        "Toad"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Alaka",
+        "Alaka’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Ganger Chieftain",
+        "Chieftain’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Cowfyne",
+        "Cowfyne’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Groke",
+        "Groke’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Gron Nine-Toes",
+        "Gron’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Mogghunter",
+        "Mogghunter’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Narp",
+        "Narp’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Mega Shorty",
+        "Shorty’s Brew"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always with one of",
+      "cards": [
+        "It’s Coming..."
+      ],
+      "with": [
+        "Deusillus",
+        "Ultra Gravitron",
+        "Niffle Kong"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always with",
+      "cards": [
+        "Deusillus"
+      ],
+      "with": [
+        "It’s Coming..."
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always with",
+      "cards": [
+        "Ultra Gravitron"
+      ],
+      "with": [
+        "It’s Coming..."
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always with",
+      "cards": [
+        "Niffle Kong"
+      ],
+      "with": [
+        "It’s Coming..."
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Z-Force Agent 14",
+        "Z-Particle Tracker",
+        "Z-Ray Blaster",
+        "Z-Wave Emitter"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Scylla",
+        "Charybdis"
+      ]
+    },
+    {
+      "kind": "others",
+      "label": "Always with another",
+      "with": [
+        "Shard of Pain",
+        "Shard of Hope",
+        "Shard of Hate",
+        "Shard of Knowledge",
+        "Shard of Life",
+        "Shard of Greed",
+        "Shard of Strength"
+      ]
+    },
+    {
+      "kind": "others",
+      "label": "Always with 2+ others",
+      "with": [
+        "Pride",
+        "Desire",
+        "Envy",
+        "Wrath",
+        "Sloth",
+        "Gluttony",
+        "Greed"
+      ]
+    },
+    {
+      "kind": "others",
+      "label": "Always with one of",
+      "cards": [
+        "Dark Harbinger"
+      ],
+      "with": [
+        "Mutation of Fury",
+        "Mutation of Instinct",
+        "Mutation of Cunning"
+      ]
+    },
+    {
+      "kind": "others",
+      "label": "Always with one of",
+      "cards": [
+        "Mercy, Malkin Queen"
+      ],
+      "with": [
+        "Floomf",
+        "Lumilu",
+        "Eunoia"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Urchin"
+      ],
+      "with": [
+        "Faygin"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Ancient Bear"
+      ],
+      "with": [
+        "Bear Flute"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "War Grumpus"
+      ],
+      "with": [
+        "Grumpus Tamer"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Commander Chan"
+      ],
+      "with": [
+        "Chan’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "First Officer Frane"
+      ],
+      "with": [
+        "Frane’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Sensor Chief Garcia"
+      ],
+      "with": [
+        "Garcia’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Medic Ingram"
+      ],
+      "with": [
+        "Ingram’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Lieutenant Khrkhar"
+      ],
+      "with": [
+        "Khrkhar’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Com. Officer Kirby"
+      ],
+      "with": [
+        "Kirby’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Armsmaster Molina"
+      ],
+      "with": [
+        "Molina’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Sci. Officer Qincan"
+      ],
+      "with": [
+        "Qincan’s Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Chief Engineer Walls"
+      ],
+      "with": [
+        "Walls’ Blaster"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Subtle Chain"
+      ],
+      "with": [
+        "Chain Gang"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Praefectus Ludo"
+      ],
+      "with": [
+        "Monument to Ludo"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Citizen Shrix"
+      ],
+      "with": [
+        "Monument to Shrix"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Faust the Great"
+      ],
+      "with": [
+        "Monument to Faust"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Consul Primus"
+      ],
+      "with": [
+        "Monument to Primus"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Cornicen Octavia"
+      ],
+      "with": [
+        "Monument to Octavia"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Master of 1",
+        "Master of 2",
+        "Master of 3"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Dino- variants",
+      "with": [
+        "Dino-Bot",
+        "Dino-Fiend",
+        "Dino-Thief",
+        "Dino-Knight",
+        "Dino-Beast",
+        "Dino-Alien"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Bot variants",
+      "with": [
+        "Dino-Bot",
+        "Dæmo-Bot",
+        "Umbra-Bot",
+        "Lyco-Bot",
+        "Sacro-Bot",
+        "Xeno-Bot"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Thief variants",
+      "with": [
+        "Dino-Thief",
+        "Dæmo-Thief",
+        "Techno-Thief",
+        "Lyco-Thief",
+        "Sacro-Thief",
+        "Xeno-Thief"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Dæmo- variants",
+      "with": [
+        "Dæmo-Thief",
+        "Dæmo-Saurus",
+        "Dæmo-Bot",
+        "Dæmo-Knight",
+        "Dæmo-Beast",
+        "Dæmo-Alien"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Saurus variants",
+      "with": [
+        "Dæmo-Saurus",
+        "Lyco-Saurus",
+        "Umbra-Saurus",
+        "Sacro-Saurus",
+        "Techno-Saurus",
+        "Xeno-Saurus"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Techno- variants",
+      "with": [
+        "Techno-Saurus",
+        "Techno-Alien",
+        "Techno-Fiend",
+        "Techno-Thief",
+        "Techno-Knight",
+        "Techno-Beast"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Beast variants",
+      "with": [
+        "Techno-Beast",
+        "Dæmo-Beast",
+        "Umbra-Beast",
+        "Sacro-Beast",
+        "Dino-Beast",
+        "Xeno-Beast"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Knight variants",
+      "with": [
+        "Techno-Knight",
+        "Dæmo-Knight",
+        "Umbra-Knight",
+        "Lyco-Knight",
+        "Dino-Knight",
+        "Xeno-Knight"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Xeno- variants",
+      "with": [
+        "Xeno-Knight",
+        "Xeno-Fiend",
+        "Xeno-Thief",
+        "Xeno-Bot",
+        "Xeno-Beast",
+        "Xeno-Saurus"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Lyco- variants",
+      "with": [
+        "Lyco-Knight",
+        "Lyco-Fiend",
+        "Lyco-Saurus",
+        "Lyco-Bot",
+        "Lyco-Thief",
+        "Lyco-Alien"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Umbra- variants",
+      "with": [
+        "Umbra-Knight",
+        "Umbra-Fiend",
+        "Umbra-Saurus",
+        "Umbra-Bot",
+        "Umbra-Beast",
+        "Umbra-Alien"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Alien variants",
+      "with": [
+        "Umbra-Alien",
+        "Lyco-Alien",
+        "Dæmo-Alien",
+        "Sacro-Alien",
+        "Techno-Alien",
+        "Dino-Alien"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "-Fiend variants",
+      "with": [
+        "Dino-Fiend",
+        "Lyco-Fiend",
+        "Sacro-Fiend",
+        "Techno-Fiend",
+        "Umbra-Fiend",
+        "Xeno-Fiend"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Sacro- variants",
+      "with": [
+        "Sacro-Fiend",
+        "Sacro-Bot",
+        "Sacro-Saurus",
+        "Sacro-Thief",
+        "Sacro-Alien",
+        "Sacro-Beast"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Bronze Key Imp",
+        "Silver Key Imp",
+        "Gold Key Imp"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Brobnar Ambassador",
+        "Dis Ambassador",
+        "Logos Ambassador",
+        "Mars Ambassador",
+        "Shadows Ambassador",
+        "Untamed Ambassador"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Beasts’ Bane",
+        "Demons’ Bane",
+        "Dinosaurs’ Bane",
+        "Humans’ Bane",
+        "Scientists’ Bane",
+        "Thieves’ Bane"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Untamed Plant",
+        "Brobnar Plant",
+        "Dis Plant",
+        "Logos Plant",
+        "Saurian Plant",
+        "Star Alliance Plant"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Chan’s Blaster",
+        "Frane’s Blaster",
+        "Garcia’s Blaster",
+        "Ingram’s Blaster",
+        "Khrkhar’s Blaster",
+        "Kirby’s Blaster",
+        "Molina’s Blaster",
+        "Qincan’s Blaster",
+        "Walls’ Blaster"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Alaka’s Brew",
+        "Chieftain’s Brew",
+        "Cowfyne’s Brew",
+        "Groke’s Brew",
+        "Gron’s Brew",
+        "Mogghunter’s Brew",
+        "Narp’s Brew",
+        "Shorty’s Brew"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Alaka"
+      ],
+      "with": [
+        "Alaka"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Ganger Chieftain"
+      ],
+      "with": [
+        "Ganger Chieftain"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Cowfyne"
+      ],
+      "with": [
+        "Cowfyne"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Groke"
+      ],
+      "with": [
+        "Groke"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Gron Nine-Toes"
+      ],
+      "with": [
+        "Gron Nine-Toes"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Mogghunter"
+      ],
+      "with": [
+        "Mogghunter"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Narp"
+      ],
+      "with": [
+        "Narp"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mega Shorty"
+      ],
+      "with": [
+        "Shorty"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Alaka"
+      ],
+      "with": [
+        "Mega Alaka"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Ganger Chieftain"
+      ],
+      "with": [
+        "Mega Ganger Chieftain"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Cowfyne"
+      ],
+      "with": [
+        "Mega Cowfyne"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Groke"
+      ],
+      "with": [
+        "Mega Groke"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Gron Nine-Toes"
+      ],
+      "with": [
+        "Mega Gron Nine-Toes"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Mogghunter"
+      ],
+      "with": [
+        "Mega Mogghunter"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Narp"
+      ],
+      "with": [
+        "Mega Narp"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "cards": [
+        "Shorty"
+      ],
+      "with": [
+        "Mega Shorty"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Dexus",
+        "Sinestra"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Odd Clawde",
+        "Even Ivan"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Mutation of Fury",
+        "Mutation of Instinct",
+        "Mutation of Cunning"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Com. Officer Gross",
+        "Com. Officer Hings"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Reckless Experimentation",
+        "Rooftop Laboratory",
+        "Dr. Verokter",
+        "Groundbreaking Discovery"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Dive Deep",
+        "Dark Discovery",
+        "Drawn Down"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Orphion, Land’s Chosen",
+        "Orphiel, Sea’s Chosen"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Bombyx",
+        "Chenille",
+        "Fifalde"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Tentaclid"
+      ],
+      "with": [
+        "Omnipus"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with 2+",
+      "cards": [
+        "Omnipus"
+      ],
+      "with": [
+        "Tentaclid"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Prof. Garwynne"
+      ],
+      "with": [
+        "Theory or Conjecture"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Prof. Garwynne (Evil Twin)"
+      ],
+      "with": [
+        "Theory or Conjecture"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Theory or Conjecture"
+      ],
+      "with": [
+        "Prof. Garwynne",
+        "Prof. Garwynne (Evil Twin)"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Revna Starsong"
+      ],
+      "with": [
+        "Berserker"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Berserker"
+      ],
+      "with": [
+        "Revna Starsong"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Molluscaller"
+      ],
+      "with": [
+        "Strange Shell"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Strange Shell"
+      ],
+      "with": [
+        "Molluscaller"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Blorb Hive"
+      ],
+      "with": [
+        "Blorb"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Blorb"
+      ],
+      "with": [
+        "Blorb Hive"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Training Costs"
+      ],
+      "with": [
+        "Bellatoran Warrior"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Bellatoran Warrior"
+      ],
+      "with": [
+        "Training Costs"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Norbyn’s Cavern"
+      ],
+      "with": [
+        "Æmberling"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Æmberling"
+      ],
+      "with": [
+        "Norbyn’s Cavern"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Tangaika"
+      ],
+      "with": [
+        "Cultist",
+        "Primordial Vault"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Cultist"
+      ],
+      "with": [
+        "Tangaika",
+        "Primordial Vault"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Primordial Vault"
+      ],
+      "with": [
+        "Tangaika",
+        "Cultist"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Batariel of the Grey"
+      ],
+      "with": [
+        "Disciple"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Disciple"
+      ],
+      "with": [
+        "Batariel of the Grey"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Nautilixian",
+        "Green Aeronaut",
+        "Purple Aeronaut",
+        "Red Aeronaut",
+        "White Aeronaut"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Platopelta",
+        "Aristotlmimus",
+        "Socraterosaurus"
+      ]
+    },
+    {
+      "kind": "variant",
+      "label": "Variants",
+      "with": [
+        "Soleft",
+        "Flounderight"
+      ]
+    },
+    {
+      "kind": "fixed",
+      "label": "Always together",
+      "with": [
+        "Conductor Jărroyă",
+        "Shĭzyokŭ Buggy",
+        "Shĭgzisŏ Buggy",
+        "Shĭsnyasĭ Buggy"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Hallafest"
+      ],
+      "with": [
+        "Brikk Nastee",
+        "Ged Hammer",
+        "Vulka",
+        "Harmal Atoon"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Brikk Nastee"
+      ],
+      "with": [
+        "Hallafest"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Ged Hammer"
+      ],
+      "with": [
+        "Hallafest"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Vulka"
+      ],
+      "with": [
+        "Hallafest"
+      ]
+    },
+    {
+      "kind": "sometimes",
+      "label": "Sometimes with",
+      "cards": [
+        "Harmal Atoon"
+      ],
+      "with": [
+        "Hallafest"
+      ]
+    },
+    {
+      "kind": "always",
+      "label": "Always with",
+      "cards": [
+        "Memrox the Red"
+      ],
+      "with": [
+        "Scoop Up"
+      ]
+    }
+  ]
+}

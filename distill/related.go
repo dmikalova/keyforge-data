@@ -21,9 +21,34 @@ type Thread struct {
 	Titles []string `json:"titles"`
 }
 
+// Rule is a deck rule of related cards (overrides/_deckrules.json), for
+// example "Faygin always appears in a deck with at least 2 copies of Urchin".
+//
+//   - A rule with Cards adds a Related entry with the label and the With
+//     cards to each of the Cards.
+//   - A rule without Cards is a group: each of the With cards gets the
+//     others.
+//
+// A rule does not add an entry that an earlier thread of the card already
+// has: the curated threads win.
+type Rule struct {
+	// Kind is the rule type of the source, for example "always".
+	Kind  string   `json:"kind"`
+	Label string   `json:"label"`
+	Cards []string `json:"cards,omitempty"`
+	With  []string `json:"with"`
+}
+
 // threadsKey is the overrides key of the curated threads. It is not a set
 // slug.
 const threadsKey = "_threads"
+
+// rulesKey is the overrides key of the deck rules.
+const rulesKey = "_deckrules"
+
+// evilTwinSuffix marks the evil twin in a rule title: "Prof. Garwynne (Evil
+// Twin)".
+const evilTwinSuffix = " (Evil Twin)"
 
 // linker adds related threads to the cards.
 type linker struct {
@@ -42,6 +67,7 @@ func linkCards(cards []card.Card, overrides map[string]Override) {
 	l.evilTwins()
 	l.megas()
 	l.threads(overrides[threadsKey].Threads)
+	l.rules(overrides[rulesKey].Rules)
 	for _, id := range slices.Sorted(maps.Keys(mentionedBy)) {
 		l.add(id, "Mentioned by", mentionedBy[id])
 	}
@@ -133,6 +159,64 @@ func (l *linker) threads(ths []Thread) {
 			l.add(id, th.Label, ids)
 		}
 	}
+}
+
+// rules adds the deck rules.
+func (l *linker) rules(rs []Rule) {
+	for _, r := range rs {
+		with := l.ids(r.With)
+		if len(r.Cards) == 0 {
+			for _, id := range with {
+				l.addNew(id, r.Label, with)
+			}
+			continue
+		}
+		for _, id := range l.ids(r.Cards) {
+			l.addNew(id, r.Label, with)
+		}
+	}
+}
+
+// ids returns the card IDs of the titles that it finds.
+func (l *linker) ids(titles []string) []string {
+	var out []string
+	for _, t := range titles {
+		if id, ok := l.resolve(t); ok {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// resolve returns the card ID of a rule title. "Title (Evil Twin)" is the
+// evil twin of the card.
+func (l *linker) resolve(title string) (string, bool) {
+	base, twin := strings.CutSuffix(title, evilTwinSuffix)
+	id, ok := l.byTitle[base]
+	if !ok || !twin {
+		return id, ok
+	}
+	_, ok = l.index[id+"-eviltwin"]
+	return id + "-eviltwin", ok
+}
+
+// addNew adds a thread to a card, unless a thread of the card already has
+// all the others.
+func (l *linker) addNew(id, label string, others []string) {
+	i, ok := l.index[id]
+	if !ok {
+		return
+	}
+	others = slices.DeleteFunc(slices.Clone(others), func(o string) bool { return o == id })
+	for _, r := range l.cards[i].Related {
+		if !slices.ContainsFunc(
+			others,
+			func(o string) bool { return !slices.Contains(r.Cards, o) },
+		) {
+			return
+		}
+	}
+	l.add(id, label, others)
 }
 
 // titleIndex maps each title to one card ID. A title with more than one card

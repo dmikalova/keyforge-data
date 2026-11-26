@@ -89,7 +89,8 @@
         "Khrkhar’s Blaster",
         "Kirby’s Blaster",
         "Qincan’s Blaster",
-        "Walls’ Blaster"
+        "Walls’ Blaster",
+        "Molina’s Blaster"
       ]
     },
     {
@@ -168,7 +169,8 @@
         "Lyco-Fiend",
         "Sacro-Fiend",
         "Umbra-Fiend",
-        "Xeno-Fiend"
+        "Xeno-Fiend",
+        "Techno-Fiend"
       ]
     },
     {
@@ -178,7 +180,8 @@
         "Lyco-Bot",
         "Sacro-Bot",
         "Umbra-Bot",
-        "Xeno-Bot"
+        "Xeno-Bot",
+        "Dæmo-Bot"
       ]
     },
     {
@@ -188,7 +191,8 @@
         "Lyco-Knight",
         "Techno-Knight",
         "Umbra-Knight",
-        "Xeno-Knight"
+        "Xeno-Knight",
+        "Dæmo-Knight"
       ]
     },
     {
@@ -198,7 +202,8 @@
         "Sacro-Saurus",
         "Techno-Saurus",
         "Umbra-Saurus",
-        "Xeno-Saurus"
+        "Xeno-Saurus",
+        "Dæmo-Saurus"
       ]
     },
     {
@@ -208,7 +213,8 @@
         "Lyco-Thief",
         "Sacro-Thief",
         "Techno-Thief",
-        "Xeno-Thief"
+        "Xeno-Thief",
+        "Dæmo-Thief"
       ]
     },
     {
@@ -218,7 +224,8 @@
         "Lyco-Alien",
         "Sacro-Alien",
         "Techno-Alien",
-        "Umbra-Alien"
+        "Umbra-Alien",
+        "Dæmo-Alien"
       ]
     },
     {
@@ -228,7 +235,8 @@
         "Sacro-Beast",
         "Techno-Beast",
         "Umbra-Beast",
-        "Xeno-Beast"
+        "Xeno-Beast",
+        "Dæmo-Beast"
       ]
     }
   ]

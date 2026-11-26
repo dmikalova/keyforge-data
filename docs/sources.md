@@ -58,8 +58,24 @@ deck. Each row has a type, the cards, and a note. The types are:
 | `anomaly` | 6 | Orb of Wonder first appeared as an Anomaly in Worlds Collide. |
 | `special` | 3 | Exchange Officer always appears as a Maverick. |
 
-These rules can feed the related threads (`overrides/_threads.json`) and the
-card pages. The work item is in [todo.md](todo.md).
+`mage threads:rules` downloads the sheet to `tmp/deckrules.tsv` and writes
+the `fixed`, `always`, `sometimes`, `others`, and `variant` rules to
+`overrides/_deckrules.json`. Distillation adds each rule to the related
+threads of its cards:
+
+- A rule with page cards links each page card to the other cards, for
+  example "Faygin: Always with 2+ Urchin".
+- A rule without page cards is a group. Each card of the group gets the
+  other cards.
+- A curated thread (`overrides/_threads.json`) wins. A rule adds nothing to
+  a card if a thread of the card already has all the rule's cards.
+
+The command prints the titles that no card has. Most of them are cards from
+sets that the crawl does not have yet. Run `mage threads:rules` again after a
+crawl adds a set.
+
+The `copies`, `house`, `houseswap`, `anomaly`, and `special` rules are about
+one card. They are not imported. The work item is in [todo.md](todo.md).
 
 ### Other data
 

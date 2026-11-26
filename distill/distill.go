@@ -86,6 +86,9 @@ type Override struct {
 	// Threads are curated threads of related cards. Only the file
 	// overrides/_threads.json has them.
 	Threads []Thread `json:"threads,omitempty"`
+	// Rules are the deck rules of related cards. Only the file
+	// overrides/_deckrules.json has them. kfdata threads rules writes it.
+	Rules []Rule `json:"rules,omitempty"`
 }
 
 // CardFix corrects a Master Vault mistake.

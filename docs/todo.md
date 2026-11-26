@@ -110,9 +110,11 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 
 ## Later
 
-- Deck rules: import the rules of the Archon Arcana `relationships_and_notes`
-  sheet (docs/sources.md). Start with the `always`, `fixed`, `copies`, and
-  `others` rules. Show them as related threads and on the card pages.
+- Deck rules: `mage threads:rules` imports the rules that link cards
+  (docs/sources.md). Run it again after each crawl that adds a set.
+- Deck rules about one card: show the `copies`, `house`, `houseswap`,
+  `anomaly`, and `special` rules of the Archon Arcana sheet on the card
+  pages.
 - Artist hints: use the Archon Arcana artist data (docs/sources.md) as hints
   in `artists:scan`, so that a new set needs fewer review answers.
 - Full deck crawl and deck database (ADR 0003).

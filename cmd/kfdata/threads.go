@@ -16,13 +16,16 @@ import (
 	"github.com/dmikalova/keyforge-data/distill"
 )
 
-const threadsUsage = `usage: kfdata threads <todo|add> [flags]
+const threadsUsage = `usage: kfdata threads <todo|add|rules> [flags]
 
   todo [-dataset file] [-overrides dir]
         print the Variant printings that are in no curated thread, in
         candidate families: runs of numbers in one set and one house
   add [-overrides dir] [-dataset file] -label "Label" "Title" "Title" ...
         add a curated thread, or add titles to the thread with that label
+  rules [-overrides dir] [-dataset file] [-in file]
+        write overrides/_deckrules.json from the Archon Arcana
+        relationships_and_notes sheet (TSV)
 `
 
 // threadsCmd edits the curated threads of related cards in
@@ -36,6 +39,7 @@ func threadsCmd(args []string, stdout io.Writer) error {
 	dataset := fs.String("dataset", "tmp/cards.json", "distilled dataset")
 	overrides := fs.String("overrides", "overrides", "overrides directory")
 	label := fs.String("label", "", "thread label")
+	in := fs.String("in", "tmp/deckrules.tsv", "deck rules sheet (TSV)")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -51,6 +55,8 @@ func threadsCmd(args []string, stdout io.Writer) error {
 	switch args[0] {
 	case "todo":
 		return threadsTodo(stdout, cards, threads)
+	case "rules":
+		return threadsRules(stdout, *in, filepath.Join(*overrides, "_deckrules.json"), cards)
 	case "add":
 		if *label == "" || fs.NArg() < 2 {
 			return errors.New(`usage: kfdata threads add -label "Label" "Title" "Title"`)
