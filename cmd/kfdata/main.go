@@ -65,6 +65,7 @@ commands:
   fix-art -out file <blank URL> <art URL>
                                         put another printing's art under a blank image
   check-art [-workers n]                print the card images with a blank art box
+  threads <todo|add> ...                 list and edit the curated threads of related cards
   distill [-out file] [-problems file] [-overrides dir]
                                         write the dataset and its problems
 `
@@ -143,6 +144,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return fixArt(ctx, rest)
 	case "check-art":
 		return checkArt(ctx, rest, stdout)
+	case "threads":
+		return threadsCmd(rest, stdout)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
 	default:

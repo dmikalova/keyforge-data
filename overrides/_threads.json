@@ -2,7 +2,234 @@
   "threads": [
     {
       "label": "The Four Horsemen",
-      "titles": ["Horseman of Death", "Horseman of Famine", "Horseman of Pestilence", "Horseman of War"]
+      "titles": [
+        "Horseman of Death",
+        "Horseman of Famine",
+        "Horseman of Pestilence",
+        "Horseman of War"
+      ]
+    },
+    {
+      "label": "Key Imps",
+      "titles": [
+        "Bronze Key Imp",
+        "Gold Key Imp",
+        "Silver Key Imp"
+      ]
+    },
+    {
+      "label": "Ambassadors",
+      "titles": [
+        "Brobnar Ambassador",
+        "Dis Ambassador",
+        "Logos Ambassador",
+        "Mars Ambassador",
+        "Shadows Ambassador",
+        "Untamed Ambassador"
+      ]
+    },
+    {
+      "label": "Master of 1, 2, and 3",
+      "titles": [
+        "Master of 1",
+        "Master of 2",
+        "Master of 3"
+      ]
+    },
+    {
+      "label": "The sins",
+      "titles": [
+        "Desire",
+        "Envy",
+        "Gluttony",
+        "Greed",
+        "Pride",
+        "Sloth",
+        "Wrath"
+      ]
+    },
+    {
+      "label": "Monuments",
+      "titles": [
+        "Monument to Faust",
+        "Monument to Octavia",
+        "Monument to Primus",
+        "Monument to Shrix"
+      ]
+    },
+    {
+      "label": "Banes",
+      "titles": [
+        "Beasts’ Bane",
+        "Demons’ Bane",
+        "Dinosaurs’ Bane",
+        "Humans’ Bane",
+        "Scientists’ Bane",
+        "Thieves’ Bane"
+      ]
+    },
+    {
+      "label": "Plants",
+      "titles": [
+        "Brobnar Plant",
+        "Dis Plant",
+        "Logos Plant",
+        "Saurian Plant",
+        "Star Alliance Plant",
+        "Untamed Plant"
+      ]
+    },
+    {
+      "label": "Blasters",
+      "titles": [
+        "Chan’s Blaster",
+        "Frane’s Blaster",
+        "Garcia’s Blaster",
+        "Ingram’s Blaster",
+        "Khrkhar’s Blaster",
+        "Kirby’s Blaster",
+        "Qincan’s Blaster",
+        "Walls’ Blaster"
+      ]
+    },
+    {
+      "label": "Brews",
+      "titles": [
+        "Alaka’s Brew",
+        "Chieftain’s Brew",
+        "Cowfyne’s Brew",
+        "Groke’s Brew",
+        "Gron’s Brew",
+        "Mogghunter’s Brew",
+        "Narp’s Brew",
+        "Shorty’s Brew"
+      ]
+    },
+    {
+      "label": "Brew and Mega Alaka",
+      "titles": [
+        "Alaka’s Brew",
+        "Mega Alaka"
+      ]
+    },
+    {
+      "label": "Brew and Mega Ganger Chieftain",
+      "titles": [
+        "Chieftain’s Brew",
+        "Mega Ganger Chieftain"
+      ]
+    },
+    {
+      "label": "Brew and Mega Cowfyne",
+      "titles": [
+        "Cowfyne’s Brew",
+        "Mega Cowfyne"
+      ]
+    },
+    {
+      "label": "Brew and Mega Groke",
+      "titles": [
+        "Groke’s Brew",
+        "Mega Groke"
+      ]
+    },
+    {
+      "label": "Brew and Mega Gron Nine-Toes",
+      "titles": [
+        "Gron’s Brew",
+        "Mega Gron Nine-Toes"
+      ]
+    },
+    {
+      "label": "Brew and Mega Mogghunter",
+      "titles": [
+        "Mogghunter’s Brew",
+        "Mega Mogghunter"
+      ]
+    },
+    {
+      "label": "Brew and Mega Narp",
+      "titles": [
+        "Narp’s Brew",
+        "Mega Narp"
+      ]
+    },
+    {
+      "label": "Brew and Mega Shorty",
+      "titles": [
+        "Shorty’s Brew",
+        "Mega Shorty"
+      ]
+    },
+    {
+      "label": "Fiends",
+      "titles": [
+        "Dino-Fiend",
+        "Lyco-Fiend",
+        "Sacro-Fiend",
+        "Umbra-Fiend",
+        "Xeno-Fiend"
+      ]
+    },
+    {
+      "label": "Bots",
+      "titles": [
+        "Dino-Bot",
+        "Lyco-Bot",
+        "Sacro-Bot",
+        "Umbra-Bot",
+        "Xeno-Bot"
+      ]
+    },
+    {
+      "label": "Knights",
+      "titles": [
+        "Dino-Knight",
+        "Lyco-Knight",
+        "Techno-Knight",
+        "Umbra-Knight",
+        "Xeno-Knight"
+      ]
+    },
+    {
+      "label": "Sauruses",
+      "titles": [
+        "Lyco-Saurus",
+        "Sacro-Saurus",
+        "Techno-Saurus",
+        "Umbra-Saurus",
+        "Xeno-Saurus"
+      ]
+    },
+    {
+      "label": "Thieves",
+      "titles": [
+        "Dino-Thief",
+        "Lyco-Thief",
+        "Sacro-Thief",
+        "Techno-Thief",
+        "Xeno-Thief"
+      ]
+    },
+    {
+      "label": "Aliens",
+      "titles": [
+        "Dino-Alien",
+        "Lyco-Alien",
+        "Sacro-Alien",
+        "Techno-Alien",
+        "Umbra-Alien"
+      ]
+    },
+    {
+      "label": "Beasts",
+      "titles": [
+        "Dino-Beast",
+        "Sacro-Beast",
+        "Techno-Beast",
+        "Umbra-Beast",
+        "Xeno-Beast"
+      ]
     }
   ]
 }
