@@ -86,7 +86,7 @@ The reference is the deck list cards in `_refs/decklist/1.png` and `_refs/deckli
 
 | File | Source | Method | Notes |
 | --- | --- | --- | --- |
-| `stat/aember.png` | KeyForge Master Rulebook v18.4 (<https://keyforging.com/mrb>, which goes to <https://keyforging.com/wp-content/uploads/2026/06/KeyForge-Master-Rulebook-v18-4.pdf>), page 7 image `Fm3.Im0` | Copied | Official full-color aember gem, 160 x 134 px. A copy is in `_refs/rulebook/aember-mrb-p07.png`. It is not single-color. |
+| `stat/aember.png` | KeyForge Master Rulebook v18.4 (<https://keyforging.com/mrb>, which goes to <https://keyforging.com/wp-content/uploads/2026/06/KeyForge-Master-Rulebook-v18-4.pdf>), page 7 image `Fm3.Im0` | Copied, then the white background made transparent | Official full-color aember gem, 160 x 134 px. The white background was removed with an edge flood fill. A copy is in `_refs/rulebook/aember-mrb-p07.png`. It is not single-color. |
 | `stat/power.svg` | None | Drawn | Our own burst shape, like the power badge on cards. No official reference. |
 | `stat/armor.svg` | None | Drawn | Our own shield shape. No official reference. |
 
