@@ -31,6 +31,10 @@ distillation rules.
   - **Publisher.** After a crawl adds card objects, it runs distillation,
     fills the missing images, publishes `data/cards.json`, and posts changed
     problems to the maintenance Discord channel.
+  - **Problems table.** Each problem that distillation finds (a missing
+    image, a blank art box, an unknown card) is a row with the decks that
+    have the card, and when it was found and fixed. The API serves a report
+    of the decks and their card problems.
 - The raw store moves to the private bucket as the primary copy. The local
   `./raw` becomes a cache.
 - The sites keep reading `data/cards.json` from the public bucket. The API is

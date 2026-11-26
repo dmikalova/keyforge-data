@@ -30,10 +30,15 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
+	_ "golang.org/x/image/webp"
+
+	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/crawl"
 	"github.com/dmikalova/keyforge-data/distill"
 	"github.com/dmikalova/keyforge-data/images"
@@ -57,6 +62,9 @@ commands:
   report [-out file] [crawl...]         write the raw data report
   gigantic -out file <base URL> <art URL>
                                         write a gigantic composite image
+  fix-art -out file <blank URL> <art URL>
+                                        put another printing's art under a blank image
+  check-art [-workers n]                print the card images with a blank art box
   distill [-out file] [-problems file] [-overrides dir]
                                         write the dataset and its problems
 `
@@ -131,6 +139,10 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return report(store, rest)
 	case "gigantic":
 		return giganticCmd(ctx, rest)
+	case "fix-art":
+		return fixArt(ctx, rest)
+	case "check-art":
+		return checkArt(ctx, rest, stdout)
 	case "distill":
 		return distillCmd(ctx, store, rest, stdout)
 	default:
@@ -287,6 +299,10 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	if err != nil {
 		return err
 	}
+	decks, err := distill.LoadDecks(store)
+	if err != nil {
+		return err
+	}
 	overrides, err := distill.LoadOverrides(*overridesDir)
 	if err != nil {
 		return err
@@ -296,7 +312,7 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 		return err
 	}
 	d, problems := distill.Run(distill.Input{
-		Cards: cards, Images: images, Overrides: overrides, Now: time.Now(),
+		Cards: cards, Images: images, Overrides: overrides, Decks: decks, Now: time.Now(),
 	})
 	b, err := json.Marshal(d, json.Deterministic(true))
 	if err != nil {
@@ -362,6 +378,113 @@ func giganticCmd(ctx context.Context, args []string) error {
 		return err
 	}
 	if err := png.Encode(f, images.Gigantic(halves[0], halves[1])); err != nil {
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
+}
+
+// checkArt downloads each card image in the public bucket and prints the
+// images whose art box is blank.
+func checkArt(ctx context.Context, args []string, stdout io.Writer) error {
+	fs := flag.NewFlagSet("check-art", flag.ContinueOnError)
+	workers := fs.Int("workers", 8, "parallel downloads")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	client := &http.Client{Timeout: time.Minute}
+	names, err := distill.ListImages(ctx, client)
+	if err != nil {
+		return err
+	}
+	jobs := make(chan string)
+	var mu sync.Mutex
+	var blank, failed []string
+	var wg sync.WaitGroup
+	for range *workers {
+		wg.Go(func() {
+			for n := range jobs {
+				img, err := fetchImage(ctx, client, card.ImageBase+n)
+				mu.Lock()
+				switch {
+				case err != nil:
+					failed = append(failed, n+": "+err.Error())
+				case images.BlankArt(img):
+					blank = append(blank, n)
+				}
+				mu.Unlock()
+			}
+		})
+	}
+	for _, n := range names {
+		jobs <- n
+	}
+	close(jobs)
+	wg.Wait()
+	slices.Sort(blank)
+	slices.Sort(failed)
+	for _, n := range blank {
+		_, _ = fmt.Fprintln(stdout, "blank", n)
+	}
+	for _, n := range failed {
+		_, _ = fmt.Fprintln(stdout, "failed", n)
+	}
+	_, err = fmt.Fprintf(
+		stdout,
+		"checked %d images: %d blank, %d failed\n",
+		len(names),
+		len(blank),
+		len(failed),
+	)
+	return err
+}
+
+// fetchImage downloads and decodes a PNG or webp image.
+func fetchImage(ctx context.Context, client *http.Client, u string) (image.Image, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	img, _, err := image.Decode(resp.Body)
+	return img, err
+}
+
+// fixArt puts the art of another printing under an image with a blank art
+// box, and writes a PNG.
+func fixArt(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("fix-art", flag.ContinueOnError)
+	out := fs.String("out", "", "PNG file")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 2 || *out == "" {
+		return errors.New("usage: fix-art -out file.png <blank image URL> <art image URL>")
+	}
+	client := &http.Client{Timeout: time.Minute}
+	top, err := fetchImage(ctx, client, fs.Arg(0))
+	if err != nil {
+		return err
+	}
+	art, err := fetchImage(ctx, client, fs.Arg(1))
+	if err != nil {
+		return err
+	}
+	if !images.BlankArt(top) {
+		return errors.New("the first image has art")
+	}
+	f, err := os.Create(*out)
+	if err != nil {
+		return err
+	}
+	if err := png.Encode(f, images.Underlay(top, art)); err != nil {
 		_ = f.Close()
 		return err
 	}

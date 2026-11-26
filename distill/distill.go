@@ -58,6 +58,9 @@ type Input struct {
 	Images []string
 	// Overrides are the curated corrections, by set slug.
 	Overrides map[string]Override
+	// Decks maps a card object ID to the IDs of the decks that have it. It
+	// is optional. Problems use it to name the decks with the card.
+	Decks map[string][]string
 	// Now is the generated time of the dataset.
 	Now time.Time
 }
@@ -91,6 +94,8 @@ type Problem struct {
 	Number string `json:"number,omitempty"`
 	Title  string `json:"title,omitempty"`
 	Detail string `json:"detail,omitempty"`
+	// Decks are the Master Vault decks that have the card of the problem.
+	Decks []string `json:"decks,omitempty"`
 }
 
 // Problem kinds.
@@ -106,6 +111,7 @@ const (
 	ProblemOnlyMavericks   = "printing with only mavericks"
 	ProblemMissingGigantic = "missing gigantic image"
 	ProblemForeignText     = "flavor text not in English"
+	ProblemAnomalyNoSet    = "anomaly without a set"
 )
 
 // referenceHouses are the Master Vault pseudo-houses of reference cards.
@@ -164,7 +170,9 @@ func Run(in Input) (card.Dataset, []Problem) {
 	for _, k := range keys {
 		r.add(cards, k, groups[k])
 	}
-	return r.dataset(cards), r.problems
+	d := r.dataset(cards)
+	r.addDecks(groups)
+	return d, r.problems
 }
 
 type run struct {
@@ -608,10 +616,21 @@ func (r *run) parse(raws [][]byte) []mvCard {
 		objs = append(objs, c)
 	}
 	objs = append(objs, r.maverickOnly(objs, mavericks)...)
+	reported := map[string]bool{}
 	out := objs[:0]
 	for _, c := range objs {
 		if c.Expansion == anomalyExpansion {
 			if playable[query.Normalize(c.Title)] {
+				continue
+			}
+			if !wcAnomaly(c.Number) {
+				if !reported[c.Number] {
+					reported[c.Number] = true
+					r.problem(Problem{
+						Kind: ProblemAnomalyNoSet, Number: c.Number, Title: c.Title,
+						Detail: "expansion 453, not A01 to A10, and no printing in a playable set",
+					})
+				}
 				continue
 			}
 			c.Expansion = anomalyDeckSetExp
@@ -740,4 +759,32 @@ func foreign(s string) bool {
 		}
 	}
 	return false
+}
+
+// addDecks adds to each problem the decks that have a card object of the
+// problem's printing.
+func (r *run) addDecks(groups map[printingKey][]mvCard) {
+	if len(r.in.Decks) == 0 {
+		return
+	}
+	for i, p := range r.problems {
+		s, ok := sets.BySlug(p.Set)
+		if !ok {
+			continue
+		}
+		var decks []string
+		for _, o := range groups[printingKey{exp: s.Expansion, number: p.Number, title: p.Title}] {
+			decks = append(decks, r.in.Decks[o.ID]...)
+		}
+		slices.Sort(decks)
+		r.problems[i].Decks = slices.Compact(decks)
+	}
+}
+
+// wcAnomaly reports whether an expansion 453 number is one of the Worlds
+// Collide anomalies, A01 to A10. Later anomalies, for example A11
+// Ecto-Charge, are not in Worlds Collide decks.
+func wcAnomaly(number string) bool {
+	n, err := strconv.Atoi(strings.TrimPrefix(number, "A"))
+	return err == nil && strings.HasPrefix(number, "A") && n >= 1 && n <= 10
 }

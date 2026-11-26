@@ -130,9 +130,9 @@ func WriteProblems(w io.Writer, version string, problems []Problem) error {
 		if p.Kind != kind {
 			kind = p.Kind
 			fmt.Fprintf(&b, "\n## %s (%d)\n\n", kind, countKind(problems, kind))
-			b.WriteString("| Set | # | Title | Detail |\n| --- | --- | --- | --- |\n")
+			b.WriteString("| Set | # | Title | Detail | Decks |\n| --- | --- | --- | --- | --- |\n")
 		}
-		b.WriteString(row(p.Set, p.Number, cell(p.Title), cell(p.Detail)))
+		b.WriteString(row(p.Set, p.Number, cell(p.Title), cell(p.Detail), deckLinks(p.Decks)))
 	}
 	_, err := io.WriteString(w, b.String())
 	return err
@@ -163,4 +163,52 @@ func row(cells ...string) string {
 		b.WriteString(" |")
 	}
 	return b.String() + "\n"
+}
+
+// LoadDecks maps each card object ID to the IDs of the stored decks that
+// have it, from every crawl in the raw store.
+func LoadDecks(store *raw.Store) (map[string][]string, error) {
+	crawls, err := store.Crawls()
+	if err != nil {
+		return nil, err
+	}
+	out := map[string][]string{}
+	seen := map[string]bool{}
+	for _, id := range crawls {
+		for rec, err := range store.Records(id) {
+			if err != nil {
+				return nil, err
+			}
+			var d struct {
+				ID    string `json:"id"`
+				Links struct {
+					Cards []string `json:"cards"`
+				} `json:"_links"`
+			}
+			if err := json.Unmarshal(rec.Deck, &d); err != nil {
+				return nil, err
+			}
+			if seen[d.ID] {
+				continue
+			}
+			seen[d.ID] = true
+			for _, c := range slices.Compact(slices.Sorted(slices.Values(d.Links.Cards))) {
+				out[c] = append(out[c], d.ID)
+			}
+		}
+	}
+	return out, nil
+}
+
+// deckLinks returns Markdown links to up to three Master Vault decks, and
+// the count of the other decks.
+func deckLinks(decks []string) string {
+	var parts []string
+	for _, d := range decks[:min(3, len(decks))] {
+		parts = append(parts, "[deck](https://www.keyforgegame.com/deck-details/"+d+")")
+	}
+	if n := len(decks) - 3; n > 0 {
+		parts = append(parts, fmt.Sprintf("+%d", n))
+	}
+	return strings.Join(parts, " ")
 }

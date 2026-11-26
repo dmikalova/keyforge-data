@@ -135,7 +135,8 @@ func TestRun(t *testing.T) {
 			"worldscollide": {Cards: map[string]CardFix{"170": {Power: &card.Power{X: true}}}},
 			"aemberskies":   {Aliases: map[string][]string{"ANT1-10NY": {"Anthony"}}},
 		},
-		Now: time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC),
+		Decks: map[string][]string{"b1": {"deck-1"}},
+		Now:   time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC),
 	}
 	d, problems := Run(in)
 
@@ -267,6 +268,13 @@ func TestRun(t *testing.T) {
 	}
 	if strings.Contains(got, "creature without power worldscollide") {
 		t.Errorf("the override must clear the power problem:\n%s", got)
+	}
+
+	i := slices.IndexFunc(problems, func(p Problem) bool {
+		return p.Kind == ProblemMissingImage && p.Set == "aemberskies" && p.Number == "100"
+	})
+	if i < 0 || !slices.Equal(problems[i].Decks, []string{"deck-1"}) {
+		t.Errorf("the missing image problem has no deck: %v", problems)
 	}
 
 	again, _ := Run(in)

@@ -55,6 +55,8 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   token creature.
 - Check the anomaly rarity icon (`rarity/anomaly.svg`) against a printed
   anomaly.
+- Run `kfdata check-art` after each image fill. Fix a blank art box with
+  `kfdata fix-art` and the art of another printing.
 - Move the scheduled crawl and publish to the data.keyforge.cards service
   (ADR 0006), so they do not depend on this Mac.
 - When Grim Reminders is crawled, check that The Grim Reaper shows its GR
