@@ -141,6 +141,7 @@ func TestFlavor(t *testing.T) {
 		"“It worked!“\n”What do you mean?”": "“It worked!”\n“What do you mean?”",
 		"“Frane, hand me the—“":             "“Frane, hand me the—”",
 		"(”Quiet.”)":                        "(“Quiet.”)",
+		"—Quixo the\u00a0”Adventurer”":      "—Quixo the\u00a0“Adventurer”",
 		"Term for “avalanche.”":             "Term for “avalanche.”",
 		"“A ‘test’ of ”will” and wit.”":     "“A ‘test’ of “will” and wit.”",
 	} {
