@@ -382,8 +382,19 @@ var attributionRe = regexp.MustCompile(`([”"])\s*[-–—]+\s*`)
 // Flavor returns clean flavor text with one style of attribution: the
 // quote, a line break, an em dash, and the name ("”\n—Squire Alys").
 func Flavor(s string) string {
-	return attributionRe.ReplaceAllString(Clean(s), "$1\n—")
+	s = closeQuoteRe.ReplaceAllString(Clean(s), "$1”$2")
+	s = openQuoteRe.ReplaceAllString(s, "$1“$2")
+	return attributionRe.ReplaceAllString(s, "$1\n—")
 }
+
+// Master Vault sometimes types a closing mark at the start of a quote and an
+// opening mark at its end. A mark after a letter or punctuation that comes
+// before a space or the end closes the quote. A mark at the start, or after
+// a space or "(", that comes before a letter opens it.
+var (
+	closeQuoteRe = regexp.MustCompile(`([^\s\x{a0}(])“([\s\x{a0}]|$)`)
+	openQuoteRe  = regexp.MustCompile(`(^|[\s\x{a0}(])”([^\s\x{a0}”])`)
+)
 
 // endsWithDigit reports whether the text so far ends with a digit, so that
 // "2" and a damage glyph become "2 damage".

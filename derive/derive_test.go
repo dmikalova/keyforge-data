@@ -134,6 +134,20 @@ func TestFlavor(t *testing.T) {
 			t.Errorf("Flavor(%q) = %q, want %q", in, got, want)
 		}
 	}
+	// Master Vault sometimes types a closing mark at the start of a quote
+	// and an opening mark at its end.
+	for in, want := range map[string]string{
+		"”Loudness: 8/10.” – Thom":          "“Loudness: 8/10.”\n—Thom",
+		"“It worked!“\n”What do you mean?”": "“It worked!”\n“What do you mean?”",
+		"“Frane, hand me the—“":             "“Frane, hand me the—”",
+		"(”Quiet.”)":                        "(“Quiet.”)",
+		"Term for “avalanche.”":             "Term for “avalanche.”",
+		"“A ‘test’ of ”will” and wit.”":     "“A ‘test’ of “will” and wit.”",
+	} {
+		if got := Flavor(in); got != want {
+			t.Errorf("Flavor(%q) = %q, want %q", in, got, want)
+		}
+	}
 	if got := Flavor("A well-known fact."); got != "A well-known fact." {
 		t.Errorf("Flavor changed a hyphen: %q", got)
 	}
