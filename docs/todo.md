@@ -53,7 +53,8 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 - Check the Winds of Exchange token creatures when the crawl reaches that
   set. The user expects about 28. Find where Master Vault puts a deck's
   token creature.
-- Draw the anomaly rarity icon (a lightning bolt).
+- Check the anomaly rarity icon (`rarity/anomaly.svg`) against a printed
+  anomaly.
 - Move the scheduled crawl and publish to the data.keyforge.cards service
   (ADR 0006), so they do not depend on this Mac.
 - When Grim Reminders is crawled, check that The Grim Reaper shows its GR

@@ -70,6 +70,7 @@ The reference is the deck list cards in `_refs/decklist/1.png` and `_refs/deckli
 | `rarity/uncommon.svg` | `_refs/decklist/1.png` | Drawn from deck list | Diamond outline. |
 | `rarity/rare.svg` | `_refs/decklist/1.png` | Drawn from deck list | Five-point star outline. |
 | `rarity/special.svg` | `_refs/decklist/2.png` (Horseman cards) | Drawn from deck list | Four-point star with concave sides, and a dot in the center. |
+| `rarity/anomaly.svg` | The user | Drawn | Lightning bolt outline. The user says the anomaly rarity is a lightning bolt. Check it against a printed anomaly. |
 
 ## Card types
 
