@@ -190,8 +190,25 @@ func (p *parser) term(t token, name string, at int) (Node, error) {
 		return nil, &Error{Pos: t.pos, Msg: "expected an operator after " + name}
 	}
 	valStart := at + n
+	if listable(f, op) {
+		if parts := splitList(t, valStart); len(parts) > 1 {
+			return list(t, f, op, parts)
+		}
+	}
 	text := t.text[valStart:]
 	quoted := slices.Contains(t.quoted[valStart:], true) || (t.anyQuoted && text == "")
+	term, err := value(t, f, op, text, quoted)
+	if err != nil {
+		return nil, err
+	}
+	if f.Kind == KindDirective {
+		return &directiveNode{Directive{Name: f.Name, Value: term.Value.Text, Pos: t.pos}}, nil
+	}
+	return term, nil
+}
+
+// value parses one value of a term.
+func value(t token, f FieldInfo, op Op, text string, quoted bool) (*Term, error) {
 	term := &Term{Field: f.Name, Op: op, Pos: t.pos}
 	switch f.Kind {
 	case KindText, KindFuzzy:
@@ -219,10 +236,67 @@ func (p *parser) term(t token, name string, at int) (Node, error) {
 			return nil, err
 		}
 	}
-	if f.Kind == KindDirective {
-		return &directiveNode{Directive{Name: f.Name, Value: term.Value.Text, Pos: t.pos}}, nil
-	}
 	return term, nil
+}
+
+// listable reports whether a term of the field can have a comma list of
+// values: an enum or a flag with ":" or "=", or the keys of a keyed field
+// with ":".
+func listable(f FieldInfo, op Op) bool {
+	switch f.Kind {
+	case KindEnum, KindFlag:
+		return op == OpHas || op == OpEq
+	case KindKeyed:
+		return op == OpHas
+	default:
+		return false
+	}
+}
+
+// listPart is one value of a comma list.
+type listPart struct {
+	text   string
+	quoted bool
+}
+
+// splitList splits the value of a term, from byte start of the token, at the
+// commas outside quotes.
+func splitList(t token, start int) []listPart {
+	var out []listPart
+	var cur listPart
+	for i := start; i < len(t.text); i++ {
+		if t.text[i] == ',' && !t.quoted[i] {
+			out = append(out, cur)
+			cur = listPart{}
+			continue
+		}
+		cur.text += string(t.text[i])
+		cur.quoted = cur.quoted || t.quoted[i]
+	}
+	return append(out, cur)
+}
+
+// list parses a comma list into an OR of terms: "set:aoa,wc" matches a card
+// in AoA or in WC. A keyed field takes only keys in a list.
+func list(t token, f FieldInfo, op Op, parts []listPart) (Node, error) {
+	or := &Or{Pos: t.pos, List: true}
+	for _, part := range parts {
+		if part.text == "" && !part.quoted {
+			return nil, &Error{
+				Pos: t.pos,
+				Msg: "a list of " + f.Name + " values has an empty value",
+			}
+		}
+		term, err := value(t, f, op, part.text, part.quoted)
+		if err != nil {
+			return nil, err
+		}
+		if f.Kind == KindKeyed && (term.Op != op || term.Value.Text != "") {
+			return nil, &Error{Pos: t.pos, Msg: "a list of " + f.Name + " values takes only keys"}
+		}
+		or.Children = append(or.Children, term)
+	}
+	return or, nil
 }
 
 func (p *parser) lookup(name string) (FieldInfo, bool) {
@@ -432,7 +506,7 @@ func flattenAnd(children []Node) []Node {
 func flattenOr(children []Node) []Node {
 	var out []Node
 	for _, c := range children {
-		if n, ok := c.(*Or); ok {
+		if n, ok := c.(*Or); ok && !n.List {
 			out = append(out, n.Children...)
 			continue
 		}

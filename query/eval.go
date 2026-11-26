@@ -135,13 +135,14 @@ func (r *Registry[T]) Match(q *Query) func(T) bool {
 	if q.Root == nil {
 		return func(T) bool { return true }
 	}
-	return r.compile(q.Root)
+	v, _ := q.Directive(DirFuzzy)
+	return r.compile(q.Root, v != FuzzyOff)
 }
 
-func (r *Registry[T]) compile(n Node) func(T) bool {
+func (r *Registry[T]) compile(n Node, fuzzy bool) func(T) bool {
 	switch n := n.(type) {
 	case *And:
-		fs := r.compileAll(n.Children)
+		fs := r.compileAll(n.Children, fuzzy)
 		return func(item T) bool {
 			for _, f := range fs {
 				if !f(item) {
@@ -151,7 +152,7 @@ func (r *Registry[T]) compile(n Node) func(T) bool {
 			return true
 		}
 	case *Or:
-		fs := r.compileAll(n.Children)
+		fs := r.compileAll(n.Children, fuzzy)
 		return func(item T) bool {
 			for _, f := range fs {
 				if f(item) {
@@ -161,21 +162,21 @@ func (r *Registry[T]) compile(n Node) func(T) bool {
 			return false
 		}
 	case *Not:
-		f := r.compile(n.Child)
+		f := r.compile(n.Child, fuzzy)
 		return func(item T) bool { return !f(item) }
 	case *Word:
 		return r.word(n)
 	case *Term:
-		return r.term(n)
+		return r.term(n, fuzzy)
 	default:
 		panic(fmt.Sprintf("query: unknown node %T", n))
 	}
 }
 
-func (r *Registry[T]) compileAll(nodes []Node) []func(T) bool {
+func (r *Registry[T]) compileAll(nodes []Node, fuzzy bool) []func(T) bool {
 	out := make([]func(T) bool, len(nodes))
 	for i, c := range nodes {
-		out[i] = r.compile(c)
+		out[i] = r.compile(c, fuzzy)
 	}
 	return out
 }
@@ -195,7 +196,7 @@ func (r *Registry[T]) word(w *Word) func(T) bool {
 	}
 }
 
-func (r *Registry[T]) term(t *Term) func(T) bool {
+func (r *Registry[T]) term(t *Term, fuzzy bool) func(T) bool {
 	if t.Field == FlagField {
 		test := r.flags[Normalize(t.Value.Text)]
 		if t.Op == OpNe {
@@ -210,7 +211,7 @@ func (r *Registry[T]) term(t *Term) func(T) bool {
 	case KindEnum:
 		return textTerm(f.Strings, t, Normalize, true)
 	case KindFuzzy:
-		if t.Op != OpHas || t.Value.Quoted {
+		if !fuzzy || t.Op != OpHas || t.Value.Quoted {
 			return textTerm(f.Strings, t, Fold, false)
 		}
 		return func(item T) bool {
@@ -333,21 +334,34 @@ func isDigits(s string) bool {
 	return err == nil
 }
 
-// FuzzyRank returns the total fuzzy score of the query's fuzzy terms for an
-// item, and whether the query has only fuzzy terms (joined by AND, not
-// negated) and words. A caller ranks by the score when the second result is
-// true and no sort directive is set.
+// DirFuzzy is the directive that turns fuzzy name matching off: with
+// "fuzzy:off", a fuzzy field matches a folded substring. A schema that wants
+// the switch adds a directive field with this name and the values "on" and
+// "off".
+const DirFuzzy = "fuzzy"
+
+// FuzzyOff is the value of DirFuzzy that turns fuzzy matching off.
+const FuzzyOff = "off"
+
+// FuzzyRank returns the total name match quality of an item, and whether the
+// query has name terms or bare words to rank by. It scores the fuzzy terms
+// and the words that are not inside a NOT. A word scores against the fuzzy
+// bare fields, so a word that matches only the text scores zero. A caller
+// ranks by the score when the second result is true and no sort directive
+// is set.
 func (r *Registry[T]) FuzzyRank(q *Query, item T) (int, bool) {
-	terms, only := fuzzyTerms(q.Root, r)
-	if !only || len(terms) == 0 {
+	patterns := r.rankPatterns(q.Root)
+	if len(patterns) == 0 {
 		return 0, false
 	}
 	total := 0
-	for _, t := range terms {
+	for _, p := range patterns {
 		best := 0
-		for _, s := range r.byName[t.Field].Strings(item) {
-			if sc, ok := FuzzyScore(t.Value.Text, s); ok && sc > best {
-				best = sc
+		for _, f := range p.fields {
+			for _, s := range f.Strings(item) {
+				if sc, ok := FuzzyScore(p.text, s); ok && sc > best {
+					best = sc
+				}
 			}
 		}
 		total += best
@@ -355,28 +369,43 @@ func (r *Registry[T]) FuzzyRank(q *Query, item T) (int, bool) {
 	return total, true
 }
 
-func fuzzyTerms[T any](n Node, r *Registry[T]) ([]*Term, bool) {
+// rankPattern is a name pattern and the fields it scores against.
+type rankPattern[T any] struct {
+	text   string
+	fields []*Field[T]
+}
+
+// rankPatterns returns the fuzzy terms and the words outside a NOT.
+func (r *Registry[T]) rankPatterns(n Node) []rankPattern[T] {
 	switch n := n.(type) {
-	case nil:
-		return nil, true
 	case *Term:
-		if f := r.byName[n.Field]; f.Kind == KindFuzzy && n.Op == OpHas {
-			return []*Term{n}, true
+		if f := r.byName[n.Field]; f != nil && f.Kind == KindFuzzy && n.Op != OpNe {
+			return []rankPattern[T]{{text: n.Value.Text, fields: []*Field[T]{f}}}
 		}
-		return nil, false
-	case *And:
-		var out []*Term
-		for _, c := range n.Children {
-			ts, ok := fuzzyTerms(c, r)
-			if !ok {
-				return nil, false
+	case *Word:
+		var fields []*Field[T]
+		for _, f := range r.bare {
+			if f.Kind == KindFuzzy {
+				fields = append(fields, f)
 			}
-			out = append(out, ts...)
 		}
-		return out, true
-	default:
-		return nil, false
+		if len(fields) > 0 {
+			return []rankPattern[T]{{text: n.Text, fields: fields}}
+		}
+	case *And:
+		return r.rankChildren(n.Children)
+	case *Or:
+		return r.rankChildren(n.Children)
 	}
+	return nil
+}
+
+func (r *Registry[T]) rankChildren(nodes []Node) []rankPattern[T] {
+	var out []rankPattern[T]
+	for _, c := range nodes {
+		out = append(out, r.rankPatterns(c)...)
+	}
+	return out
 }
 
 // numeric reports whether n is a plain number: not X and not a lettered

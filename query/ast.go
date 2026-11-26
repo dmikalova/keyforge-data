@@ -12,7 +12,17 @@
 //	and     = unary { ["and"] unary }
 //	unary   = ("not" | "-") unary | primary
 //	primary = "(" or ")" | term
-//	term    = field op value | "#" value | word | "quoted words"
+//	term    = field op value { "," value } | "#" value | word | "quoted words"
+//	op      = ":" | "=" | "!=" | "<" | "<=" | ">" | ">="
+//
+// A comma list of values is an OR of terms: "set:aoa,wc" is
+// "(set:aoa or set:wc)". Enum and flag fields take a list with ":" or "=",
+// and a keyed field takes a list of keys with ":". A comma inside quotes is
+// part of the value.
+//
+// A directive term (sort:, order:, unique:, seed:, fuzzy:) changes the
+// display or the name matching, and does not filter.| "#" value | word | "quoted words"
+//
 //	op      = ":" | "=" | "!=" | "<" | "<=" | ">" | ">="
 //
 // A directive term (sort:, order:, unique:, seed:) changes the display and
@@ -49,6 +59,9 @@ type And struct {
 type Or struct {
 	Children []Node
 	Pos      Span
+	// List is true for a comma list such as "set:aoa,wc". Each child is a
+	// Term of the same field and operator, and String writes the list form.
+	List bool
 }
 
 // Not matches when its child does not match.
@@ -179,6 +192,11 @@ const (
 func format(n Node, outer int) string {
 	switch n := n.(type) {
 	case *Or:
+		if n.List {
+			if s, ok := formatList(n.Children); ok {
+				return s
+			}
+		}
 		s := joinNodes(n.Children, " or ", precOr)
 		if outer > precOr {
 			return "(" + s + ")"
@@ -216,7 +234,7 @@ func formatTerm(t *Term) string {
 	var b strings.Builder
 	b.WriteString(t.Field)
 	if t.Key != "" {
-		b.WriteString(":" + quoteIfNeeded(t.Key))
+		b.WriteString(":" + quoteKey(t.Key))
 		if t.Value.Text == "" {
 			return b.String() // the key alone
 		}
@@ -224,6 +242,28 @@ func formatTerm(t *Term) string {
 	b.WriteString(string(t.Op))
 	b.WriteString(formatValue(t.Value))
 	return b.String()
+}
+
+// formatList writes a comma list: the first term in full, then the values
+// (or the keys of a keyed field) of the other terms. It returns false if a
+// child is not a term, so the caller writes a plain OR.
+func formatList(children []Node) (string, bool) {
+	parts := make([]string, len(children))
+	for i, c := range children {
+		t, ok := c.(*Term)
+		if !ok {
+			return "", false
+		}
+		switch {
+		case i == 0:
+			parts[i] = formatTerm(t)
+		case t.Key != "":
+			parts[i] = quoteKey(t.Key)
+		default:
+			parts[i] = formatValue(t.Value)
+		}
+	}
+	return strings.Join(parts, ","), true
 }
 
 func formatValue(v Value) string {
@@ -242,6 +282,15 @@ func quoteIfNeeded(s string) string {
 		return quote(s)
 	}
 	return s
+}
+
+// quoteKey quotes a key that needs quotes, or that has a comma: an unquoted
+// comma starts a list.
+func quoteKey(s string) string {
+	if strings.Contains(s, ",") {
+		return quote(s)
+	}
+	return quoteIfNeeded(s)
 }
 
 // quote wraps s in quote marks. The language has no escapes: a word cannot

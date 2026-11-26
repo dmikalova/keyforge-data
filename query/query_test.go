@@ -84,6 +84,7 @@ func registry(t testing.TB) *Registry[card] {
 				Name: "sort", Kind: KindDirective, Values: []string{"name", "power", "random"},
 			},
 			{Name: "seed", Kind: KindDirective},
+			{Name: DirFuzzy, Kind: KindDirective, Values: []string{"on", FuzzyOff}},
 		},
 		[]Flag[card]{
 			{
@@ -187,6 +188,16 @@ func TestParseFormatsCanonically(t *testing.T) {
 		{"a (b c) d", "a b c d"},
 		{"a or (b or c)", "a or b or c"},
 		{"ant1-10ny", "ant1-10ny"},
+		{"h:dis,logos", "house:Dis,Logos"},
+		{"h=dis,logos", "house=Dis,Logos"},
+		{"h:dis,star-alliance", "house:Dis,\"Star Alliance\""},
+		{"h:dis,\"star alliance\"", "house:Dis,\"Star Alliance\""},
+		{"-h:dis,logos t:creature", "-house:Dis,Logos type:creature"},
+		{"h:dis,logos or h:brobnar", "house:Dis,Logos or house:Brobnar"},
+		{"k:elusive,taunt", "keyword:elusive,taunt"},
+		{"is:gigantic,eviltwin", "is:gigantic,eviltwin"},
+		{"x:a,b", "text:a,b"},
+		{"n:a,b fuzzy:off", "name:a,b fuzzy:off"},
 	}
 	for _, c := range cases {
 		q, err := r.Parse(c.in)
@@ -226,6 +237,10 @@ func TestParseErrors(t *testing.T) {
 		{"troll or sort:power", "cannot be inside", ""},
 		{"k:assault>=x2", "not a number", ""},
 		{"p:4..", "not a range", ""},
+		{"h:dis,", "empty value", ""},
+		{"h:,dis", "empty value", ""},
+		{"h:dis,diss", "not a house value", "Dis"},
+		{"k:elusive,assault>=2", "takes only keys", ""},
 	}
 	for _, c := range cases {
 		_, err := r.Parse(c.in)
@@ -294,6 +309,13 @@ func TestMatch(t *testing.T) {
 		{"-is:gigantic h:star-alliance", nil},
 		{"sort:name h:logos", []string{"Mimic Gel"}},
 		{"not not troll", []string{"Troll"}},
+		{"h:logos,star-alliance", []string{"Mimic Gel", "ANT1-10NY"}},
+		{"-h:brobnar,logos", []string{"Urchin", "ANT1-10NY"}},
+		{"k:elusive,taunt", []string{"Urchin", "ANT1-10NY"}},
+		{"t:creature h:brobnar,logos", []string{"Troll", "Krump", "Mimic Gel"}},
+		{"n:mmc fuzzy:off", nil},
+		{"n:mimic fuzzy:off", []string{"Mimic Gel"}},
+		{"n:mimi-c fuzzy:off", nil},
 	}
 	for _, c := range cases {
 		if got := names(t, r, c.in); !slices.Equal(got, c.want) {
@@ -333,8 +355,16 @@ func TestFuzzyRank(t *testing.T) {
 		t.Errorf("Mimic Gel scores %d, Krump %d; want word starts to win", mimic, krump)
 	}
 	q, _ = r.Parse("n:mg h:logos")
+	if _, ok := r.FuzzyRank(q, cards[3]); !ok {
+		t.Error("a query with a name term and a house term ranks by name")
+	}
+	q, _ = r.Parse("h:logos -n:mg")
 	if _, ok := r.FuzzyRank(q, cards[3]); ok {
-		t.Error("a query with a house term is not fuzzy-only")
+		t.Error("a negated name term ranks")
+	}
+	q, _ = r.Parse("mimic h:logos")
+	if s, ok := r.FuzzyRank(q, cards[3]); !ok || s == 0 {
+		t.Errorf("a bare word ranks by name: %d %t", s, ok)
 	}
 }
 
@@ -354,6 +384,15 @@ func TestFuzzyScore(t *testing.T) {
 		if _, ok := FuzzyScore(c.p, c.s); ok != c.ok {
 			t.Errorf("FuzzyScore(%q, %q) ok = %t, want %t", c.p, c.s, ok, c.ok)
 		}
+	}
+	order := []string{"Troll", "Trollop", "Big Troll", "Patrolled", "Tribute Collector"}
+	prev := 1 << 30
+	for _, s := range order {
+		sc, ok := FuzzyScore("troll", s)
+		if !ok || sc >= prev {
+			t.Errorf("FuzzyScore(troll, %q) = %d %t; want below %d", s, sc, ok, prev)
+		}
+		prev = sc
 	}
 	runs, _ := FuzzyScore("troll", "Troll")
 	spread, _ := FuzzyScore("troll", "The Rot Of All Lands")
@@ -398,6 +437,7 @@ func FuzzParse(f *testing.F) {
 		"h:dis (p>=3 or k:assault>=2) -is:gigantic",
 		`x:"steal 1" sort:power`,
 		"#S01 or n:anthony",
+		`h:dis,"star alliance" -k:elusive,taunt fuzzy:off`,
 		"((a or b) c) not d",
 		`"`, "(", ")", "-", "a:b:c", "p:1..2..3", "k:>=", "#",
 	} {
