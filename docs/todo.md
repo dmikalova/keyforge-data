@@ -54,8 +54,10 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   set. The user expects about 28. Find where Master Vault puts a deck's
   token creature.
 - Draw the anomaly rarity icon (a lightning bolt).
-- Move the scheduled crawl and publish to the cloud, so they do not depend
-  on this Mac.
+- Move the scheduled crawl and publish to the data.keyforge.cards service
+  (ADR 0006), so they do not depend on this Mac.
+- When Grim Reminders is crawled, check that The Grim Reaper shows its GR
+  printing and not the Worlds Collide anomaly.
 - Look at the raw data of each set before you write the rules. Make a report
   of what Master Vault does with gigantic halves, houseless creatures, evil
   twins, token creatures, reference cards, and X power in each set. Give it to
