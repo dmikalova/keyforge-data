@@ -184,6 +184,13 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		typ = "creature"
 		flags = append(flags, FlagTokenCreature)
 	}
+	// Master Vault gives an evil twin the type "Evil Twin Creature". The
+	// card is a creature with the flag eviltwin, and a separate card from
+	// the normal card with the same name and house.
+	if rest, ok := strings.CutPrefix(typ, "evil twin "); ok {
+		typ = rest
+		flags = append(flags, FlagEvilTwin)
+	}
 	switch {
 	case slices.Contains([]string{"action", "artifact", "creature", "upgrade"}, typ),
 		slices.Contains(flags, FlagReference):
@@ -200,6 +207,9 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	}
 
 	id := query.Normalize(k.title) + "-" + cmp.Or(house, "none")
+	if slices.Contains(flags, FlagEvilTwin) {
+		id += "-eviltwin"
+	}
 	c, seen := cards[id]
 	if seen &&
 		slices.ContainsFunc(c.Printings, func(p card.Printing) bool { return p.Set == set.Slug }) {

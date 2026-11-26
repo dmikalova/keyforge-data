@@ -114,6 +114,14 @@ func TestRun(t *testing.T) {
 				`"card_title":"Horseman of Famine","house":"Sanctum","card_type":"Creature","card_text":"Play/Fight/Reap: Gain 1A.","power":"3","rarity":"FIXED","card_number":"247","expansion":341`,
 			),
 			obj(
+				"w1",
+				`"card_title":"Old Egad","house":"Logos","card_type":"Creature","power":"1","rarity":"Rare","card_number":"100","expansion":496`,
+			),
+			obj(
+				"w2",
+				`"card_title":"Old Egad","house":"Logos","card_type":"Evil Twin Creature","power":"2","rarity":"Rare","card_number":"004","expansion":496`,
+			),
+			obj(
 				"b1",
 				`"card_title":"ANT1-10NY","house":"Logos","card_type":"Creature","power":"3","rarity":"Rare","card_number":"100","expansion":800`,
 			),
@@ -207,11 +215,23 @@ func TestRun(t *testing.T) {
 		t.Errorf("horseman: %q %q", hf.Printings[0].Rarity, hf.Text)
 	}
 
+	if ew := find(
+		t,
+		d,
+		"oldegad-logos-eviltwin",
+	); !ew.HasFlag(FlagEvilTwin) || ew.Type != "creature" ||
+		ew.Power.N != 2 {
+		t.Errorf("evil twin: %+v", ew)
+	}
+	if n := find(t, d, "oldegad-logos"); n.HasFlag(FlagEvilTwin) || n.Power.N != 1 {
+		t.Errorf("normal twin: %+v", n)
+	}
+
 	// Reference cards sort last, after the cards without a house.
 	if last := d.Cards[len(d.Cards)-1]; last.ID != "forgeahead-none" {
 		t.Errorf("last card is %s", last.ID)
 	}
-	if len(d.Sets) != 7 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
+	if len(d.Sets) != 8 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
 		t.Errorf("sets %v version %q", d.Sets, d.Version)
 	}
 
