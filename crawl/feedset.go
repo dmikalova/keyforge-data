@@ -252,8 +252,13 @@ func sortedKeys(m map[string]bool) []string {
 // ownSet reports whether a card object belongs to the scanned set. A deck
 // also has legacy cards from older sets and reprints with their first set.
 // Those cards are found when their own set is scanned, so they do not keep
-// a scan going. The Worlds Collide anomalies (expansion 453) have no decks
-// of their own, so they belong to the Worlds Collide scan.
+// a scan going. The anomalies (expansion 453) have no decks of their own:
+// they come in the decks of other sets. So an anomaly belongs to every set
+// scan, and the scan keeps a deck for each new anomaly. Distillation reads
+// the stored decks to find the set of an anomaly.
 func ownSet(h mv.CardHead, expansion int) bool {
-	return h.Expansion == expansion || expansion == 452 && h.Expansion == 453
+	return h.Expansion == expansion || h.Expansion == anomalyExpansion
 }
+
+// anomalyExpansion is the Master Vault expansion of the anomalies.
+const anomalyExpansion = 453

@@ -166,27 +166,30 @@ func row(cells ...string) string {
 }
 
 // LoadDecks maps each card object ID to the IDs of the stored decks that
-// have it, from every crawl in the raw store.
-func LoadDecks(store *raw.Store) (map[string][]string, error) {
+// have it, and to the expansions of those decks, from every crawl in the raw
+// store.
+func LoadDecks(store *raw.Store) (map[string][]string, map[string][]int, error) {
 	crawls, err := store.Crawls()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	out := map[string][]string{}
+	deckSets := map[string][]int{}
 	seen := map[string]bool{}
 	for _, id := range crawls {
 		for rec, err := range store.Records(id) {
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			var d struct {
-				ID    string `json:"id"`
-				Links struct {
+				ID        string `json:"id"`
+				Expansion int    `json:"expansion"`
+				Links     struct {
 					Cards []string `json:"cards"`
 				} `json:"_links"`
 			}
 			if err := json.Unmarshal(rec.Deck, &d); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if seen[d.ID] {
 				continue
@@ -194,10 +197,13 @@ func LoadDecks(store *raw.Store) (map[string][]string, error) {
 			seen[d.ID] = true
 			for _, c := range slices.Compact(slices.Sorted(slices.Values(d.Links.Cards))) {
 				out[c] = append(out[c], d.ID)
+				if !slices.Contains(deckSets[c], d.Expansion) {
+					deckSets[c] = append(deckSets[c], d.Expansion)
+				}
 			}
 		}
 	}
-	return out, nil
+	return out, deckSets, nil
 }
 
 // deckLinks returns Markdown links to up to three Master Vault decks, and

@@ -46,6 +46,9 @@ type mvCard struct {
 	IsAnomaly  bool           `json:"is_anomaly"`
 	IsEnhanced bool           `json:"is_enhanced"`
 	FrontImage string         `json:"front_image"`
+	// fromAnomalies is true for an object of the anomaly expansion (453). The
+	// card takes the house of the deck, so it is houseless.
+	fromAnomalies bool
 }
 
 // Input is everything that distillation reads.
@@ -58,6 +61,9 @@ type Input struct {
 	Images []string
 	// Overrides are the curated corrections, by set slug.
 	Overrides map[string]Override
+	// DeckSets maps a card object ID to the expansions of the stored decks
+	// that have it. Anomalies use it to find their set.
+	DeckSets map[string][]int
 	// Decks maps a card object ID to the IDs of the decks that have it. It
 	// is optional. Problems use it to name the decks with the card.
 	Decks map[string][]string
@@ -276,7 +282,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 					Set:    set.Slug,
 					Number: k.number,
 					Title:  k.title,
-					Detail: p.Flavor,
+					Detail: "Master Vault's English data has this text, which the printed card does not have. The site drops it: " + p.Flavor,
 				},
 			)
 			p.Flavor = ""
@@ -333,6 +339,8 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 	}
 	h := query.Normalize(base.House)
 	switch {
+	case base.fromAnomalies:
+		return "", []string{FlagHouseless}
 	case len(houses) > 1:
 		// Master Vault prints the card in the house of the deck: an anomaly,
 		// or a card such as Dark Æmber Vault. The card is houseless.
@@ -582,19 +590,16 @@ func nilIfEmpty(m map[string]int) map[string]int {
 	return m
 }
 
-// Master Vault keeps the anomalies of Worlds Collide in a separate expansion
-// (453). Players do not see that expansion: the anomalies come in Worlds
-// Collide decks. The data report shows that every expansion 453 object is
-// in a Worlds Collide deck.
-const (
-	anomalyExpansion  = 453
-	anomalyDeckSetExp = 452
-)
+// anomalyExpansion is the Master Vault expansion of the anomalies. Players
+// do not see it: an anomaly comes in the decks of other sets, and later sets
+// can reprint it as a normal card.
+const anomalyExpansion = 453
 
 // parse reads the card objects, drops the mavericks, and moves the
 // anomalies of expansion 453. An anomaly with a printing in a playable set
-// uses that printing, so its expansion 453 objects are dropped. Other
-// anomalies become printings of the set whose decks have them.
+// uses that printing, so its expansion 453 objects are dropped. Another
+// anomaly becomes a printing of the oldest set whose stored decks have it
+// (Input.DeckSets). Nothing is coded for each anomaly.
 // A printing that has only maverick objects is kept, in the house of the
 // card's other printings (see maverickOnly).
 func (r *run) parse(raws [][]byte) []mvCard {
@@ -617,24 +622,27 @@ func (r *run) parse(raws [][]byte) []mvCard {
 	}
 	objs = append(objs, r.maverickOnly(objs, mavericks)...)
 	reported := map[string]bool{}
+	anomalySets := r.anomalySets(objs)
 	out := objs[:0]
 	for _, c := range objs {
 		if c.Expansion == anomalyExpansion {
 			if playable[query.Normalize(c.Title)] {
 				continue
 			}
-			if !wcAnomaly(c.Number) {
+			exp, ok := anomalySets[c.Number]
+			if !ok {
 				if !reported[c.Number] {
 					reported[c.Number] = true
 					r.problem(Problem{
 						Kind: ProblemAnomalyNoSet, Number: c.Number, Title: c.Title,
-						Detail: "expansion 453, not A01 to A10, and no printing in a playable set",
+						Detail: "no printing in a playable set, and no stored deck has it",
 					})
 				}
 				continue
 			}
-			c.Expansion = anomalyDeckSetExp
+			c.Expansion = exp
 			c.IsAnomaly = true
+			c.fromAnomalies = true
 		}
 		out = append(out, c)
 	}
@@ -781,10 +789,22 @@ func (r *run) addDecks(groups map[printingKey][]mvCard) {
 	}
 }
 
-// wcAnomaly reports whether an expansion 453 number is one of the Worlds
-// Collide anomalies, A01 to A10. Later anomalies, for example A11
-// Ecto-Charge, are not in Worlds Collide decks.
-func wcAnomaly(number string) bool {
-	n, err := strconv.Atoi(strings.TrimPrefix(number, "A"))
-	return err == nil && strings.HasPrefix(number, "A") && n >= 1 && n <= 10
+// anomalySets returns, for each anomaly number, the oldest playable set
+// whose stored decks have one of its objects.
+func (r *run) anomalySets(objs []mvCard) map[string]int {
+	out := map[string]int{}
+	for _, c := range objs {
+		if c.Expansion != anomalyExpansion {
+			continue
+		}
+		for _, exp := range r.in.DeckSets[c.ID] {
+			if _, ok := sets.ByExpansion(exp); !ok || exp == anomalyExpansion {
+				continue
+			}
+			if old, ok := out[c.Number]; !ok || setIndex(exp) < setIndex(old) {
+				out[c.Number] = exp
+			}
+		}
+	}
+	return out
 }

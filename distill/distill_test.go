@@ -70,6 +70,14 @@ func TestRun(t *testing.T) {
 				`"card_title":"Ghostform","house":"Logos","card_type":"Upgrade","rarity":"FIXED","card_number":"A01","expansion":453,"is_anomaly":true`,
 			),
 			obj(
+				"c1",
+				`"card_title":"Ecto-Charge","house":"Dis","card_type":"Action","rarity":"FIXED","card_number":"A11","expansion":453,"is_anomaly":true`,
+			),
+			obj(
+				"n1",
+				`"card_title":"Lost Anomaly","house":"Dis","card_type":"Action","rarity":"FIXED","card_number":"A99","expansion":453,"is_anomaly":true`,
+			),
+			obj(
 				"q1",
 				`"card_title":"Timequake","house":"Dis","card_type":"Action","rarity":"FIXED","card_number":"A09","expansion":453,"is_anomaly":true`,
 			),
@@ -135,8 +143,9 @@ func TestRun(t *testing.T) {
 			"worldscollide": {Cards: map[string]CardFix{"170": {Power: &card.Power{X: true}}}},
 			"aemberskies":   {Aliases: map[string][]string{"ANT1-10NY": {"Anthony"}}},
 		},
-		Decks: map[string][]string{"b1": {"deck-1"}},
-		Now:   time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC),
+		Decks:    map[string][]string{"b1": {"deck-1"}},
+		DeckSets: map[string][]int{"a1": {479, 452}, "a2": {452}, "q1": {452}, "c1": {600}},
+		Now:      time.Date(2026, 11, 26, 0, 0, 0, 0, time.UTC),
 	}
 	d, problems := Run(in)
 
@@ -187,6 +196,15 @@ func TestRun(t *testing.T) {
 	if !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
 		gf.Printings[0].Set != "worldscollide" || gf.Printings[0].Image != "worldscollide/A01.webp" {
 		t.Errorf("anomaly: %+v", gf)
+	}
+	// An anomaly takes the oldest set whose decks have it.
+	if ec := find(
+		t,
+		d,
+		"ectocharge-none",
+	); ec.Printings[0].Set != "windsofexchange" ||
+		ec.Printings[0].Number != "A11" {
+		t.Errorf("ecto-charge: %+v", ec.Printings)
 	}
 	// An anomaly with a printing in a playable set drops its expansion 453
 	// objects.
@@ -250,7 +268,7 @@ func TestRun(t *testing.T) {
 	if last := d.Cards[len(d.Cards)-1]; last.ID != "forgeahead-none" {
 		t.Errorf("last card is %s", last.ID)
 	}
-	if len(d.Sets) != 8 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
+	if len(d.Sets) != 9 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
 		t.Errorf("sets %v version %q", d.Sets, d.Version)
 	}
 
@@ -258,6 +276,7 @@ func TestRun(t *testing.T) {
 	for _, want := range []string{
 		"missing image aemberskies 100",
 		"missing image massmutation 028",
+		"anomaly without a set  A99",
 		"missing gigantic image massmutation 125",
 		"printing with only mavericks vaultmasters2023 099",
 		"unlabeled houseless kind aemberskies 400",

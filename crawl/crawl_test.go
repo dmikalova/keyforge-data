@@ -67,6 +67,8 @@ func TestKeepNewSkipsMavericksSeenCardsAndCopies(t *testing.T) {
 		"l1": {ID: "l1", Expansion: 435, CardNumber: "010"},
 		// e1 is an enhanced copy of c2: a new object of the same printing.
 		"e1": {ID: "e1", Expansion: 341, CardNumber: "002"},
+		// a1 is an anomaly. Anomalies come in the decks of every set.
+		"a1": {ID: "a1", Expansion: 453, CardNumber: "A11"},
 	}
 	seen := map[string]bool{TargetKey(heads["c1"]): true}
 	numbers := map[string]bool{}
@@ -75,6 +77,7 @@ func TestKeepNewSkipsMavericksSeenCardsAndCopies(t *testing.T) {
 		{ID: "d2", CardIDs: []string{"c1", "c2", "c2"}},
 		{ID: "d3", CardIDs: []string{"l1"}},
 		{ID: "d4", CardIDs: []string{"e1"}},
+		{ID: "d5", CardIDs: []string{"a1"}},
 	}
 	kept, added := keepNew(decks, heads, seen, numbers, 341)
 	var ids []string
@@ -82,11 +85,11 @@ func TestKeepNewSkipsMavericksSeenCardsAndCopies(t *testing.T) {
 		ids = append(ids, d.ID)
 	}
 	// d3 has only a card from another set, so it is not kept.
-	if want := []string{"d2"}; !slices.Equal(ids, want) {
+	if want := []string{"d2", "d5"}; !slices.Equal(ids, want) {
 		t.Errorf("kept = %v, want %v", ids, want)
 	}
-	if added != 1 {
-		t.Errorf("added = %d, want 1", added)
+	if added != 2 {
+		t.Errorf("added = %d, want 2", added)
 	}
 	if !numbers["002"] || numbers["010"] {
 		t.Errorf("numbers = %v, want only the set's own numbers", numbers)

@@ -299,7 +299,7 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 	if err != nil {
 		return err
 	}
-	decks, err := distill.LoadDecks(store)
+	decks, deckSets, err := distill.LoadDecks(store)
 	if err != nil {
 		return err
 	}
@@ -312,7 +312,12 @@ func distillCmd(ctx context.Context, store *raw.Store, args []string, stdout io.
 		return err
 	}
 	d, problems := distill.Run(distill.Input{
-		Cards: cards, Images: images, Overrides: overrides, Decks: decks, Now: time.Now(),
+		Cards:     cards,
+		Images:    images,
+		Overrides: overrides,
+		Decks:     decks,
+		DeckSets:  deckSets,
+		Now:       time.Now(),
 	})
 	b, err := json.Marshal(d, json.Deterministic(true))
 	if err != nil {
