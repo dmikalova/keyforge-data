@@ -117,7 +117,8 @@ const (
 	FlagGigantic      = "gigantic"
 	FlagEvilTwin      = "eviltwin"
 	// FlagMultiHouse marks a card that Master Vault prints once for each
-	// house of the deck, for example the anomalies.
+	// house of the deck, for example Dark Æmber Vault. Anomalies are not
+	// multi-house cards.
 	FlagMultiHouse = "multihouse"
 	// FlagHouseless marks every card without a house that is not a reference
 	// card: anomalies, multi-house cards, and the houseless kinds.
@@ -293,6 +294,10 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 	}
 	h := query.Normalize(base.House)
 	switch {
+	case len(houses) > 1 && base.IsAnomaly:
+		// An anomaly takes the house of the deck. It is houseless, but it is
+		// not a multi-house card.
+		return "", []string{FlagHouseless}
 	case len(houses) > 1:
 		return "", []string{FlagMultiHouse, FlagHouseless}
 	case referenceHouses[h]:

@@ -130,7 +130,7 @@ func TestRun(t *testing.T) {
 	}
 
 	gf := find(t, d, "ghostform-none")
-	if !gf.HasFlag(FlagMultiHouse) || !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
+	if gf.HasFlag(FlagMultiHouse) || !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
 		gf.Printings[0].Set != "worldscollide" || gf.Printings[0].Image != "worldscollide/A01.webp" {
 		t.Errorf("anomaly: %+v", gf)
 	}
