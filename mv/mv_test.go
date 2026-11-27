@@ -100,7 +100,7 @@ func TestGetMapsLimitAndNotFound(t *testing.T) {
 
 func TestPacerCapsPaceAndBackoff(t *testing.T) {
 	p := NewPacer()
-	for range 30 {
+	for range 60 {
 		p.Throttled()
 	}
 	if p.Pace != p.MaxPace {
@@ -113,5 +113,36 @@ func TestPacerCapsPaceAndBackoff(t *testing.T) {
 	}
 	if last != p.MaxBackoff || p.Longest != p.MaxBackoff {
 		t.Errorf("last = %s, longest = %s, want %s", last, p.Longest, p.MaxBackoff)
+	}
+}
+
+// TestGetCoolsDownAfterThrottles checks that a run of throttles stops the
+// retries for a cooldown. Master Vault keeps a block while a client retries
+// it every minute.
+func TestGetCoolsDownAfterThrottles(t *testing.T) {
+	var n atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if n.Add(1) <= 5 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		_, _ = io.WriteString(w, feedPage)
+	}))
+	defer srv.Close()
+	c := fastClient(srv.URL)
+	c.Pacer.CooldownAfter = 2
+	c.Pacer.Cooldown = time.Millisecond
+	if _, err := c.Feed(context.Background(), FeedQuery{Expansion: 341, Page: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if c.Pacer.Cooldowns != 2 {
+		t.Errorf("cooldowns = %d, want 2", c.Pacer.Cooldowns)
+	}
+}
+
+func TestNewPacerStartsSlow(t *testing.T) {
+	p := NewPacer()
+	if p.Pace < 10*time.Second || p.CooldownAfter == 0 || p.Cooldown < 30*time.Minute {
+		t.Errorf("pacer = %+v, want a 10s pace and a 30m cooldown", p)
 	}
 }

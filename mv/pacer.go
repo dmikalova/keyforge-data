@@ -15,15 +15,26 @@ type Pacer struct {
 	Longest time.Duration
 	// MaxBackoff caps one backoff wait.
 	MaxBackoff time.Duration
+	// CooldownAfter is the number of throttles in a row that start a
+	// cooldown. Master Vault sends no Retry-After header, and it keeps a
+	// block while a client retries it every minute.
+	CooldownAfter int
+	// Cooldown is the wait after CooldownAfter throttles in a row.
+	Cooldown time.Duration
+	// Cooldowns counts the cooldowns of the run.
+	Cooldowns int
 }
 
 // NewPacer returns a pacer with the polite start values.
 func NewPacer() *Pacer {
 	return &Pacer{
-		Pace:       time.Second,
-		MaxPace:    20 * time.Second,
-		Longest:    2 * time.Second,
-		MaxBackoff: time.Minute,
+		// A pace of 1 second got a block after 23 feed pages.
+		Pace:          10 * time.Second,
+		MaxPace:       time.Minute,
+		Longest:       2 * time.Second,
+		MaxBackoff:    time.Minute,
+		CooldownAfter: 5,
+		Cooldown:      30 * time.Minute,
 	}
 }
 
