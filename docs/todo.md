@@ -122,6 +122,17 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   through its one paced client. The Mac does not crawl.
 - After the card crawl is complete, change the crawler to a deck crawler that
   runs on the data.keyforge.cards container (ADR 0003).
+- Find the Master Vault limit before the deck crawl. On 2026-11-26 a 10 s
+  pace read about 240 feed pages an hour for 8 hours. Then Master Vault
+  throttled the crawl after about 2,000 pages and blocked it for about
+  12 hours. At 260 pages an hour and 10 decks a page, 3.5M decks take about
+  56 days. If the limit is about 2,000 pages a day, they take years. Test
+  these options:
+  - A larger `page_size` (25 or 50). This changes the time the most.
+  - Requests with the user's Master Vault login cookie. Find out whether a
+    logged-in client gets a higher limit.
+  - Two crawlers. Read the Master Vault terms first. Two crawlers that get
+    around a limit can get the IP or the account blocked.
 - Done: `mage dataset:publish` writes the versioned dataset files
   (`data/cards/<version>.json`), the pointer (`data/latest.json`), and the
   Atom feed (`data/feed.xml`).
