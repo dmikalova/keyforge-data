@@ -56,7 +56,7 @@ All set references are Archon Arcana images. The files are in `_refs/archonarcan
 | `set/discovery.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/Disc.png> | Traced from Disc.png | |
 | `set/crucibleclash.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/CC.png> | Traced from CC.png | |
 | `set/draconianmeasures.svg` | <https://mywikis-wiki-media.s3.us-central-1.wasabisys.com/archonarcana/DM.png> | Traced from DM.png | |
-| `set/moremutation.svg` | None | Missing | No reference found. |
+| `set/moremutation.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/874.png> (visual reference only) | Drawn | Our own drawing: a large circle with three smaller circles, the top one on a short neck. We drew the shapes as geometry. We did not copy keyteki path data. |
 | `set/vaultmasters2025.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/939.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "25". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
 | `set/vaultmasters2026.svg` | <https://github.com/keyteki/keyteki/blob/master/client/assets/img/964.png> (visual reference only) | Drawn | Our own drawing: a double triangle with a circle and "26". We drew the shapes as geometry and traced them into one path. We did not copy keyteki path data. |
 
