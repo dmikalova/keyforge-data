@@ -143,7 +143,6 @@ func (c *Client) get(ctx context.Context, reqURL, locale string) ([]byte, error)
 		return nil, err
 	}
 	b := c.Pacer.backoff()
-	throttles := 0
 	for {
 		body, status, err := c.do(ctx, reqURL, locale)
 		c.last = time.Now()
@@ -160,17 +159,6 @@ func (c *Client) get(ctx context.Context, reqURL, locale string) ([]byte, error)
 			return nil, ErrPastLimit
 		case status == http.StatusTooManyRequests:
 			c.Pacer.Throttled()
-			throttles++
-			if c.Pacer.CooldownAfter > 0 && throttles >= c.Pacer.CooldownAfter {
-				throttles = 0
-				c.Pacer.Cooldowns++
-				c.Log.Warn("throttled: cooling down", "url", reqURL,
-					"cooldown", c.Pacer.Cooldown, "pace", c.Pacer.Pace)
-				if err := sleep(ctx, c.Pacer.Cooldown); err != nil {
-					return nil, err
-				}
-				continue
-			}
 			c.Log.Warn("throttled", "url", reqURL, "wait", b.wait, "pace", c.Pacer.Pace)
 		case status >= 500:
 			c.Log.Warn("gateway error", "url", reqURL, "status", status, "wait", b.wait)

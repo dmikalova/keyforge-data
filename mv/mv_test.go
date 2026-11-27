@@ -56,7 +56,7 @@ func fastClient(url string) *Client {
 	c := New(quiet())
 	c.BaseURL = url + "/"
 	c.Pacer.Pace = time.Millisecond
-	c.Pacer.Longest = time.Millisecond
+	c.Pacer.FirstBackoff = time.Millisecond
 	return c
 }
 
@@ -116,33 +116,31 @@ func TestPacerCapsPaceAndBackoff(t *testing.T) {
 	}
 }
 
-// TestGetCoolsDownAfterThrottles checks that a run of throttles stops the
-// retries for a cooldown. Master Vault keeps a block while a client retries
-// it every minute.
-func TestGetCoolsDownAfterThrottles(t *testing.T) {
-	var n atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		if n.Add(1) <= 5 {
-			w.WriteHeader(http.StatusTooManyRequests)
-			return
-		}
-		_, _ = io.WriteString(w, feedPage)
-	}))
-	defer srv.Close()
-	c := fastClient(srv.URL)
-	c.Pacer.CooldownAfter = 2
-	c.Pacer.Cooldown = time.Millisecond
-	if _, err := c.Feed(context.Background(), FeedQuery{Expansion: 341, Page: 1}); err != nil {
-		t.Fatal(err)
+// TestBackoffDoublesPastAMinute checks that the waits after throttles in a
+// row double from FirstBackoff past one minute, and that each request starts
+// again at FirstBackoff. Master Vault sends no Retry-After header, and a
+// retry every minute kept a block for hours.
+func TestBackoffDoublesPastAMinute(t *testing.T) {
+	p := NewPacer()
+	b := p.backoff()
+	want := []time.Duration{
+		10 * time.Second, 20 * time.Second, 40 * time.Second, 80 * time.Second,
+		160 * time.Second, 320 * time.Second, 640 * time.Second, 1280 * time.Second,
+		2560 * time.Second, time.Hour, time.Hour,
 	}
-	if c.Pacer.Cooldowns != 2 {
-		t.Errorf("cooldowns = %d, want 2", c.Pacer.Cooldowns)
+	for i, w := range want {
+		if got := b.next(); got != w {
+			t.Errorf("wait %d = %s, want %s", i, got, w)
+		}
+	}
+	if got := p.backoff().next(); got != p.FirstBackoff {
+		t.Errorf("a new backoff starts at %s, want %s", got, p.FirstBackoff)
 	}
 }
 
 func TestNewPacerStartsSlow(t *testing.T) {
 	p := NewPacer()
-	if p.Pace < 10*time.Second || p.CooldownAfter == 0 || p.Cooldown < 30*time.Minute {
-		t.Errorf("pacer = %+v, want a 10s pace and a 30m cooldown", p)
+	if p.Pace != 10*time.Second || p.FirstBackoff != 10*time.Second || p.MaxBackoff != time.Hour {
+		t.Errorf("pacer = %+v, want a 10s pace and a 10s to 1h backoff", p)
 	}
 }
