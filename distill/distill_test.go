@@ -211,15 +211,20 @@ func TestRun(t *testing.T) {
 		ec.Printings[0].Number != "A11" {
 		t.Errorf("ecto-charge: %+v", ec.Printings)
 	}
-	// An anomaly with a printing in a playable set drops its expansion 453
-	// objects.
-	if tq := find(
-		t,
-		d,
-		"timequake-logos",
-	); len(tq.Printings) != 1 ||
-		tq.Printings[0].Set != "massmutation" {
-		t.Errorf("timequake: %+v", tq.Printings)
+	// An anomaly with a printing in a playable set keeps its anomaly
+	// printing in the oldest set whose decks have it, on the same card.
+	tq := find(t, d, "timequake-logos")
+	if len(tq.Printings) != 2 ||
+		tq.Printings[0].Set != "worldscollide" || !tq.Printings[0].Anomaly ||
+		tq.Printings[0].Rarity != "Anomaly" || tq.Printings[0].Number != "A09" ||
+		tq.Printings[1].Set != "massmutation" ||
+		tq.House != "logos" || tq.HasFlag(FlagHouseless) || tq.Group != "" {
+		t.Errorf("timequake: %+v", tq)
+	}
+	for _, c := range d.Cards {
+		if c.ID == "timequake-none" {
+			t.Errorf("the anomaly printing made a second card: %+v", c)
+		}
 	}
 	if p := find(t, d, "mimicgel-logos").Power; p == nil || !p.X {
 		t.Errorf("override power X: %v", p)

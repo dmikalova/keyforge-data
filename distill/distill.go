@@ -50,6 +50,10 @@ type mvCard struct {
 	// fromAnomalies is true for an object of the anomaly expansion (453). The
 	// card takes the house of the deck, so it is houseless.
 	fromAnomalies bool
+	// playableHouse is the house of the card's printing in a playable set,
+	// for an anomaly object of a card that a later set prints as a normal
+	// card. The anomaly printing joins that card.
+	playableHouse string
 }
 
 // Input is everything that distillation reads.
@@ -346,6 +350,8 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 	}
 	h := query.Normalize(base.House)
 	switch {
+	case base.playableHouse != "":
+		return base.playableHouse, nil
 	case base.fromAnomalies:
 		return "", []string{FlagHouseless}
 	case len(houses) > 1:
@@ -643,15 +649,15 @@ func nilIfEmpty(m map[string]int) map[string]int {
 const anomalyExpansion = 453
 
 // parse reads the card objects, drops the mavericks, and moves the
-// anomalies of expansion 453. An anomaly with a printing in a playable set
-// uses that printing, so its expansion 453 objects are dropped. Another
-// anomaly becomes a printing of the oldest set whose stored decks have it
-// (Input.DeckSets). Nothing is coded for each anomaly.
+// anomalies of expansion 453. An anomaly becomes a printing of the oldest
+// set whose stored decks have it (Input.DeckSets). An anomaly that a
+// playable set also prints, such as Valoocanth, keeps that anomaly printing
+// on the card of the playable printing. Nothing is coded for each anomaly.
 // A printing that has only maverick objects is kept, in the house of the
 // card's other printings (see maverickOnly).
 func (r *run) parse(raws [][]byte) []mvCard {
 	var objs, mavericks []mvCard
-	playable := map[string]bool{}
+	playable := map[string]string{}
 	for _, b := range raws {
 		var c mvCard
 		if err := json.Unmarshal(b, &c); err != nil {
@@ -663,7 +669,7 @@ func (r *run) parse(raws [][]byte) []mvCard {
 			continue
 		}
 		if c.Expansion != anomalyExpansion {
-			playable[query.Normalize(c.Title)] = true
+			playable[query.Normalize(c.Title)] = query.Normalize(c.House)
 		}
 		objs = append(objs, c)
 	}
@@ -673,10 +679,16 @@ func (r *run) parse(raws [][]byte) []mvCard {
 	out := objs[:0]
 	for _, c := range objs {
 		if c.Expansion == anomalyExpansion {
-			if playable[query.Normalize(c.Title)] {
-				continue
-			}
+			house, isPlayable := playable[query.Normalize(c.Title)]
 			exp, ok := anomalySets[c.Number]
+			if isPlayable {
+				// The playable printing makes the card. Without a stored
+				// deck, the anomaly printing has no set and is left out.
+				if !ok {
+					continue
+				}
+				c.playableHouse = house
+			}
 			if !ok {
 				if !reported[c.Number] {
 					reported[c.Number] = true
