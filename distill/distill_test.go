@@ -143,6 +143,22 @@ func TestRun(t *testing.T) {
 				`"card_title":"Bordan the Redeemed","house":"Redemption","card_type":"Creature","power":"6","rarity":"Rare","card_number":"150","expansion":855`,
 			),
 			obj(
+				"bp1",
+				`"card_title":"Blypyp","house":"Mars","card_type":"Creature","power":"2","rarity":"Common","card_number":"180","expansion":435`,
+			),
+			obj(
+				"bp2",
+				`"card_title":"Blypyp","house":"Elders","card_type":"Creature","power":"2","rarity":"Common","card_number":"010","expansion":892`,
+			),
+			obj(
+				"gr1",
+				`"card_title":"The Grim Reaper","house":"Geistoid","card_type":"Creature","power":"6","rarity":"Rare","card_number":"155","expansion":700`,
+			),
+			obj(
+				"gr2",
+				`"card_title":"The Grim Reaper","house":"Brobnar","card_type":"Creature","power":"6","rarity":"Rare","card_number":"233","expansion":722,"is_maverick":true`,
+			),
+			obj(
 				"v1",
 				`"card_title":"Master of 2","house":"Brobnar","card_type":"Creature","power":"4","rarity":"Variant","card_number":"090","expansion":341`,
 			),
@@ -167,6 +183,7 @@ func TestRun(t *testing.T) {
 			"callofthearchons/046.webp?v=7", "ageofascension/012.webp", "massmutation/125.webp",
 			"worldscollide/A01.webp", "worldscollide/170.webp",
 			"aemberskies/400-other-card.webp", "aemberskies/400-sky-whale.webp",
+			"grimreminders/155.webp", "menagerie/233.webp",
 		},
 		Overrides: map[string]Override{
 			"worldscollide": {Cards: map[string]CardFix{"170": {Power: &card.Power{X: true}}}},
@@ -325,6 +342,25 @@ func TestRun(t *testing.T) {
 		bd.Printings[0].House != "" {
 		t.Errorf("bordan: %+v", bd)
 	}
+	// A card that a later set prints in another house, such as Martian Civil
+	// War's Elders, joins the card of its first house.
+	bp := find(t, d, "blypyp-mars")
+	if len(bp.Printings) != 2 || bp.Printings[1].Set != "martiancivilwar" ||
+		bp.Printings[1].House != "elders" || bp.Printings[0].House != "" {
+		t.Errorf("blypyp: %+v", bp)
+	}
+	for _, c := range d.Cards {
+		if c.ID == "blypyp-elders" {
+			t.Errorf("the Elders printing made a second card")
+		}
+	}
+	// A printing that Master Vault has only as mavericks shows the art of
+	// the card's newest printing that is not a maverick.
+	gr := find(t, d, "thegrimreaper-geistoid")
+	men := gr.Printings[len(gr.Printings)-1]
+	if men.Set != "menagerie" || !men.Maverick || men.Image != "grimreminders/155.webp" {
+		t.Errorf("grim reaper menagerie printing: %+v", men)
+	}
 	// Variant and FIXED cards are Special, like the later sets print them.
 	if m2 := find(t, d, "masterof2-brobnar"); m2.Printings[0].Rarity != "Special" {
 		t.Errorf("variant rarity: %q, want Special", m2.Printings[0].Rarity)
@@ -347,7 +383,7 @@ func TestRun(t *testing.T) {
 	if last := d.Cards[len(d.Cards)-1]; last.ID != "forgeahead-none" {
 		t.Errorf("last card is %s", last.ID)
 	}
-	if len(d.Sets) != 10 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
+	if len(d.Sets) != 13 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
 		t.Errorf("sets %v version %q", d.Sets, d.Version)
 	}
 

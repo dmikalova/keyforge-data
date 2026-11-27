@@ -89,9 +89,14 @@ type Printing struct {
 	// Anomaly is true for a printing with the anomaly frame.
 	Anomaly bool `json:"anomaly,omitempty"`
 	// House is the house of this printing when it is not the card's house:
-	// "redemption" for a card that Tokens of Change prints in Redemption
-	// and an earlier set prints in another house.
+	// "redemption" for a card that Tokens of Change prints in Redemption,
+	// or "elders" for a Mars card that Martian Civil War prints in Elders.
 	House string `json:"house,omitempty"`
+	// Maverick is true for a printing that Master Vault has only as
+	// mavericks. Its Master Vault image shows another house, so the printing
+	// uses the image of the card's newest printing that is not a maverick,
+	// when the card has one. Show another printing by default.
+	Maverick bool `json:"maverick,omitempty"`
 	// Image is the image path under the public bucket's images/cards/.
 	Image string `json:"image,omitempty"`
 	// MVIDs are the Master Vault card object IDs of the printing.

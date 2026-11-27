@@ -54,6 +54,9 @@ type mvCard struct {
 	// for an anomaly object of a card that a later set prints as a normal
 	// card. The anomaly printing joins that card.
 	playableHouse string
+	// maverickOnly is true for an object of a printing that Master Vault has
+	// only as mavericks (maverickOnly).
+	maverickOnly bool
 }
 
 // Input is everything that distillation reads.
@@ -173,7 +176,8 @@ func Run(in Input) (card.Dataset, []Problem) {
 		r.add(cards, k, groups[k])
 	}
 	evilTwinRarities(cards)
-	mergeSecondHouse(cards)
+	mergeHouses(cards)
+	maverickImages(cards)
 	d := r.dataset(cards)
 	r.addDecks(groups)
 	return d, r.problems
@@ -276,12 +280,13 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 	}
 
 	p := card.Printing{
-		Set:     set.Slug,
-		Number:  k.number,
-		Rarity:  rarity(base),
-		Anomaly: base.IsAnomaly,
-		Image:   r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
-		Artist:  r.in.Artists[set.Slug][k.number],
+		Set:      set.Slug,
+		Number:   k.number,
+		Rarity:   rarity(base),
+		Anomaly:  base.IsAnomaly,
+		Maverick: base.maverickOnly,
+		Image:    r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
+		Artist:   r.in.Artists[set.Slug][k.number],
 		// dataset keeps the text only where it differs from the card text.
 		Text: derive.Display(base.Text),
 	}
@@ -623,36 +628,72 @@ var specialRarities = []string{"FIXED", "Variant", "The Tide"}
 // evilTwinRarity is the Master Vault rarity of every evil twin.
 const evilTwinRarity = "Evil Twin"
 
-// secondHouse is the house that a later set prints some cards of other
-// houses in. Tokens of Change prints Dark Centurion, a Saurian card, in
-// Redemption.
-const secondHouse = "redemption"
-
-// mergeSecondHouse moves each card of the second house into the card with
-// the same title in exactly one other house. Its printings keep the second
-// house as the printing's house, so the card keeps its first house and a
-// house search can still find the printing. A second-house card with no
-// card of another house, or with several, stays a card of its own.
-func mergeSecondHouse(cards map[string]*card.Card) {
+// mergeHouses joins the cards with one title in several houses into the
+// card of the first house: the house of the oldest printing. Later sets
+// print some cards in another house: Tokens of Change prints Dark Centurion,
+// a Saurian card, in Redemption, and Martian Civil War prints Mars cards in
+// Elders and Ironyx Rebels. The joined printings keep their house as the
+// printing's house, so a house search still finds them. Evil twins and
+// cards without a house are not joined.
+func mergeHouses(cards map[string]*card.Card) {
 	byTitle := map[string][]string{}
 	for id, c := range cards {
-		if c.House != secondHouse && !c.HasFlag(FlagEvilTwin) {
+		if c.House != "" && !c.HasFlag(FlagEvilTwin) && len(c.Printings) > 0 {
 			byTitle[c.Folded] = append(byTitle[c.Folded], id)
 		}
 	}
-	for id, c := range cards {
-		if c.House != secondHouse || c.HasFlag(FlagEvilTwin) || len(byTitle[c.Folded]) != 1 {
+	for _, ids := range byTitle {
+		if len(ids) < 2 {
 			continue
 		}
-		target := cards[byTitle[c.Folded][0]]
-		for _, p := range c.Printings {
-			p.House = secondHouse
-			target.Printings = append(target.Printings, p)
+		// The first house is the house of the oldest printing. The ID breaks
+		// a tie, so the result does not depend on map order.
+		slices.SortFunc(ids, func(a, b string) int {
+			return cmp.Or(
+				cmp.Compare(
+					slugIndex(cards[a].Printings[0].Set),
+					slugIndex(cards[b].Printings[0].Set),
+				),
+				strings.Compare(a, b),
+			)
+		})
+		target := cards[ids[0]]
+		for _, id := range ids[1:] {
+			c := cards[id]
+			for _, p := range c.Printings {
+				if p.House == "" {
+					p.House = c.House
+				}
+				target.Printings = append(target.Printings, p)
+			}
+			delete(cards, id)
 		}
 		slices.SortStableFunc(target.Printings, func(a, b card.Printing) int {
 			return cmp.Compare(slugIndex(a.Set), slugIndex(b.Set))
 		})
-		delete(cards, id)
+	}
+}
+
+// maverickImages gives each maverick-only printing the image of the card's
+// newest printing that is not a maverick. The Master Vault image of a
+// maverick shows another house. A card with only maverick printings, such
+// as Exchange Officer, keeps its images.
+func maverickImages(cards map[string]*card.Card) {
+	for _, c := range cards {
+		img := ""
+		for _, p := range c.Printings {
+			if !p.Maverick && !p.Anomaly && p.Image != "" {
+				img = p.Image
+			}
+		}
+		if img == "" {
+			continue
+		}
+		for i := range c.Printings {
+			if c.Printings[i].Maverick {
+				c.Printings[i].Image = img
+			}
+		}
 	}
 }
 
@@ -844,6 +885,7 @@ func (r *run) maverickOnly(objs, mavericks []mvCard) []mvCard {
 			c.House = h
 		}
 		c.IsMaverick = false
+		c.maverickOnly = true
 		out = append(out, c)
 	}
 	return out
