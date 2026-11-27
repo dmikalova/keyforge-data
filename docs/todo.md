@@ -63,6 +63,13 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
   house. Do not do this before the crawl has the Redemption cards.
 - Run `kfdata check-art` after each image fill. Fix a blank art box with
   `kfdata fix-art` and the art of another printing.
+- After the card crawl: run `mage artists:scan` for the last sets, then
+  review the artists with the user (`mage artists:review`). Open items on
+  2026-11-27: Deusillus (Caio Monteiro or Leo Aveiro), Bonerot Venom (Ivan
+  Frolov or Ivan Tao), Shae "Cloudkicker" (Jeferson Cordeiro or Oscar
+  Römer), Wasteful Regret (Fábio Mota or Fábio Perez), the spellings
+  Jean-Baptiste Reynaud and Alisson Ricardo, and Dodger's 10 ("Allison
+  Rick / Felipe Gallo" as one artist or two).
 - Move the scheduled crawl and publish to the data.keyforge.cards service
   (ADR 0006), so they do not depend on this Mac.
 - When Grim Reminders is crawled, check that The Grim Reaper shows its GR

@@ -355,6 +355,9 @@ var cleaner = strings.NewReplacer(
 	"\u202f", " ",
 	// The non-breaking hyphen is a normal hyphen for search.
 	"\u2011", "-",
+	// Master Vault ends some texts with zero-width characters. They are not
+	// visible and make the same text of two printings differ.
+	"\ufeff", "", "\u200b", "", "\u200c", "", "\u200d", "", "\u2060", "",
 )
 
 // spacesRe finds runs of spaces and the spaces next to a line break.

@@ -109,8 +109,12 @@ func TestClean(t *testing.T) {
 	for in, want := range map[string]string{
 		"“They said they’d bring it right back.” <softreturn>—Squire<nonbreak>Alys": "“They said they’d bring it right back.”\n—Squire\u00a0Alys",
 		"Play: Return 2\u202fenemy creatures.\r\n":                                  "Play: Return 2 enemy creatures.",
-		"non\u2011Star Alliance":                                                    "non-Star Alliance",
-		"Gain 1<nonbreak><A>.":                                                      "Gain 1\u00a0<A>.",
+		// Master Vault ends some texts with zero-width characters, so the
+		// same text of two printings compared as different.
+		"each enemy creature.\ufeff\ufeff": "each enemy creature.",
+		"Fight/\u200bReap:":                "Fight/Reap:",
+		"non\u2011Star Alliance":           "non-Star Alliance",
+		"Gain 1<nonbreak><A>.":             "Gain 1\u00a0<A>.",
 	} {
 		if got := Clean(in); got != want {
 			t.Errorf("Clean(%q) = %q, want %q", in, got, want)
