@@ -50,6 +50,10 @@ type File struct {
 	// Artists maps a collector number to the artist of the printing. Master
 	// Vault has no artists. kfdata artists scan writes them. A set file.
 	Artists map[string]string `json:"artists,omitempty"`
+	// Unused maps a collector number that has no card to the reason, for
+	// example a number that no deck has. The crawl does not wait for these
+	// numbers (crawl.StopRule). A set file.
+	Unused map[string]string `json:"unused,omitempty"`
 	// Threads are curated threads of related cards. A curated thread wins
 	// over a deck rule with the same cards or fewer. _threads.json.
 	Threads []Thread `json:"threads,omitempty"`

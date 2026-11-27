@@ -44,18 +44,38 @@ func TestGreedyCountsRepeatsOnce(t *testing.T) {
 
 func TestHasGap(t *testing.T) {
 	cases := []struct {
-		in   []string
-		want bool
+		in     []string
+		unused map[string]bool
+		want   bool
 	}{
-		{nil, false},
-		{[]string{"001", "002", "003"}, false},
-		{[]string{"001", "003"}, true},
-		{[]string{"001", "002", "S01"}, false},
+		{nil, nil, false},
+		{[]string{"001", "002", "003"}, nil, false},
+		{[]string{"001", "003"}, nil, true},
+		{[]string{"001", "002", "S01"}, nil, false},
+		// A number that has no card in the set is not a gap.
+		{[]string{"001", "003"}, map[string]bool{"002": true}, false},
+		{[]string{"001", "004"}, map[string]bool{"002": true}, true},
 	}
 	for _, c := range cases {
-		if got := hasGap(c.in); got != c.want {
-			t.Errorf("hasGap(%v) = %t, want %t", c.in, got, c.want)
+		if got := hasGap(c.in, c.unused); got != c.want {
+			t.Errorf("hasGap(%v, %v) = %t, want %t", c.in, c.unused, got, c.want)
 		}
+	}
+}
+
+// TestAddNumbersCountsMavericks checks that a maverick fills its number.
+// Exchange Officer is always a maverick, and without it the gap at its
+// number kept a set scan going for 200 pages.
+func TestAddNumbersCountsMavericks(t *testing.T) {
+	heads := map[string]mv.CardHead{
+		"a": {Expansion: 609, CardNumber: "282", Title: "Exchange Officer", IsMaverick: true},
+		"b": {Expansion: 609, CardNumber: "001", Title: "Autocannon"},
+		"c": {Expansion: 341, CardNumber: "005", Title: "Older"},
+	}
+	numbers := map[string]bool{}
+	addNumbers(heads, numbers, 609)
+	if !numbers["282"] || !numbers["001"] || numbers["005"] || len(numbers) != 2 {
+		t.Errorf("numbers = %v, want 001 and 282", numbers)
 	}
 }
 

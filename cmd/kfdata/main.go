@@ -45,6 +45,7 @@ import (
 	"github.com/dmikalova/keyforge-data/images"
 	"github.com/dmikalova/keyforge-data/inspect"
 	"github.com/dmikalova/keyforge-data/mv"
+	"github.com/dmikalova/keyforge-data/overlay"
 	"github.com/dmikalova/keyforge-data/raw"
 	"github.com/dmikalova/keyforge-data/sets"
 )
@@ -173,10 +174,15 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 func crawlSets(ctx context.Context, log *slog.Logger, store *raw.Store, args []string) error {
 	fs := flag.NewFlagSet("crawl-sets", flag.ContinueOnError)
 	id := fs.String("crawl", "sets-"+time.Now().UTC().Format("20060102"), "crawl ID")
+	dir := fs.String("overrides", "overrides", "overrides directory with the unused card numbers")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	targets, err := sets.Select(fs.Args())
+	if err != nil {
+		return err
+	}
+	stop, err := stopRule(*dir)
 	if err != nil {
 		return err
 	}
@@ -185,7 +191,7 @@ func crawlSets(ctx context.Context, log *slog.Logger, store *raw.Store, args []s
 		return err
 	}
 	log.Info("crawl", "id", *id, "dir", c.Dir())
-	runErr := crawl.FeedSets(ctx, log, mv.New(log), c, targets, crawl.DefaultStop)
+	runErr := crawl.FeedSets(ctx, log, mv.New(log), c, targets, stop)
 	state := crawl.FeedSetsState{}
 	if err := c.State(&state); err != nil {
 		return errors.Join(runErr, err)
@@ -525,4 +531,25 @@ func fixArt(ctx context.Context, args []string) error {
 		return err
 	}
 	return f.Close()
+}
+
+// stopRule returns the default stop rule with the unused card numbers of the
+// set override files.
+func stopRule(dir string) (crawl.StopRule, error) {
+	stop := crawl.DefaultStop
+	files, err := overlay.LoadAll(dir)
+	if err != nil {
+		return stop, err
+	}
+	stop.Unused = map[string]map[string]bool{}
+	for name, f := range files {
+		if !overlay.IsSet(name) || len(f.Unused) == 0 {
+			continue
+		}
+		stop.Unused[name] = map[string]bool{}
+		for n := range f.Unused {
+			stop.Unused[name][n] = true
+		}
+	}
+	return stop, nil
 }

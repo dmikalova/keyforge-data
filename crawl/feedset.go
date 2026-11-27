@@ -31,6 +31,9 @@ type StopRule struct {
 	// MaxQuietPages is the number of pages in a row with no new card after
 	// which the scan stops, gap or not.
 	MaxQuietPages int
+	// Unused are the card numbers that have no card, by set slug. They are
+	// not a gap. The overrides give them (overlay.File.Unused).
+	Unused map[string]map[string]bool
 }
 
 // DefaultStop is the stop rule for a cover scan.
@@ -144,6 +147,7 @@ func scanSet(
 			return err
 		}
 		kept, added := keepNew(p.Decks, heads, seen, numbers, s.Expansion)
+		addNumbers(heads, numbers, s.Expansion)
 		// Store every deck of the page, not only the kept decks. The page has
 		// the full decks, so storing them costs no request, and the raw store
 		// can answer questions about decks later without a new crawl.
@@ -172,7 +176,7 @@ func scanSet(
 			st.Done, st.Reason = true, "out of decks"
 		case st.Quiet >= stop.MaxQuietPages:
 			st.Done, st.Reason = true, fmt.Sprintf("%d quiet pages", st.Quiet)
-		case st.Quiet >= stop.QuietPages && !hasGap(st.Numbers):
+		case st.Quiet >= stop.QuietPages && !hasGap(st.Numbers, stop.Unused[s.Slug]):
 			st.Done, st.Reason = true, fmt.Sprintf("%d quiet pages and no gap", st.Quiet)
 		}
 		if err := c.Checkpoint(all); err != nil {
@@ -184,7 +188,7 @@ func scanSet(
 	}
 	log.Info("set done",
 		"set", s.Slug, "reason", st.Reason, "pages", st.Page,
-		"kept", st.Kept, "cards", len(seen), "gap", hasGap(st.Numbers),
+		"kept", st.Kept, "cards", len(seen), "gap", hasGap(st.Numbers, stop.Unused[s.Slug]),
 	)
 	return c.Checkpoint(all)
 }
@@ -227,8 +231,9 @@ func keepNew(
 }
 
 // hasGap reports whether the numeric card numbers skip a value below their
-// maximum. Lettered numbers (S01, A21) are ignored.
-func hasGap(numbers []string) bool {
+// maximum. Lettered numbers (S01, A21) are ignored. A number in unused has
+// no card, so it is not a gap.
+func hasGap(numbers []string, unused map[string]bool) bool {
 	present := map[int]bool{}
 	top := 0
 	for _, s := range numbers {
@@ -238,6 +243,11 @@ func hasGap(numbers []string) bool {
 		}
 		present[n] = true
 		top = max(top, n)
+	}
+	for s := range unused {
+		if n, err := strconv.Atoi(strings.TrimLeft(s, "0")); err == nil {
+			present[n] = true
+		}
 	}
 	for n := 1; n < top; n++ {
 		if !present[n] {
@@ -269,3 +279,14 @@ func ownSet(h mv.CardHead, expansion int) bool {
 
 // anomalyExpansion is the Master Vault expansion of the anomalies.
 const anomalyExpansion = 453
+
+// addNumbers adds the number of each card object of the set's own expansion
+// to numbers, mavericks too. A maverick is not a target, but it shows that
+// its number has a card: Exchange Officer is always a maverick.
+func addNumbers(heads map[string]mv.CardHead, numbers map[string]bool, expansion int) {
+	for _, h := range heads {
+		if h.Expansion == expansion {
+			numbers[h.CardNumber] = true
+		}
+	}
+}
