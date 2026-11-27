@@ -596,6 +596,10 @@ func traits(s *string) []string {
 // print their own anomaly rarity.
 func rarity(c mvCard) string {
 	switch {
+	case c.fromAnomalies:
+		// Master Vault gives most anomalies the rarity Special. The printed
+		// card has the anomaly rarity icon.
+		return "Anomaly"
 	case c.Rarity == "Token":
 		// A token creature is not in a deck. Its rarity names the kind.
 		return "Token Creature"

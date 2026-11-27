@@ -80,7 +80,7 @@ func TestRun(t *testing.T) {
 			),
 			obj(
 				"c1",
-				`"card_title":"Ecto-Charge","house":"Dis","card_type":"Action","rarity":"FIXED","card_number":"A11","expansion":453,"is_anomaly":true`,
+				`"card_title":"Ecto-Charge","house":"Dis","card_type":"Action","rarity":"Special","card_number":"A11","expansion":453,"is_anomaly":true`,
 			),
 			obj(
 				"n1",
@@ -214,6 +214,11 @@ func TestRun(t *testing.T) {
 	gf := find(t, d, "ghostform-none")
 	if gf.Printings[0].Rarity != "Anomaly" {
 		t.Errorf("anomaly rarity: %q", gf.Printings[0].Rarity)
+	}
+	// Master Vault gives most anomalies the rarity Special. Every anomaly
+	// printing is rarity Anomaly.
+	if ec := find(t, d, "ectocharge-none"); ec.Printings[0].Rarity != "Anomaly" {
+		t.Errorf("ecto-charge rarity: %q, want Anomaly", ec.Printings[0].Rarity)
 	}
 	if !gf.HasFlag(FlagHouseless) || !gf.Printings[0].Anomaly ||
 		gf.Printings[0].Set != "worldscollide" || gf.Printings[0].Image != "worldscollide/A01.webp" {
