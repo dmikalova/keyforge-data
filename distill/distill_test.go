@@ -131,12 +131,16 @@ func TestRun(t *testing.T) {
 				`"card_title":"Horseman of Famine","house":"Sanctum","card_type":"Creature","card_text":"Play/Fight/Reap: Gain 1A.","power":"3","rarity":"FIXED","card_number":"247","expansion":341`,
 			),
 			obj(
+				"v1",
+				`"card_title":"Master of 2","house":"Brobnar","card_type":"Creature","power":"4","rarity":"Variant","card_number":"090","expansion":341`,
+			),
+			obj(
 				"w1",
 				`"card_title":"Old Egad","house":"Logos","card_type":"Creature","power":"1","rarity":"Rare","card_number":"100","expansion":496`,
 			),
 			obj(
 				"w2",
-				`"card_title":"Old Egad","house":"Logos","card_type":"Evil Twin Creature","power":"2","rarity":"Rare","card_number":"004","expansion":496`,
+				`"card_title":"Old Egad","house":"Logos","card_type":"Evil Twin Creature","power":"2","rarity":"Evil Twin","card_number":"004","expansion":496`,
 			),
 			obj(
 				"k1",
@@ -289,8 +293,12 @@ func TestRun(t *testing.T) {
 		d,
 		"oldegad-logos-eviltwin",
 	); !ew.HasFlag(FlagEvilTwin) || ew.Type != "creature" ||
-		ew.Power.N != 2 {
+		ew.Power.N != 2 || ew.Printings[0].Rarity != "Rare" {
 		t.Errorf("evil twin: %+v", ew)
+	}
+	// Variant and FIXED cards are Special, like the later sets print them.
+	if m2 := find(t, d, "masterof2-brobnar"); m2.Printings[0].Rarity != "Special" {
+		t.Errorf("variant rarity: %q, want Special", m2.Printings[0].Rarity)
 	}
 	if n := find(t, d, "oldegad-logos"); n.HasFlag(FlagEvilTwin) || n.Power.N != 1 {
 		t.Errorf("normal twin: %+v", n)

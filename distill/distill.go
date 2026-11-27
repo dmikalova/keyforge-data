@@ -172,6 +172,7 @@ func Run(in Input) (card.Dataset, []Problem) {
 	for _, k := range keys {
 		r.add(cards, k, groups[k])
 	}
+	evilTwinRarities(cards)
 	d := r.dataset(cards)
 	r.addDecks(groups)
 	return d, r.problems
@@ -603,12 +604,51 @@ func rarity(c mvCard) string {
 	case c.Rarity == "Token":
 		// A token creature is not in a deck. Its rarity names the kind.
 		return "Token Creature"
-	case c.Rarity != "FIXED":
-		return c.Rarity
-	case c.IsAnomaly:
+	case c.Rarity == "FIXED" && c.IsAnomaly:
 		return "Anomaly"
+	case slices.Contains(specialRarities, c.Rarity):
+		return "Special"
 	}
-	return "Special"
+	return c.Rarity
+}
+
+// specialRarities are the Master Vault rarities of the sets before Winds of
+// Exchange that the later sets call Special: FIXED for the cards that come
+// in a fixed group, Variant for the variant families, and The Tide. An evil
+// twin's rarity "Evil Twin" becomes the rarity of its normal form
+// (evilTwinRarities).
+var specialRarities = []string{"FIXED", "Variant", "The Tide"}
+
+// evilTwinRarity is the Master Vault rarity of every evil twin.
+const evilTwinRarity = "Evil Twin"
+
+// evilTwinRarities gives each evil twin printing the rarity of its normal
+// form: the normal card's printing in the same set, or else the normal
+// card's newest printing. The flag eviltwin marks the evil twin.
+func evilTwinRarities(cards map[string]*card.Card) {
+	for id, c := range cards {
+		base, ok := strings.CutSuffix(id, "-eviltwin")
+		if !ok {
+			continue
+		}
+		normal := cards[base]
+		for i := range c.Printings {
+			p := &c.Printings[i]
+			if p.Rarity != evilTwinRarity {
+				continue
+			}
+			p.Rarity = "Special"
+			if normal == nil || len(normal.Printings) == 0 {
+				continue
+			}
+			p.Rarity = normal.Printings[len(normal.Printings)-1].Rarity
+			for _, np := range normal.Printings {
+				if np.Set == p.Set {
+					p.Rarity = np.Rarity
+				}
+			}
+		}
+	}
 }
 
 func number(v jsontext.Value) (int, bool) {
