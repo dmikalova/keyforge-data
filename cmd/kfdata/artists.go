@@ -95,6 +95,11 @@ func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 	dataset := fs.String("dataset", "tmp/cards.json", "dataset file")
 	ocrBin := fs.String("ocr", "tmp/artistocr", "artistocr binary")
 	workers := fs.Int("workers", 8, "parallel downloads and OCR processes")
+	hintsPath := fs.String(
+		"hints",
+		"",
+		"CSV of card title and artist: its artists are candidates too",
+	)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -109,6 +114,21 @@ func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 	aliases, err := artists.LoadAliases(af.dir)
 	if err != nil {
 		return err
+	}
+	// A new set brings artists that the known list does not have. Without
+	// them as candidates, the scan matches a new artist to a known one
+	// with a similar line: "Dib" became Rodrigo Camilo, not Djib.
+	saved := len(known)
+	if *hintsPath != "" {
+		hints, err := loadHints(*hintsPath, aliases, known)
+		if err != nil {
+			return err
+		}
+		for _, name := range hints {
+			if !slices.Contains(known, name) {
+				known = append(known, name)
+			}
+		}
 	}
 	// A new alias renames the printings that have the variant spelling.
 	aliases.CanonicalAll(assigned)
@@ -154,6 +174,10 @@ func artistsScan(ctx context.Context, args []string, stdout io.Writer) error {
 		})
 	}
 	if err := saveAll(af.dir, assigned); err != nil {
+		return err
+	}
+	// A hint artist that the scan assigned becomes a known artist.
+	if err := saveUsedKnown(af.dir, known[:saved], assigned); err != nil {
 		return err
 	}
 	if err := writeJSON(af.reviewFile(), queue); err != nil {
@@ -769,4 +793,21 @@ func uniq(s []string) []string {
 	out := slices.Clone(s)
 	slices.Sort(out)
 	return slices.Compact(out)
+}
+
+// saveUsedKnown adds the assigned artists that known does not have to the
+// known artists.
+func saveUsedKnown(dir string, known []string, assigned map[string]map[string]string) error {
+	out := slices.Clone(known)
+	for _, nums := range assigned {
+		for _, name := range nums {
+			if !slices.Contains(out, name) {
+				out = append(out, name)
+			}
+		}
+	}
+	if len(out) == len(known) {
+		return nil
+	}
+	return artists.SaveKnown(dir, out)
 }

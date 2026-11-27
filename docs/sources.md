@@ -41,6 +41,26 @@ On 2026-11-26 we compared the artist scan with `illustrators.csv`:
 The card image is the authority. When a source and the card image disagree,
 use the card image.
 
+`mage artists:scan` downloads `illustrators.csv` to `tmp/hints/` and uses it
+in two steps:
+
+1. The OCR matches the known artists and the artists of the CSV. Without the
+   CSV artists, the OCR matched a new artist to a known artist with a similar
+   line: "Dib" became Rodrigo Camilo, not Djib.
+2. `kfdata artists-hints` settles the printings where the OCR is not sure.
+   It takes the CSV artist when:
+   - the OCR and the CSV agree;
+   - the OCR reads nothing useful, and the card's other printings have the
+     CSV artist;
+   - the OCR reads nothing useful, and the card has no other printing.
+
+The card images are 300 by 420 pixels, also the originals. The artist line is
+too small to read by eye. On 2026-11-27 the scan of the sets from Vault
+Masters 2023 to Prophetic Visions settled 3125 printings: 2635 by OCR alone,
+283 by OCR and CSV, 76 by the CSV and the other printings, 126 by the CSV for
+new cards, and 5 are in the review. 12 OCR matches disagreed with the CSV, and
+their readings showed the CSV artist. The artist files have the CSV artist.
+
 ### Deck rules
 
 The `relationships_and_notes` Google Sheet has 285 rules about the cards in a

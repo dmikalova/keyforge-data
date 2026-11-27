@@ -163,6 +163,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return distillCmd(ctx, store, rest, stdout)
 	case "artists-scan":
 		return artistsScan(ctx, rest, stdout)
+	case "artists-hints":
+		return artistsHints(rest, stdout)
 	case "artists-review":
 		return artistsReview(rest, os.Stdin, stdout)
 	default:
