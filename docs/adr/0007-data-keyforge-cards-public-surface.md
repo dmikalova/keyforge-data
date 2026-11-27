@@ -33,7 +33,6 @@ grammar (ADR 0004).
 | `data/cards/<version>.json` | 1 year, immutable | One dataset version |
 | `data/latest.json` | 60 seconds | The pointer: version, URL of the version file, generated time, card count, set count |
 | `data/feed.xml` | 60 seconds | An Atom feed with one entry for each version |
-| `data/cards.json` | 60 seconds | The current dataset, until all sites read `latest.json`. Then delete it. |
 
 - The publisher writes the version file first, then the feed, then the
   pointer. A client that reads the pointer always finds the version file.

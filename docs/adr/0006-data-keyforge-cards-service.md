@@ -29,7 +29,7 @@ distillation rules.
     job and no new Cloud Scheduler job. Its modes are the set scan, the cover refresh, the full deck crawl, the
     newest-deck tail, and the deck import queue.
   - **Publisher.** After a crawl adds card objects, it runs distillation,
-    fills the missing images, publishes `data/cards.json`, and posts changed
+    fills the missing images, publishes a dataset version (ADR 0007), and posts changed
     problems to the maintenance Discord channel.
   - **Problems table.** Each problem that distillation finds (a missing
     image, a blank art box, an unknown card) is a row with the decks that
@@ -37,7 +37,8 @@ distillation rules.
     of the decks and their card problems.
 - The raw store moves to the private bucket as the primary copy. The local
   `./raw` becomes a cache.
-- The sites keep reading `data/cards.json` from the public bucket. The API is
+- The sites keep reading the dataset from the public bucket: the pointer
+  `data/latest.json` and the version file that it names (ADR 0007). The API is
   for queries and decks, not for the card list. The bucket is cheaper and
   does not go down with the service.
 - Turn on the stages in this order:

@@ -191,16 +191,13 @@ type Dataset struct {
 // relative to.
 const ImageBase = "https://storage.googleapis.com/mklv-keyforge-cards-public/images/cards/"
 
-// DatasetPath is the object path of the current dataset in the public bucket.
-// It stays until every site reads LatestPath (ADR 0007).
-const DatasetPath = "data/cards.json"
-
 // LatestPath is the object path of the pointer to the current dataset
 // version. Read it, then read the version file that it names.
 const LatestPath = "data/latest.json"
 
 // VersionPath returns the object path of a dataset version file. The file
-// never changes, and a bucket rule deletes it after 90 days.
+// never changes. The publisher deletes a version file that is older than 90
+// days, but never the current version.
 func VersionPath(version string) string {
 	return "data/cards/" + version + ".json"
 }

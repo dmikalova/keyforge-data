@@ -19,13 +19,12 @@ import (
 )
 
 const (
-	// datasetObject is the dataset in the public bucket. The search site
-	// reads it and reloads it when it changes.
-	datasetObject = "gs://mklv-keyforge-cards-public/data/cards.json"
-	datasetURL    = "https://storage.googleapis.com/mklv-keyforge-cards-public/data/cards.json"
-	datasetFile   = "tmp/cards.json"
-	problemsFile  = "docs/dataset-problems.md"
-	problemsJSON  = "tmp/problems.json"
+	// latestURL is the public URL of the pointer to the published dataset
+	// version (ADR 0007). The sites read it and then the version file.
+	latestURL    = "https://storage.googleapis.com/mklv-keyforge-cards-public/data/latest.json"
+	datasetFile  = "tmp/cards.json"
+	problemsFile = "docs/dataset-problems.md"
+	problemsJSON = "tmp/problems.json"
 	// notifiedFile is the problems file of the last Discord post.
 	notifiedFile = "tmp/dataset-problems.notified.md"
 	repo         = "dmikalova/keyforge-data"
@@ -79,7 +78,7 @@ func (Dataset) Publish() error {
 	if remote == local {
 		fmt.Println("dataset", local, "is already published")
 	} else {
-		if err := uploadVersion(local); err != nil {
+		if err := uploadVersion(local, remote); err != nil {
 			return err
 		}
 		fmt.Println("published dataset", local, "over", remote)
@@ -128,10 +127,10 @@ func checkShrink(cards, published int) error {
 }
 
 // publishedVersion returns the version and the card count of the published
-// dataset, or empty and 0.
+// dataset from the pointer file, or empty and 0.
 func publishedVersion() (string, int) {
 	client := &http.Client{Timeout: time.Minute}
-	resp, err := client.Get(datasetURL)
+	resp, err := client.Get(latestURL)
 	if err != nil {
 		return "", 0
 	}
@@ -139,11 +138,14 @@ func publishedVersion() (string, int) {
 	if resp.StatusCode != http.StatusOK {
 		return "", 0
 	}
-	var d datasetHead
-	if err := json.UnmarshalRead(resp.Body, &d); err != nil {
+	var l struct {
+		Version string `json:"version"`
+		Cards   int    `json:"cards"`
+	}
+	if err := json.UnmarshalRead(resp.Body, &l); err != nil {
 		return "", 0
 	}
-	return d.Version, len(d.Cards)
+	return l.Version, l.Cards
 }
 
 // notifyProblems posts the problems summary to the maintenance Discord
@@ -302,15 +304,17 @@ const (
 
 // uploadVersion uploads a new dataset version: the version file
 // data/cards/<version>.json, then data/feed.xml, then the pointer
-// data/latest.json, then data/cards.json. A client that reads the pointer
-// always finds the version file. data/cards.json stays until every site
-// reads data/latest.json.
-func uploadVersion(version string) error {
+// data/latest.json. A client that reads the pointer always finds the version
+// file. published is the version that the pointer names before the upload.
+func uploadVersion(version, published string) error {
 	// The published dataset and feed give the feed entry its card changes.
 	// A first publish has neither, so remove the copies of a run before.
 	_ = os.Remove("tmp/published.json")
 	_ = os.Remove("tmp/published-feed.xml")
-	_ = sh.Run("gcloud", "storage", "cp", datasetObject, "tmp/published.json")
+	if published != "" {
+		_ = sh.Run("gcloud", "storage", "cp",
+			publicBucket+"data/cards/"+published+".json", "tmp/published.json")
+	}
 	_ = sh.Run("gcloud", "storage", "cp", publicBucket+"data/feed.xml", "tmp/published-feed.xml")
 	if err := kfdata(
 		"feed",
@@ -331,7 +335,6 @@ func uploadVersion(version string) error {
 		{datasetFile, "data/cards/" + version + ".json", "public, max-age=31536000, immutable", "application/json"},
 		{feedFile, "data/feed.xml", "public, max-age=60", "application/atom+xml"},
 		{latestFile, "data/latest.json", "public, max-age=60", "application/json"},
-		{datasetFile, "data/cards.json", "public, max-age=60", "application/json"},
 	} {
 		if err := sh.RunV("gcloud", "storage", "cp", "-Z",
 			"--cache-control="+u.cache, "--content-type="+u.typ,
