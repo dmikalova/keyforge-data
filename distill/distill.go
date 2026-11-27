@@ -173,6 +173,7 @@ func Run(in Input) (card.Dataset, []Problem) {
 		r.add(cards, k, groups[k])
 	}
 	evilTwinRarities(cards)
+	mergeSecondHouse(cards)
 	d := r.dataset(cards)
 	r.addDecks(groups)
 	return d, r.problems
@@ -621,6 +622,45 @@ var specialRarities = []string{"FIXED", "Variant", "The Tide"}
 
 // evilTwinRarity is the Master Vault rarity of every evil twin.
 const evilTwinRarity = "Evil Twin"
+
+// secondHouse is the house that a later set prints some cards of other
+// houses in. Tokens of Change prints Dark Centurion, a Saurian card, in
+// Redemption.
+const secondHouse = "redemption"
+
+// mergeSecondHouse moves each card of the second house into the card with
+// the same title in exactly one other house. Its printings keep the second
+// house as the printing's house, so the card keeps its first house and a
+// house search can still find the printing. A second-house card with no
+// card of another house, or with several, stays a card of its own.
+func mergeSecondHouse(cards map[string]*card.Card) {
+	byTitle := map[string][]string{}
+	for id, c := range cards {
+		if c.House != secondHouse && !c.HasFlag(FlagEvilTwin) {
+			byTitle[c.Folded] = append(byTitle[c.Folded], id)
+		}
+	}
+	for id, c := range cards {
+		if c.House != secondHouse || c.HasFlag(FlagEvilTwin) || len(byTitle[c.Folded]) != 1 {
+			continue
+		}
+		target := cards[byTitle[c.Folded][0]]
+		for _, p := range c.Printings {
+			p.House = secondHouse
+			target.Printings = append(target.Printings, p)
+		}
+		slices.SortStableFunc(target.Printings, func(a, b card.Printing) int {
+			return cmp.Compare(slugIndex(a.Set), slugIndex(b.Set))
+		})
+		delete(cards, id)
+	}
+}
+
+// slugIndex is the release order of a set slug.
+func slugIndex(slug string) int {
+	s, _ := sets.BySlug(slug)
+	return setIndex(s.Expansion)
+}
 
 // evilTwinRarities gives each evil twin printing the rarity of its normal
 // form: the normal card's printing in the same set, or else the normal

@@ -88,6 +88,10 @@ type Printing struct {
 	Rarity string `json:"rarity"`
 	// Anomaly is true for a printing with the anomaly frame.
 	Anomaly bool `json:"anomaly,omitempty"`
+	// House is the house of this printing when it is not the card's house:
+	// "redemption" for a card that Tokens of Change prints in Redemption
+	// and an earlier set prints in another house.
+	House string `json:"house,omitempty"`
 	// Image is the image path under the public bucket's images/cards/.
 	Image string `json:"image,omitempty"`
 	// MVIDs are the Master Vault card object IDs of the printing.

@@ -369,6 +369,12 @@ func (l *linker) notes(imported, curated []NoteRule) {
 			return
 		}
 		c := &l.cards[l.index[id]]
+		// A card with a printing in its second house shows that house on the
+		// printing, so the house swap note says nothing new.
+		if n.Kind == "houseswap" &&
+			slices.ContainsFunc(c.Printings, func(p card.Printing) bool { return p.House != "" }) {
+			return
+		}
 		note := card.Note{Kind: n.Kind, Text: n.Text}
 		if !slices.Contains(c.Notes, note) {
 			c.Notes = append(c.Notes, note)

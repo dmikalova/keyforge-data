@@ -131,6 +131,18 @@ func TestRun(t *testing.T) {
 				`"card_title":"Horseman of Famine","house":"Sanctum","card_type":"Creature","card_text":"Play/Fight/Reap: Gain 1A.","power":"3","rarity":"FIXED","card_number":"247","expansion":341`,
 			),
 			obj(
+				"dc1",
+				`"card_title":"Dark Centurion","house":"Saurian","card_type":"Creature","power":"5","rarity":"Uncommon","card_number":"203","expansion":479`,
+			),
+			obj(
+				"dc2",
+				`"card_title":"Dark Centurion","house":"Redemption","card_type":"Creature","power":"5","rarity":"Uncommon","card_number":"152","expansion":855`,
+			),
+			obj(
+				"bd1",
+				`"card_title":"Bordan the Redeemed","house":"Redemption","card_type":"Creature","power":"6","rarity":"Rare","card_number":"150","expansion":855`,
+			),
+			obj(
 				"v1",
 				`"card_title":"Master of 2","house":"Brobnar","card_type":"Creature","power":"4","rarity":"Variant","card_number":"090","expansion":341`,
 			),
@@ -296,6 +308,23 @@ func TestRun(t *testing.T) {
 		ew.Power.N != 2 || ew.Printings[0].Rarity != "Rare" {
 		t.Errorf("evil twin: %+v", ew)
 	}
+	// A Redemption printing of a card of another house joins that card,
+	// with the printing's house. A Redemption-only card stays Redemption.
+	dc := find(t, d, "darkcenturion-saurian")
+	if dc.House != "saurian" || len(dc.Printings) != 2 ||
+		dc.Printings[0].Set != "massmutation" || dc.Printings[0].House != "" ||
+		dc.Printings[1].Set != "tokensofchange" || dc.Printings[1].House != "redemption" {
+		t.Errorf("dark centurion: %+v", dc)
+	}
+	for _, c := range d.Cards {
+		if c.ID == "darkcenturion-redemption" {
+			t.Errorf("the Redemption printing made a second card")
+		}
+	}
+	if bd := find(t, d, "bordantheredeemed-redemption"); bd.House != "redemption" ||
+		bd.Printings[0].House != "" {
+		t.Errorf("bordan: %+v", bd)
+	}
 	// Variant and FIXED cards are Special, like the later sets print them.
 	if m2 := find(t, d, "masterof2-brobnar"); m2.Printings[0].Rarity != "Special" {
 		t.Errorf("variant rarity: %q, want Special", m2.Printings[0].Rarity)
@@ -318,7 +347,7 @@ func TestRun(t *testing.T) {
 	if last := d.Cards[len(d.Cards)-1]; last.ID != "forgeahead-none" {
 		t.Errorf("last card is %s", last.ID)
 	}
-	if len(d.Sets) != 9 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
+	if len(d.Sets) != 10 || d.Sets[0].Slug != "callofthearchons" || d.Version == "" {
 		t.Errorf("sets %v version %q", d.Sets, d.Version)
 	}
 
