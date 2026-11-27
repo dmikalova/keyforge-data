@@ -25,7 +25,7 @@ func TestDiff(t *testing.T) {
 	}
 	h := ch.html()
 	for _, want := range []string{
-		`<a href="https://search.keyforge.cards/?card=d">D &amp; E</a>`,
+		`<a href="https://gallery.keyforge.cards/?card=d">D &amp; E</a>`,
 		`<li>C</li>`,
 	} {
 		if !strings.Contains(h, want) {

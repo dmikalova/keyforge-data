@@ -21,7 +21,7 @@ import (
 // The public URLs of the dataset files (ADR 0007).
 const (
 	publicBase = "https://storage.googleapis.com/mklv-keyforge-cards-public/"
-	searchBase = "https://search.keyforge.cards/"
+	searchBase = "https://gallery.keyforge.cards/"
 	// feedDays is how long a feed entry stays. A bucket lifecycle rule
 	// deletes the version files after 90 days, so an older entry has no
 	// file.

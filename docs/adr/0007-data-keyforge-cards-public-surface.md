@@ -21,7 +21,7 @@ The user wants a new file for each dataset version. The user does not want to
 manage old versions by hand.
 
 The search site holds the query fields and the search engine in
-`keyforge-card-search/internal/search`. keyforge-data holds only the query
+`gallery.keyforge.cards/internal/search`. keyforge-data holds only the query
 grammar (ADR 0004).
 
 ## Decision
@@ -51,17 +51,17 @@ grammar (ADR 0004).
   is less than 1 KB. The search site works this way now, with the full file.
 - `data/feed.xml` is for people and for feed readers. Each entry gives the
   cards that the version adds, changes, and removes, and links to them on
-  search.keyforge.cards.
+  gallery.keyforge.cards.
 - Do not make a JSON Feed in addition. The pointer and the Atom feed cover
   programs and people.
 
 ### Search engine
 
 - The search fields and the search engine move from
-  `keyforge-card-search/internal/search` to a keyforge-data package. The API,
+  `gallery.keyforge.cards/internal/search` to a keyforge-data package. The API,
   the MCP tools, and the bot use the same fields as the site.
 - The deck search uses the same engine later, with the deck fields.
-- search.keyforge.cards becomes only a frontend. It imports the engine for
+- gallery.keyforge.cards becomes only a frontend. It imports the engine for
   the pages, and it calls no search code of its own.
 
 ### API endpoints
@@ -109,7 +109,7 @@ query each.
 - The bot also has the slash command `/card name:<name>`, with Discord
   autocomplete.
 - Each answer is an embed: the card name links to the card page on
-  search.keyforge.cards, the image comes from the public bucket, and the
+  gallery.keyforge.cards, the image comes from the public bucket, and the
   description is the card text.
 - The bot token is in sops in the infrastructure repo.
 

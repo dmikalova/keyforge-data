@@ -1,4 +1,4 @@
-// Package query is the search language that search.keyforge.cards and
+// Package query is the search language that gallery.keyforge.cards and
 // decks.keyforge.cards share (ADR 0004).
 //
 // Parse turns a query string into an AST, with a Schema that names the

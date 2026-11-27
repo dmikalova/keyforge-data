@@ -2,7 +2,7 @@
 
 ## Context
 
-search.keyforge.cards and decks.keyforge.cards use one query language. The
+gallery.keyforge.cards and decks.keyforge.cards use one query language. The
 deck language adds more fields. Card ratings come later as more fields. Cards
 fit in memory (about 7,500 rows). Decks are in Postgres (about 4M rows).
 

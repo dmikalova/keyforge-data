@@ -121,7 +121,8 @@ order. The vocabulary is in [../CONTEXT.md](../CONTEXT.md).
 
 ## Phase 8: Card search
 
-- Build search.keyforge.cards. The plan is in the keyforge-card-search repo.
+- Build gallery.keyforge.cards (search.keyforge.cards until 2026-11-27). The
+  plan is in the gallery.keyforge.cards repo.
 
 ## Phase 9: data.keyforge.cards (ADR 0006, ADR 0007)
 
