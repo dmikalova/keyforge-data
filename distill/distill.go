@@ -349,6 +349,15 @@ func (r *run) house(set sets.Set, base mvCard, objs []mvCard, ov Override) (stri
 		houses[query.Normalize(o.House)] = true
 	}
 	h := query.Normalize(base.House)
+	// A number prefix in the overrides names a kind of houseless cards, such
+	// as the Skybeasts (S01) of Æmber Skies. Master Vault prints them in the
+	// house of the deck, so a card seen in one deck only has a house too.
+	for prefix, label := range ov.KindPrefixes {
+		if strings.HasPrefix(base.Number, prefix) {
+			r.label("groups", query.Normalize(label), label)
+			return "", []string{query.Normalize(label), FlagHouseless}
+		}
+	}
 	switch {
 	case base.playableHouse != "":
 		return base.playableHouse, nil

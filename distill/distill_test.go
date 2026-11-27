@@ -71,6 +71,14 @@ func TestRun(t *testing.T) {
 				`"card_title":"Ghostform","house":"Logos","card_type":"Upgrade","rarity":"FIXED","card_number":"A01","expansion":453,"is_anomaly":true`,
 			),
 			obj(
+				"s1",
+				`"card_title":"Akugyo","house":"Brobnar","card_type":"Creature","power":"5","rarity":"Special","card_number":"S01","expansion":800`,
+			),
+			obj(
+				"s2",
+				`"card_title":"Akugyo","house":"Mars","card_type":"Creature","power":"5","rarity":"Special","card_number":"S01","expansion":800`,
+			),
+			obj(
 				"c1",
 				`"card_title":"Ecto-Charge","house":"Dis","card_type":"Action","rarity":"FIXED","card_number":"A11","expansion":453,"is_anomaly":true`,
 			),
@@ -146,7 +154,10 @@ func TestRun(t *testing.T) {
 		},
 		Overrides: map[string]Override{
 			"worldscollide": {Cards: map[string]CardFix{"170": {Power: &card.Power{X: true}}}},
-			"aemberskies":   {Aliases: map[string][]string{"ANT1-10NY": {"Anthony"}}},
+			"aemberskies": {
+				Aliases:      map[string][]string{"ANT1-10NY": {"Anthony"}},
+				KindPrefixes: map[string]string{"S": "Skybeast"},
+			},
 		},
 		Decks:    map[string][]string{"b1": {"deck-1"}},
 		DeckSets: map[string][]int{"a1": {479, 452}, "a2": {452}, "q1": {452}, "c1": {600}},
@@ -177,6 +188,12 @@ func TestRun(t *testing.T) {
 		ew.Related[0].Label != "Evil twin" ||
 		ew.Related[0].Cards[0] != "oldegad-logos" {
 		t.Errorf("evil twin related: %+v", ew.Related)
+	}
+	// A card that Master Vault prints in the house of the deck gets the kind
+	// of its number prefix.
+	if sb := find(t, d, "akugyo-none"); sb.Group != "skybeast" ||
+		!sb.HasFlag("skybeast") || !sb.HasFlag(FlagHouseless) {
+		t.Errorf("skybeast: group %q flags %v", sb.Group, sb.Flags)
 	}
 	if gf := find(t, d, "ghostform-none"); gf.Group != "anomaly" {
 		t.Errorf("anomaly group %q", gf.Group)

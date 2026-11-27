@@ -42,6 +42,11 @@ type File struct {
 	// Kinds maps a Master Vault house of houseless cards to its kind label,
 	// for example "Skybeast" to "skybeast". A set file.
 	Kinds map[string]string `json:"kinds,omitempty"`
+	// KindPrefixes maps a collector number prefix to the kind label of the
+	// houseless cards with that prefix, for example "S" to "Skybeast" in
+	// Æmber Skies. Master Vault prints these cards in the house of the deck,
+	// so the house does not name the kind. A set file.
+	KindPrefixes map[string]string `json:"kindPrefixes,omitempty"`
 	// Aliases maps a card title to extra names for name search. A set file.
 	Aliases map[string][]string `json:"aliases,omitempty"`
 	// Cards maps a collector number to corrections for that printing's card.
