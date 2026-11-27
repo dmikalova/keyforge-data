@@ -159,6 +159,14 @@ func TestRun(t *testing.T) {
 				`"card_title":"The Grim Reaper","house":"Brobnar","card_type":"Creature","power":"6","rarity":"Rare","card_number":"233","expansion":722,"is_maverick":true`,
 			),
 			obj(
+				"sh1",
+				`"card_title":"Shooler","house":"Dis","card_type":"Creature","power":"5","rarity":"Common","card_number":"080","expansion":341`,
+			),
+			obj(
+				"sh2",
+				`"card_title":"Shooler","house":"Dis","card_type":"Creature","power":"5","rarity":"Common","card_number":"090","expansion":722`,
+			),
+			obj(
 				"v1",
 				`"card_title":"Master of 2","house":"Brobnar","card_type":"Creature","power":"4","rarity":"Variant","card_number":"090","expansion":341`,
 			),
@@ -184,6 +192,7 @@ func TestRun(t *testing.T) {
 			"worldscollide/A01.webp", "worldscollide/170.webp",
 			"aemberskies/400-other-card.webp", "aemberskies/400-sky-whale.webp",
 			"grimreminders/155.webp", "menagerie/233.webp",
+			"callofthearchons/080.webp", "menagerie/090.webp",
 		},
 		Overrides: map[string]Override{
 			"worldscollide": {Cards: map[string]CardFix{"170": {Power: &card.Power{X: true}}}},
@@ -191,6 +200,7 @@ func TestRun(t *testing.T) {
 				Aliases:      map[string][]string{"ANT1-10NY": {"Anthony"}},
 				KindPrefixes: map[string]string{"S": "Skybeast"},
 			},
+			"menagerie": {GreyFrame: []string{"090"}},
 		},
 		Decks:    map[string][]string{"b1": {"deck-1"}},
 		DeckSets: map[string][]int{"a1": {479, 452}, "a2": {452}, "q1": {452}, "c1": {600}},
@@ -360,6 +370,13 @@ func TestRun(t *testing.T) {
 	men := gr.Printings[len(gr.Printings)-1]
 	if men.Set != "menagerie" || !men.Maverick || men.Image != "grimreminders/155.webp" {
 		t.Errorf("grim reaper menagerie printing: %+v", men)
+	}
+	// A normal printing whose image has the grey frame of a maverick render
+	// (overrides greyFrame) is treated like a maverick-only printing.
+	sh := find(t, d, "shooler-dis")
+	if len(sh.Printings) != 2 || !sh.Printings[1].Maverick ||
+		sh.Printings[1].Image != "callofthearchons/080.webp" || sh.Printings[0].Maverick {
+		t.Errorf("shooler: %+v", sh.Printings)
 	}
 	// Variant and FIXED cards are Special, like the later sets print them.
 	if m2 := find(t, d, "masterof2-brobnar"); m2.Printings[0].Rarity != "Special" {

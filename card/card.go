@@ -93,7 +93,8 @@ type Printing struct {
 	// or "elders" for a Mars card that Martian Civil War prints in Elders.
 	House string `json:"house,omitempty"`
 	// Maverick is true for a printing that Master Vault has only as
-	// mavericks. Its Master Vault image shows another house, so the printing
+	// mavericks, or whose Master Vault image has the grey frame of a maverick
+	// render (overrides greyFrame). Such an image shows no house, so the printing
 	// uses the image of the card's newest printing that is not a maverick,
 	// when the card has one. Show another printing by default.
 	Maverick bool `json:"maverick,omitempty"`

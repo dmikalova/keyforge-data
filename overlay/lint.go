@@ -107,6 +107,11 @@ func (l *linter) set(name string, f File, known map[string]bool, aliases map[str
 			}
 		}
 	}
+	for _, num := range f.GreyFrame {
+		if !l.numbers[name+"/"+num] {
+			l.add(name, false, "grey frame %s: no printing has this number", num)
+		}
+	}
 	for _, t := range slices.Sorted(maps.Keys(f.Aliases)) {
 		if !l.titles[t] {
 			l.add(name, true, "aliases of %q: no card has this title", t)

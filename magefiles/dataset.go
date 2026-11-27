@@ -62,7 +62,11 @@ func (Dataset) Publish() error {
 	if err != nil {
 		return err
 	}
-	if filled > 0 {
+	grey, err := checkGreyFrames()
+	if err != nil {
+		return err
+	}
+	if filled > 0 || grey > 0 {
 		if err := (Dataset{}).Distill(); err != nil {
 			return err
 		}
@@ -374,4 +378,24 @@ func pruneVersions(current string) error {
 		fmt.Println("deleted the old dataset version", f[2])
 	}
 	return nil
+}
+
+// checkGreyFrames runs kfdata check-art -write: it checks the new card
+// images for the grey frame of a maverick render and adds the hits to the
+// greyFrame lists of the set override files. The check keeps its results in
+// tmp/art-checks.json, so it downloads only new images. It returns the
+// number of new grey frames.
+func checkGreyFrames() (int, error) {
+	out, err := sh.Output("go", "run", "./cmd/kfdata", "check-art", "-write")
+	fmt.Println(out)
+	if err != nil {
+		return 0, err
+	}
+	n := 0
+	for line := range strings.SplitSeq(out, "\n") {
+		if _, err := fmt.Sscanf(line, "added %d grey frames", &n); err == nil {
+			return n, nil
+		}
+	}
+	return 0, nil
 }

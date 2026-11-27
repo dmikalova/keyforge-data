@@ -55,6 +55,13 @@ type File struct {
 	// Artists maps a collector number to the artist of the printing. Master
 	// Vault has no artists. kfdata artists scan writes them. A set file.
 	Artists map[string]string `json:"artists,omitempty"`
+	// GreyFrame lists the collector numbers whose Master Vault image has the
+	// grey frame of a house-less maverick render although the card has a
+	// house, for example The Grim Reaper in Menagerie. Distillation treats
+	// the printing like a maverick-only printing: it shows the art of the
+	// card's newest normal printing. kfdata check-art -write writes it. A set
+	// file.
+	GreyFrame []string `json:"greyFrame,omitempty"`
 	// Unused maps a collector number that has no card to the reason, for
 	// example a number that no deck has. The crawl does not wait for these
 	// numbers (crawl.StopRule). A set file.

@@ -284,7 +284,7 @@ func (r *run) add(cards map[string]*card.Card, k printingKey, objs []mvCard) {
 		Number:   k.number,
 		Rarity:   rarity(base),
 		Anomaly:  base.IsAnomaly,
-		Maverick: base.maverickOnly,
+		Maverick: base.maverickOnly || slices.Contains(ov.GreyFrame, k.number),
 		Image:    r.printingImage(set, k, base, objs, slices.Contains(flags, FlagGigantic)),
 		Artist:   r.in.Artists[set.Slug][k.number],
 		// dataset keeps the text only where it differs from the card text.

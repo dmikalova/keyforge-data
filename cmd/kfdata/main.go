@@ -30,16 +30,13 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"slices"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
 	_ "golang.org/x/image/webp"
 
 	"github.com/dmikalova/keyforge-data/artists"
-	"github.com/dmikalova/keyforge-data/card"
 	"github.com/dmikalova/keyforge-data/crawl"
 	"github.com/dmikalova/keyforge-data/distill"
 	"github.com/dmikalova/keyforge-data/images"
@@ -66,7 +63,7 @@ commands:
                                         write a gigantic composite image
   fix-art -out file <blank URL> <art URL>
                                         put another printing's art under a blank image
-  check-art [-workers n]                print the card images with a blank art box
+  check-art [-workers n] [-write]      print the card images with a blank art box or a grey frame
   threads <todo|add|rules> ...           list and edit the curated threads of related cards
   overrides lint [-dataset f]            check the override files against the dataset
   feed [-dataset f] [-old f] [-old-feed f]
@@ -426,61 +423,6 @@ func giganticCmd(ctx context.Context, args []string) error {
 		return err
 	}
 	return f.Close()
-}
-
-// checkArt downloads each card image in the public bucket and prints the
-// images whose art box is blank.
-func checkArt(ctx context.Context, args []string, stdout io.Writer) error {
-	fs := flag.NewFlagSet("check-art", flag.ContinueOnError)
-	workers := fs.Int("workers", 8, "parallel downloads")
-	if err := fs.Parse(args); err != nil {
-		return err
-	}
-	client := &http.Client{Timeout: time.Minute}
-	names, err := distill.ListImages(ctx, client)
-	if err != nil {
-		return err
-	}
-	jobs := make(chan string)
-	var mu sync.Mutex
-	var blank, failed []string
-	var wg sync.WaitGroup
-	for range *workers {
-		wg.Go(func() {
-			for n := range jobs {
-				img, err := fetchImage(ctx, client, card.ImageBase+n)
-				mu.Lock()
-				switch {
-				case err != nil:
-					failed = append(failed, n+": "+err.Error())
-				case images.BlankArt(img):
-					blank = append(blank, n)
-				}
-				mu.Unlock()
-			}
-		})
-	}
-	for _, n := range names {
-		jobs <- n
-	}
-	close(jobs)
-	wg.Wait()
-	slices.Sort(blank)
-	slices.Sort(failed)
-	for _, n := range blank {
-		_, _ = fmt.Fprintln(stdout, "blank", n)
-	}
-	for _, n := range failed {
-		_, _ = fmt.Fprintln(stdout, "failed", n)
-	}
-	_, err = fmt.Fprintf(
-		stdout,
-		"checked %d images: %d blank, %d failed\n",
-		len(names),
-		len(blank),
-		len(failed),
-	)
-	return err
 }
 
 // fetchImage downloads and decodes a PNG or webp image.
